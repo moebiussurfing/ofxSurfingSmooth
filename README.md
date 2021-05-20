@@ -23,14 +23,14 @@ Copyright (C) 2015, Paul Turowski. ( http://paulturowski.com )
  
 **ofApp.h**
 ```.cpp
-	#include "ofxSurfingSmooth.h"
+#include "ofxSurfingSmooth.h"
 
-	ofxSurfingSmooth surfingSmooth;
+ofxSurfingSmooth surfingSmooth;
 
-	ofParameterGroup params;
-	ofParameter<float> lineWidth;
-	ofParameter<float> separation;
-	ofParameter<float> speed;
+ofParameterGroup params;
+ofParameter<float> lineWidth;
+ofParameter<float> separation;
+ofParameter<float> speed;
 ```
 
 **ofApp.cpp**
