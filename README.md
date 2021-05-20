@@ -50,9 +50,9 @@ ofApp::setup(){
   <p>
 
 Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compile your projects or the examples:
-* [ofxHistoryPlot](https://github.com/moebiussurfing/ofxHistoryPlot)
-* [ofxScaleDragRect](https://github.com/moebiussurfing/ofxScaleDragRect)
-* [ofxImGui](https://github.com/moebiussurfing/ofxImGui)  
+* [ofxHistoryPlot](https://github.com/moebiussurfing/ofxHistoryPlot)  [ FORK ]
+* [ofxScaleDragRect](https://github.com/moebiussurfing/ofxScaleDragRect)  [ FORK ]
+* [ofxImGui](https://github.com/moebiussurfing/ofxImGui)  [ FORK ]  
 * [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
 * [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for example-Advanced ]  
 * [ofxMidiParams](https://github.com/moebiussurfing/ofxMidiParams)  [ Only for example-Advanced ]  
