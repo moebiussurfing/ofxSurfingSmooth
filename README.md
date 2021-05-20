@@ -21,7 +21,7 @@ Thanks to @**turowskipaul** !
 
 ## Usage
  
-** ofApp.h **
+**ofApp.h**
 ```.cpp
   #include "ofxSurfingSmooth.h"
 
@@ -33,19 +33,19 @@ Thanks to @**turowskipaul** !
   ofParameter<float> speed;
 ```
 
-** ofApp.cpp **
+**ofApp.cpp**
 ```.cpp
 ofApp::setup(){
- 	params.setName("paramsGroup");// main container
- 	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
-	params.add(separation.set("separation", 50, 1, 100));
-	params.add(speed.set("speed", 0.5, 0, 1));
+  params.setName("paramsGroup");// main container
+  params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
+  params.add(separation.set("separation", 50, 1, 100));
+  params.add(speed.set("speed", 0.5, 0, 1));
 
-	surfingSmooth.setup(params);
+  surfingSmooth.setup(params);
 }
 ```
 
-details>
+<details>
   <summary>Dependencies</summary>
   <p>
 
@@ -54,7 +54,8 @@ Clone these add-ons and include into the **OF Project Generator** to allow compi
 * [ofxScaleDragRect](https://github.com/moebiussurfing/ofxScaleDragRect)
 * [ofxImGui](https://github.com/moebiussurfing/ofxImGui)  
 * [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
-* [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for one of the examples ]
+* [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for one of the examples ]  
+
 *Thanks a lot to all these ofxAddons coders.*  
   </p>
 </details>
@@ -70,15 +71,18 @@ Clone these add-ons and include into the **OF Project Generator** to allow compi
 <br/>
 
 ### TODO
-+ Add example/snippets to help access the smoothed parameters on the new created group.
++ Add example/snippets to help access the smoothed parameters on the newly created group.
 + Add "Real" nested sub-groups tree levels.
 + Add colors types, vectors, using templates...
 + Add thresholds/bonk independent for each variable/channel: make it functional. Add callbacks...
 + Add param to calibrate max history smooth.
 
-## Author
-An addon by **@moebiusSurfing**  
+## Authors
+An add-on updated by **@moebiusSurfing**  
 *( ManuMolina ) 2019-2021*  
+
+Original Author:  
+Paul Turowski] (http://paulturowski.com)
 
 [Twitter](https://twitter.com/moebiussurfing/)  
 [Instagram](https://www.instagram.com/moebiussurfing/)  
