@@ -1,11 +1,11 @@
 # Overview
 An **openFrameworks** add-on to do different styles of timed **smoothing** to grouped ```ofParameters```.
 
-## ofxDataStream  
+## Based on ofxDataStream  
 This add-on is extremely based on:  
 https://github.com/turowskipaul/ofxDataStream  
-Copyright (C) 2015 [Paul Turowski] (http://paulturowski.com)  
-Thanks to @**turowskipaul** !  
+Copyright (C) 2015, Paul Turowski (http://paulturowski.com)  
+Thanks @**turowskipaul** !  
 
 ## Screencast
 ![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")
@@ -15,9 +15,10 @@ Thanks to @**turowskipaul** !
 - Another smoothed ```ofParameterGroup``` will be created with the same structure.
 - 2 Smoothing algorithms: **Accumulator** and **Slide**.
 - 3 Mean types: **Arith**, **Geom** and **Harm**.
-- Only float and int types yet.
+- Only ```float``` and ```int``` types yet.
 - Scalable and draggable plots.
 - Store/Recall all the settings.
+- **ImGui** based GUI ready to integrate.
 
 ## Usage
  
@@ -49,12 +50,13 @@ ofApp::setup(){
   <summary>Dependencies</summary>
   <p>
 
-Clone these add-ons and include into the **OF Project Generator** to allow compile your projects or the examples:
+Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compile your projects or the examples:
 * [ofxHistoryPlot](https://github.com/moebiussurfing/ofxHistoryPlot)
 * [ofxScaleDragRect](https://github.com/moebiussurfing/ofxScaleDragRect)
 * [ofxImGui](https://github.com/moebiussurfing/ofxImGui)  
 * [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
-* [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for one of the examples ]  
+* [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for example-Advanced ]  
+* [ofxMidiParams](https://github.com/moebiussurfing/ofxMidiParams)  [ Only for example-Advanced ]  
 
 *Thanks a lot to all these ofxAddons coders.*  
   </p>
