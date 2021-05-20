@@ -4,8 +4,7 @@ An **openFrameworks** add-on to do different styles of timed **smoothing** to gr
 ## Based on the ofxDataStream Engine  
 This add-on is extremely based on:  
 https://github.com/turowskipaul/ofxDataStream  
-Copyright (C) 2015, Paul Turowski  
-(http://paulturowski.com)  
+Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)  
 
 ## Screencast
 ![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")
