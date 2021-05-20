@@ -103,7 +103,7 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 
 ### TODO
 + Add more types: 2D/3D/4D vectors, colors. Using templates [?] ...  
-  [** _ANY HELP/PULL ON THIS IS REALLY APPRECIATED!_ **]
+  [ _**ANY HELP/PULL ON THIS IS REALLY APPRECIATED!**_ ]
 + Add "Real" nested sub-groups tree levels. Now the params are recreated on one depth level only.
 + Add independent thresholds/onSet for each parameter/channel: make it functional. Add callbacks...
 + Add param to calibrate max history smooth/speed.
