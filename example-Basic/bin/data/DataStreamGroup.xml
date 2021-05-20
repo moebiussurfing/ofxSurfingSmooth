@@ -15,7 +15,7 @@
         "Smooth_Power": "0.75",
         "Speed": "0.5",
         "Threshold": "1",
-        "Type_Mean": "0",
+        "Type_Mean": "1",
         "Type_Smooth": "2",
         "Use_Generators": "0",
         "index": "4",

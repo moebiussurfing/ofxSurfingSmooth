@@ -4,7 +4,8 @@
 ofxSurfingSmooth::ofxSurfingSmooth()
 {
 	ofAddListener(ofEvents().update, this, &ofxSurfingSmooth::update);
-	ofAddListener(ofEvents().draw, this, &ofxSurfingSmooth::draw, OF_EVENT_ORDER_BEFORE_APP);
+	ofAddListener(ofEvents().draw, this, &ofxSurfingSmooth::draw, OF_EVENT_ORDER_AFTER_APP);
+	//ofAddListener(ofEvents().draw, this, &ofxSurfingSmooth::draw, OF_EVENT_ORDER_BEFORE_APP);
 }
 
 //--------------------------------------------------------------
@@ -325,7 +326,7 @@ void ofxSurfingSmooth::updateGenerators() {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw(ofEventArgs & args) {
-	if (!bShowGui) return;
+	if (!bShowGui || !bGui) return;
 
 	if (bShowPlots) {
 		ofPushStyle();
@@ -408,7 +409,7 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 			else ofSetColor(colorBaseLine);
 		}
 		string s = "#" + ofToString(i);
-		
+
 		//add param name
 		//s += " " + mParamsGroup[i].getName();
 
@@ -1311,15 +1312,18 @@ void ofxSurfingSmooth::Changed_Controls_Out(ofAbstractParameter &e)
 
 }
 
+//------------
+
+// API getters
+
+// to get the smoothed parameters indiviauly and externaly
+
 //--------------------------------------------------------------
-ofAbstractParameter& ofxSurfingSmooth::getParam(ofAbstractParameter &e) {
+ofAbstractParameter& ofxSurfingSmooth::getParamAbstract(ofAbstractParameter &e) {
 	string name = e.getName();
 	auto &p = mParamsGroup.get(name);
-
-	//log
 	auto i = mParamsGroup.getPosition(name);
 	float value = outputs[i].getValue();
-	ofLogVerbose(__FUNCTION__) << name << " : " << value;
 
 	//ofAbstractParameter& aparam = mParamsGroup[i];
 	//float value = 0;
@@ -1331,39 +1335,47 @@ ofAbstractParameter& ofxSurfingSmooth::getParam(ofAbstractParameter &e) {
 	//	ofParameter<float> ti = aparam.cast<float>();
 	//	value = ofMap(ti, ti.getMin(), ti.getMax(), 0, 1);
 	//}
-
 	//ofLogNotice(__FUNCTION__) << aparam.getName() << " : " << e;
 
 	return p;
 }
 
+
 //--------------------------------------------------------------
-ofAbstractParameter& ofxSurfingSmooth::getParam(string name) {
-	//string name = e.getName();
+ofAbstractParameter& ofxSurfingSmooth::getParamAbstract(string name) {
 	auto &p = mParamsGroup.get(name);
 
-	//log
 	auto i = mParamsGroup.getPosition(name);
 	float value = outputs[i].getValue();
-	//ofLogNotice(__FUNCTION__) << name << " : " << value;
 
 	return p;
 }
 
-//TODO: it seems that intereferes with the param?
 //--------------------------------------------------------------
 ofParameter<float>& ofxSurfingSmooth::getParamFloat(string name) {
-	auto &p = mParamsGroup.get(name);
-	auto i = mParamsGroup.getPosition(name);
+	//auto &p = mParamsGroup.get(name);
+	//auto i = mParamsGroup.getPosition(name);
+	//if (p.type() == typeid(ofParameter<float>).name()) {
+	//	ofParameter<float> pf = p.cast<float>();
+	//	ofParameter<float> pf_Out = pf;//set min/max
+	//	//ofParameter<float> pf_Out{ pf.getName(), 0, pf.getMin(), pf.getMax() };//set min/max
+	//	float value = ofMap(outputs[i].getValue(), 0, 1, pf.getMin(), pf.getMax());
+	//	pf_Out.set(value);
+	//	//pf.set(outputs[i].getValue());
+	//	return pf_Out;
+	//	//return pf;
+	//}
+	//else
+	//{
+	//	ofParameter<float> pf{ "empty", -1 };
+	//	return pf;
+	//}
+
+	auto &p = mParamsGroup_COPY.get(name);
+	auto i = mParamsGroup_COPY.getPosition(name);
 	if (p.type() == typeid(ofParameter<float>).name()) {
 		ofParameter<float> pf = p.cast<float>();
-		ofParameter<float> pf_Out = pf;//set min/max
-		//ofParameter<float> pf_Out{ pf.getName(), 0, pf.getMin(), pf.getMax() };//set min/max
-		float value = ofMap(outputs[i].getValue(), 0, 1, pf.getMin(), pf.getMax());
-		pf_Out.set(value);
-		//pf.set(outputs[i].getValue());
-		return pf_Out;
-		//return pf;
+		return pf;
 	}
 	else
 	{
@@ -1375,11 +1387,23 @@ ofParameter<float>& ofxSurfingSmooth::getParamFloat(string name) {
 //--------------------------------------------------------------
 float ofxSurfingSmooth::getParamFloatValue(ofAbstractParameter &e) {
 	string name = e.getName();
-	auto &p = mParamsGroup.get(name);
-	auto i = mParamsGroup.getPosition(name);
+
+	//auto &p = mParamsGroup.get(name);
+	//auto i = mParamsGroup.getPosition(name);
+	//if (p.type() == typeid(ofParameter<float>).name()) {
+	//	ofParameter<float> pf = p.cast<float>();
+	//	return ofMap(outputs[i].getValue(), 0, 1, pf.getMin(), pf.getMax());
+	//}
+	//else
+	//{
+	//	return -1;
+	//}
+
+	auto &p = mParamsGroup_COPY.get(name);
+	auto i = mParamsGroup_COPY.getPosition(name);
 	if (p.type() == typeid(ofParameter<float>).name()) {
 		ofParameter<float> pf = p.cast<float>();
-		return ofMap(outputs[i].getValue(), 0, 1, pf.getMin(), pf.getMax());
+		return pf.get();
 	}
 	else
 	{
@@ -1390,11 +1414,23 @@ float ofxSurfingSmooth::getParamFloatValue(ofAbstractParameter &e) {
 //--------------------------------------------------------------
 int ofxSurfingSmooth::getParamIntValue(ofAbstractParameter &e) {
 	string name = e.getName();
-	auto &p = mParamsGroup.get(name);
-	auto i = mParamsGroup.getPosition(name);
+
+	//auto &p = mParamsGroup.get(name);
+	//auto i = mParamsGroup.getPosition(name);
+	//if (p.type() == typeid(ofParameter<int>).name()) {
+	//	ofParameter<int> pf = p.cast<int>();
+	//	return ofMap(outputs[i].getValue(), 0, 1, pf.getMin(), pf.getMax());
+	//}
+	//else
+	//{
+	//	return -1;
+	//}
+
+	auto &p = mParamsGroup_COPY.get(name);
+	auto i = mParamsGroup_COPY.getPosition(name);
 	if (p.type() == typeid(ofParameter<int>).name()) {
 		ofParameter<int> pf = p.cast<int>();
-		return ofMap(outputs[i].getValue(), 0, 1, pf.getMin(), pf.getMax());
+		return pf.get();
 	}
 	else
 	{
@@ -1404,23 +1440,38 @@ int ofxSurfingSmooth::getParamIntValue(ofAbstractParameter &e) {
 
 //--------------------------------------------------------------
 ofParameter<int>& ofxSurfingSmooth::getParamInt(string name) {
-	auto &p = mParamsGroup.get(name);
-	auto i = mParamsGroup.getPosition(name);
+	//auto &p = mParamsGroup.get(name);
+	//auto i = mParamsGroup.getPosition(name);
+	//if (p.type() == typeid(ofParameter<int>).name()) {
+	//	ofParameter<int> pi = p.cast<int>();
+	//	ofParameter<int> pi_Out = pi;//set min/max
+	//	pi.set(outputs[i].getValue());
+	//	return pi_Out;
+	//	//return pi;
+	//}
+	//else
+	//{
+	//	ofParameter<int> pi{ "empty", -1 };
+	//	return pi;
+	//}
+
+	auto &p = mParamsGroup_COPY.get(name);
+	auto i = mParamsGroup_COPY.getPosition(name);
 	if (p.type() == typeid(ofParameter<int>).name()) {
-		ofParameter<int> pi = p.cast<int>();
-		ofParameter<int> pi_Out = pi;//set min/max
-		pi.set(outputs[i].getValue());
-		return pi_Out;
-		//return pi;
+		ofParameter<int> pf = p.cast<int>();
+		return pf;
 	}
 	else
 	{
-		ofParameter<int> pi{ "empty", -1 };
-		return pi;
+		ofParameter<int> pf{ "empty", -1 };
+		return pf;
 	}
 }
 
+//-----
+
 // will populate widgets params, to monitor the smoothed outputs, not the raw parameters (inputs)
+// not using the recreated smooth parameters...
 //--------------------------------------------------------------
 void ofxSurfingSmooth::addGroupSmooth_ImGuiWidgets(ofParameterGroup &group) {
 	string n = group.getName() + " > Smoothed";

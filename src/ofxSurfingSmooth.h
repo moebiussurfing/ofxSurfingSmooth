@@ -8,6 +8,7 @@ TODO:
 + add colors types, vectors, using templates...
 + add thresholds/bonk independent for each variable/channel: make it functional. add callbacks...
 + add param to calibrate max history smooth
++ fix broke state when tweak smooth power "on playing"
 
 */
 
@@ -78,8 +79,8 @@ public:
 public:
 	float getParamFloatValue(ofAbstractParameter &e);
 	int getParamIntValue(ofAbstractParameter &e);
-	ofAbstractParameter& getParam(ofAbstractParameter &e);
-	ofAbstractParameter& getParam(string name);
+	ofAbstractParameter& getParamAbstract(ofAbstractParameter &e);
+	ofAbstractParameter& getParamAbstract(string name);
 	ofParameter<float>& getParamFloat(string name);
 	ofParameter<int>& getParamInt(string name);
 
@@ -153,6 +154,7 @@ private:
 
 private:
 	void Changed_Params(ofAbstractParameter &e);
+	bool bDISABLE_CALLBACKS = true;
 
 	ofParameterGroup params;
 	ofParameter<bool> enable;
@@ -211,8 +213,6 @@ private:
 	std::vector<std::string> typeSmoothLabels;
 	std::vector<std::string> typeMeanLabels;
 
-	bool bDISABLE_CALLBACKS = true;
-
 	//--------------------------------------------------------------
 	void nextTypeSmooth() {
 		if (typeSmooth >= typeSmooth.getMax()) typeSmooth = 1;
@@ -225,5 +225,5 @@ private:
 	}
 
 public:
-	ofParameter<bool> bShowGui{ "SHOW DATA STREAM", true };// exposed to use in external gui's
+	ofParameter<bool> bShowGui{ "SHOW SMOOTH SURFER", true };// exposed to use in external gui's
 };
