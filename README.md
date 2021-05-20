@@ -45,6 +45,8 @@ ofApp::setup(){
 }
 ```
 
+Look on the **example-Basic** for helping snippets to access the smoothed parameters on the newly created smoothed group.  
+
 <details>
   <summary>Dependencies</summary>
   <p>
@@ -70,7 +72,6 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 </details>
 
 ### TODO
-+ Add example/snippets to help access the smoothed parameters on the newly created group.
 + Add "Real" nested sub-groups tree levels.
 + Add colors types, vectors, using templates...
 + Add thresholds/bonk independent for each variable/channel: make it functional. Add callbacks...
