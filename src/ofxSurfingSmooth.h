@@ -4,11 +4,14 @@
 
 TODO:
 
-+ "real" nested sub-groups tree levels
-+ add colors types, vectors, using templates...
-+ add thresholds/bonk independent for each variable/channel: make it functional. add callbacks...
-+ add param to calibrate max history smooth
-+ fix broke state when tweak smooth power "on playing"
++ add bool to enable/disable each param..
++ independent settings for each param..
++ "real" nested sub-groups tree levels..
++ add colors types, vectors, using templates..
++ add thresholds/bonk independent for each variable/channel: make it functional. add callbacks..
++ add param to calibrate max history smooth/speed..
++ fix broke-continuity/state when tweak smooth power "on playing"..
++ plotting int type should be stepped/not continuous..
 
 */
 
