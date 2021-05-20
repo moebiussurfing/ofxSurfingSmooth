@@ -7,7 +7,8 @@ https://github.com/turowskipaul/ofxDataStream
 Copyright (C) 2015, Paul Turowski. ( http://paulturowski.com )  
 
 ## Screencast
-![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif"){:height="50%" width="50%"}
+![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")  
+<img src="docs/readme_images/ofxSurfingSmooth.gif" width="50%" height="50%">
 
 ## Features
 - Just pass your ```ofParameterGroup``` container.
