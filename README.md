@@ -8,10 +8,6 @@ Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)
 
 **ofxSurfingSmooth** is just a kind of helper with the **ofxDataStream** engine, ```ofParameters``` bridge, plottings, easy integration workflow, GUI, and settings management.  
 
-### ALTERNATIVE
-There's another more powerful filtering add-on that you can check too:  
-https://github.com/bensnell/ofxFilter
-
 ## Screencast 
 <img src="docs/readme_images/ofxSurfingSmooth.gif" width="75%" height="75%">
 
@@ -111,6 +107,10 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 + Add "Real" nested sub-groups tree levels. Now the params are recreated on one depth level only. This could help when duplicated names too.
 + Add independent thresholds/onSet for each parameter/channel: make it functional. Add callbacks...
 + Add param to calibrate max history smooth/speed.
+
+#### ALTERNATIVE
+There's another more powerful filtering add-on that you can check too:  
+https://github.com/bensnell/ofxFilter
 
 ## Authors
 Original Author:  
