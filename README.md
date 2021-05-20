@@ -7,9 +7,6 @@ https://github.com/turowskipaul/ofxDataStream
 Copyright (C) 2015 [Paul Turowski] (http://paulturowski.com)  
 Thanks to @**turowskipaul** !  
 
-## Screenshot
-![image](docs/readme_images/Capture.jpg?raw=true "image")
-
 ## Screencast
 ![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")
 
