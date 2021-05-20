@@ -1,10 +1,12 @@
 # Overview
 An **openFrameworks** add-on to do different styles of timed **smoothing** to grouped ```ofParameters```.
 
-## Based on the ofxDataStream Engine  
+## ofxDataStream Engine Based  
 This add-on is extremely based on:  
 https://github.com/turowskipaul/ofxDataStream  
 Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)  
+
+This add-on is just a kind of helper with ```ofParameters``` bridge, plottings, GUI and settings management.  
 
 ## Screencast 
 <img src="docs/readme_images/ofxSurfingSmooth.gif" width="75%" height="75%">
