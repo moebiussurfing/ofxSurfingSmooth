@@ -39,7 +39,7 @@ ofParameter<int> shapeType;
 ```.cpp
 void ofApp::setup() {
 	params.setName("paramsGroup");// main container
-	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
+	params.add(lineWidth.set("lineWidth", 0.5, 0.0, 1.0));
 	params.add(separation.set("separation", 50.0, 1.0, 100.0));
 	params.add(speed.set("speed", 0.5, 0.0, 1.0));
 	params.add(amount.set("amount", 1, 1, 10));
