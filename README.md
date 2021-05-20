@@ -49,6 +49,7 @@ void ofApp::setup() {
 }
 
 void ofApp::update() {
+
 	// we can get the smoothed params using different approaches:
 
 	// 1. just the values
