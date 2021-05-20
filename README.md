@@ -1,4 +1,6 @@
-# Overview
+# ofxSurfingSmooth
+
+## Overview
 An **openFrameworks** add-on to do different styles of timed **smoothing** to grouped ```ofParameters```.
 
 ## ofxDataStream engine based  
