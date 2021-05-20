@@ -37,7 +37,8 @@ ofParameter<int> shapeType;
 
 **ofApp.cpp**
 ```.cpp
-void ofApp::setup() {
+void ofApp::setup() 
+{
 	params.setName("paramsGroup");// main container
 	params.add(lineWidth.set("lineWidth", 0.5, 0.0, 1.0));
 	params.add(separation.set("separation", 50.0, 1.0, 100.0));
@@ -48,8 +49,8 @@ void ofApp::setup() {
 	surfingSmooth.setup(params);
 }
 
-void ofApp::update() {
-
+void ofApp::update() 
+{
 	// we can get the smoothed params using different approaches:
 
 	// 1. just the values
