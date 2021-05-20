@@ -75,14 +75,14 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 + Add "Real" nested sub-groups tree levels.
 + Add colors types, vectors, using templates...
 + Add thresholds/bonk independent for each variable/channel: make it functional. Add callbacks...
-+ Add param to calibrate max history smooth.
++ Add param to calibrate max history smooth/speed.
 
 ## Authors
 Original Author:  
-Paul Turowski] (http://paulturowski.com)  
+Paul Turowski. http://paulturowski.com  
 Thanks @**turowskipaul** !  
 
-An add-on updated by **@moebiusSurfing**  
+An add-on [updated] by **@moebiusSurfing**  
 *( ManuMolina ) 2019-2021*  
 
 [Twitter](https://twitter.com/moebiussurfing/)  
