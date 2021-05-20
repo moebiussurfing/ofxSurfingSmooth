@@ -40,8 +40,8 @@ ofParameter<int> shapeType;
 void ofApp::setup() {
 	params.setName("paramsGroup");// main container
 	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
-	params.add(separation.set("separation", 50, 1, 100));
-	params.add(speed.set("speed", 0.5, 0, 1));
+	params.add(separation.set("separation", 50.0, 1.0, 100.0));
+	params.add(speed.set("speed", 0.5, 0.0, 1.0));
 	params.add(amount.set("amount", 1, 1, 10));
 	params.add(speed.set("shapeType", 0, 0, 3));
 
