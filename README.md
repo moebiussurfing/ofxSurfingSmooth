@@ -14,10 +14,11 @@ Thanks to @**turowskipaul** !
 ![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")
 
 ## Features
-- Just pass your ofParameterGroup container.
-- Another smoothed ofParameterGroup will be created with the same structure.
+- Just pass your ```ofParameterGroup``` container.
+- Another smoothed ```ofParameterGroup``` will be created with the same structure.
+- 2 Smoothing algorithms: **Accumulator** and **Slide**.
+- 3 Mean types: **Arith**, **Geom** and **Harm**.
 - Only float and int types yet.
-- Different smooth styles.
 - Scalable and draggable plots.
 - Store/Recall all the settings.
 
