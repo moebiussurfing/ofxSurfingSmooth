@@ -31,6 +31,8 @@ ofParameterGroup params;
 ofParameter<float> lineWidth;
 ofParameter<float> separation;
 ofParameter<float> speed;
+ofParameter<int> amount;
+ofParameter<int> shapeType;
 ```
 
 **ofApp.cpp**
@@ -40,6 +42,8 @@ void ofApp::setup() {
 	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
 	params.add(separation.set("separation", 50, 1, 100));
 	params.add(speed.set("speed", 0.5, 0, 1));
+	params.add(amount.set("amount", 1, 1, 10));
+	params.add(speed.set("shapeType", 0, 0, 3));
 
 	surfingSmooth.setup(params);
 }
@@ -50,15 +54,17 @@ void ofApp::update() {
 	// 1. just the values
 	int _shapeType = surfingSmooth.getParamIntValue(shapeType);
 	int _amount = surfingSmooth.getParamIntValue(amount);
-
+	float _speed = surfingSmooth.getParamFloatValue(speed);
+	
 	// 2. the parameter itself
 	ofParameter<float> _lineWidth = surfingSmooth.getParamFloat(lineWidth.getName());
 	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
+	ofParameter<int> _amount = surfingSmooth.getParamInt(amount.getName());
 
 	// 3. the whole group
 	ofParameterGroup &_paramsSmoothed = surfingSmooth.getParamsSmoothed();
 
-	// 4. as ofAbstractParameter to be casted after
+	// 4. as ofAbstractParameter to be casted to correct type after
 	ofAbstractParameter &_lineWidth = surfingSmooth.getParamAbstract(lineWidth);
 }
 ```
