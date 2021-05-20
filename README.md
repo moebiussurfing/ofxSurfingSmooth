@@ -4,7 +4,7 @@ An **openFrameworks** add-on to do different styles of timed **smoothing** to gr
 ## Based on the ofxDataStream Engine  
 This add-on is extremely based on:  
 https://github.com/turowskipaul/ofxDataStream  
-Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)  
+Copyright (C) 2015, Paul Turowski. ( http://paulturowski.com )  
 
 ## Screencast
 ![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")
@@ -72,9 +72,9 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 </details>
 
 ### TODO
-+ Add "Real" nested sub-groups tree levels.
++ Add "Real" nested sub-groups tree levels. Now the params are recreated on one depth level.
 + Add colors types, vectors, using templates...
-+ Add thresholds/bonk independent for each variable/channel: make it functional. Add callbacks...
++ Add thresholds/onSet/bonk independent for each variable/channel: make it functional. Add callbacks...
 + Add param to calibrate max history smooth/speed.
 
 ## Authors
