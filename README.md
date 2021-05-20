@@ -6,7 +6,6 @@ This add-on is extremely based on:
 https://github.com/turowskipaul/ofxDataStream  
 Copyright (C) 2015, Paul Turowski  
 (http://paulturowski.com)  
-Thanks @**turowskipaul** !  
 
 ## Screencast
 ![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")
@@ -80,7 +79,9 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 
 ## Authors
 Original Author:  
-Paul Turowski] (http://paulturowski.com)
+Paul Turowski] (http://paulturowski.com)  
+Thanks @**turowskipaul** !  
+
 An add-on updated by **@moebiusSurfing**  
 *( ManuMolina ) 2019-2021*  
 
