@@ -6,9 +6,8 @@ This add-on is extremely based on:
 https://github.com/turowskipaul/ofxDataStream  
 Copyright (C) 2015, Paul Turowski. ( http://paulturowski.com )  
 
-## Screencast
-![gif](docs/readme_images/ofxSurfingSmooth.gif?raw=true "gif")  
-<img src="docs/readme_images/ofxSurfingSmooth.gif" width="50%" height="50%">
+## Screencast 
+<img src="docs/readme_images/ofxSurfingSmooth.gif" width="75%" height="75%">
 
 ## Features
 - Just pass your ```ofParameterGroup``` container.
