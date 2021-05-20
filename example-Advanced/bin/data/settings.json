@@ -1,0 +1,6 @@
+{
+    "ofApp": {
+        "SHOW_DATA_STREAM": "1",
+        "SHOW_MIDI_PARAMS": "1"
+    }
+}

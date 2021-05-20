@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<midiparams>
+	<param paramName="lineWidth" group="ParamsGroup" midiid="-1" displayName="" />
+	<param paramName="separation" group="ParamsGroup" midiid="-1" displayName="" />
+	<param paramName="speed" group="ParamsGroup" midiid="-1" displayName="" />
+	<param paramName="shapeType" group="ParamsGroup" midiid="-1" displayName="" />
+	<param paramName="size" group="ParamsGroup" midiid="-1" displayName="" />
+	<param paramName="amount" group="ParamsGroup" midiid="-1" displayName="" />
+	<param paramName="shapeType2" group="ParamsGroup2" midiid="-1" displayName="" />
+	<param paramName="size2" group="ParamsGroup2" midiid="-1" displayName="" />
+	<param paramName="amount2" group="ParamsGroup2" midiid="-1" displayName="" />
+</midiparams>
