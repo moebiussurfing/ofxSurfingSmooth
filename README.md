@@ -15,7 +15,7 @@ Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)
 - Just pass your ```ofParameterGroup``` container.
 - Another smoothed ```ofParameterGroup``` will be created with the same structure.
 - 2 Smoothing algorithms: **Accumulator** and **Slide**.
-- 3 Mean types: **Arith**, **Geom** and **Harm**.
+- 3 Mean types: **Arithmetic**, **Geometric** and **Harmonic**.
 - Only ```float``` and ```int``` types yet.
 - Scalable and draggable plots.
 - Auto Store/Recall all the settings.
@@ -61,10 +61,10 @@ void ofApp::update()
 	float _speed = surfingSmooth.getParamFloatValue(speed);
 	
 	// 2. the parameter itself
+	ofParameter<int> _amount = surfingSmooth.getParamInt(amount.getName());
 	ofParameter<float> _lineWidth = surfingSmooth.getParamFloat(lineWidth.getName());
 	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
-	ofParameter<int> _amount = surfingSmooth.getParamInt(amount.getName());
-
+	
 	// 3. the whole ofParameterGroup
 	ofParameterGroup& _paramsSmoothed = surfingSmooth.getParamsSmoothed();
 	//requires more work after
