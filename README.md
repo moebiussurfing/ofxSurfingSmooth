@@ -16,7 +16,7 @@ Copyright (C) 2015, Paul Turowski. ( http://paulturowski.com )
 - 3 Mean types: **Arith**, **Geom** and **Harm**.
 - Only ```float``` and ```int``` types yet.
 - Scalable and draggable plots.
-- Store/Recall all the settings.
+- Auto Store/Recall all the settings.
 - **ImGui** based GUI ready to integrate.
 
 ## Usage
@@ -35,7 +35,7 @@ Copyright (C) 2015, Paul Turowski. ( http://paulturowski.com )
 
 **ofApp.cpp**
 ```.cpp
-ofApp::setup(){
+void ofApp::setup() {
   params.setName("paramsGroup");// main container
   params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
   params.add(separation.set("separation", 50, 1, 100));
@@ -43,9 +43,27 @@ ofApp::setup(){
 
   surfingSmooth.setup(params);
 }
+
+void ofApp::update() {
+ // we can get the smoothed params doing different approaches:
+
+	// 1. just the values
+	int _shapeType = surfingSmooth.getParamIntValue(shapeType);
+	int _amount = surfingSmooth.getParamIntValue(amount);
+
+ // 2. the parameter itself
+	ofParameter<float> _lineWidth = surfingSmooth.getParamFloat(lineWidth.getName());
+	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
+ 
+ // 3. the whole group
+	auto &group = surfingSmooth.getParamsSmoothed();
+ 
+ // 4. as ofAbstractParameter to be casted after
+	auto &ap = surfingSmooth.getParamAbstract(lineWidth);
+}
 ```
 
-*Look on the **example-Basic** for helping snippets to access the smoothed parameters on the newly created smoothed group.*  
+*Look on the **example-Basic** for more helping snippets to access the smoothed parameters on the newly re-created smoothed group.*  
 
 
 <details>
@@ -58,7 +76,7 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 * [ofxImGui](https://github.com/moebiussurfing/ofxImGui)  [ FORK ]  
 * [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
 * [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for example-Advanced ]  
-* [ofxMidiParams](https://github.com/moebiussurfing/ofxMidiParams)  [ Only for example-Advanced ]  
+* [ofxMidiParams](https://github.com/moebiussurfing/ofxMidiParams)  [ FORK | Only for example-Advanced ]  
 
 *Thanks a lot to all these ofxAddons coders.*  
   </p>
