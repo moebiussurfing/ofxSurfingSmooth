@@ -45,7 +45,8 @@ ofApp::setup(){
 }
 ```
 
-Look on the **example-Basic** for helping snippets to access the smoothed parameters on the newly created smoothed group.  
+*Look on the **example-Basic** for helping snippets to access the smoothed parameters on the newly created smoothed group.*  
+
 
 <details>
   <summary>Dependencies</summary>
