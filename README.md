@@ -6,7 +6,7 @@ This add-on is extremely based on:
 https://github.com/turowskipaul/ofxDataStream  
 Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)  
 
-This add-on is just a kind of helper with ```ofParameters``` bridge, plottings, GUI and settings management.  
+**ofxSurfingSmooth** is just a kind of helper with ```ofParameters``` bridge, plottings, easy integration workflow, GUI and settings management.  
 
 ## Screencast 
 <img src="docs/readme_images/ofxSurfingSmooth.gif" width="75%" height="75%">
