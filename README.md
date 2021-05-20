@@ -1,7 +1,7 @@
 # Overview
 An **openFrameworks** add-on to do different styles of timed **smoothing** to grouped ```ofParameters```.
 
-## Based on ofxDataStream  
+## Based on the ofxDataStream Engine  
 This add-on is extremely based on:  
 https://github.com/turowskipaul/ofxDataStream  
 Copyright (C) 2015, Paul Turowski  
@@ -71,8 +71,6 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
   </p>
 </details>
 
-<br/>
-
 ### TODO
 + Add example/snippets to help access the smoothed parameters on the newly created group.
 + Add "Real" nested sub-groups tree levels.
@@ -81,11 +79,10 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 + Add param to calibrate max history smooth.
 
 ## Authors
-An add-on updated by **@moebiusSurfing**  
-*( ManuMolina ) 2019-2021*  
-
 Original Author:  
 Paul Turowski] (http://paulturowski.com)
+An add-on updated by **@moebiusSurfing**  
+*( ManuMolina ) 2019-2021*  
 
 [Twitter](https://twitter.com/moebiussurfing/)  
 [Instagram](https://www.instagram.com/moebiussurfing/)  
