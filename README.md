@@ -23,42 +23,42 @@ Copyright (C) 2015, Paul Turowski. ( http://paulturowski.com )
  
 **ofApp.h**
 ```.cpp
-  #include "ofxSurfingSmooth.h"
+	#include "ofxSurfingSmooth.h"
 
-  ofxSurfingSmooth surfingSmooth;
+	ofxSurfingSmooth surfingSmooth;
 
-  ofParameterGroup params;
-  ofParameter<float> lineWidth;
-  ofParameter<float> separation;
-  ofParameter<float> speed;
+	ofParameterGroup params;
+	ofParameter<float> lineWidth;
+	ofParameter<float> separation;
+	ofParameter<float> speed;
 ```
 
 **ofApp.cpp**
 ```.cpp
 void ofApp::setup() {
-  params.setName("paramsGroup");// main container
-  params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
-  params.add(separation.set("separation", 50, 1, 100));
-  params.add(speed.set("speed", 0.5, 0, 1));
+	params.setName("paramsGroup");// main container
+	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
+	params.add(separation.set("separation", 50, 1, 100));
+	params.add(speed.set("speed", 0.5, 0, 1));
 
-  surfingSmooth.setup(params);
+	surfingSmooth.setup(params);
 }
 
 void ofApp::update() {
- // we can get the smoothed params doing different approaches:
+	// we can get the smoothed params doing different approaches:
 
 	// 1. just the values
 	int _shapeType = surfingSmooth.getParamIntValue(shapeType);
 	int _amount = surfingSmooth.getParamIntValue(amount);
 
- // 2. the parameter itself
+	// 2. the parameter itself
 	ofParameter<float> _lineWidth = surfingSmooth.getParamFloat(lineWidth.getName());
 	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
- 
- // 3. the whole group
+
+	// 3. the whole group
 	auto &group = surfingSmooth.getParamsSmoothed();
- 
- // 4. as ofAbstractParameter to be casted after
+
+	// 4. as ofAbstractParameter to be casted after
 	auto &ap = surfingSmooth.getParamAbstract(lineWidth);
 }
 ```
