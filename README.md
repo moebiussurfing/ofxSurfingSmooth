@@ -11,7 +11,7 @@ Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)
 **ofxSurfingSmooth** is just a kind of helper with the **ofxDataStream** engine, ```ofParameters``` bridge, plottings, easy integration workflow, GUI, and settings management.  
 
 ## Screencast 
-<img src="docs/readme_images/ofxSurfingSmooth.gif" width="75%" height="75%">
+<img src="docs/readme_images/ofxSurfingSmooth.gif" width="80%" height="80%">
 
 ## Features
 - Just pass your ```ofParameterGroup``` container.
