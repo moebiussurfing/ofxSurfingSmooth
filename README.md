@@ -56,10 +56,10 @@ void ofApp::update() {
 	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
 
 	// 3. the whole group
-	auto &group = surfingSmooth.getParamsSmoothed();
+	ofParameterGroup &_paramsSmoothed = surfingSmooth.getParamsSmoothed();
 
 	// 4. as ofAbstractParameter to be casted after
-	auto &ap = surfingSmooth.getParamAbstract(lineWidth);
+	ofAbstractParameter &_lineWidth = surfingSmooth.getParamAbstract(lineWidth);
 }
 ```
 
