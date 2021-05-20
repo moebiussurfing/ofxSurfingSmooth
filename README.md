@@ -61,11 +61,12 @@ void ofApp::update() {
 	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
 	ofParameter<int> _amount = surfingSmooth.getParamInt(amount.getName());
 
-	// 3. the whole group
-	ofParameterGroup &_paramsSmoothed = surfingSmooth.getParamsSmoothed();
+	// 3. the whole ofParameterGroup
+	ofParameterGroup& _paramsSmoothed = surfingSmooth.getParamsSmoothed();
+	//requires more work after
 
-	// 4. as ofAbstractParameter to be casted to correct type after
-	ofAbstractParameter &_lineWidth = surfingSmooth.getParamAbstract(lineWidth);
+	// 4. the ofAbstractParameter to be casted to correct type after
+	ofAbstractParameter& _lineWidth = surfingSmooth.getParamAbstract(lineWidth);
 }
 ```
 
@@ -81,8 +82,8 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 * [ofxScaleDragRect](https://github.com/moebiussurfing/ofxScaleDragRect)  [ FORK ]
 * [ofxImGui](https://github.com/moebiussurfing/ofxImGui)  [ FORK ]  
 * [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
-* [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for example-Advanced ]  
-* [ofxMidiParams](https://github.com/moebiussurfing/ofxMidiParams)  [ FORK | Only for example-Advanced ]  
+* [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for **example-Advanced** ]  
+* [ofxMidiParams](https://github.com/moebiussurfing/ofxMidiParams)  [ FORK | **Only for example-Advanced** ]  
 
 *Thanks a lot to all these ofxAddons coders.*  
   </p>
@@ -97,8 +98,8 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 </details>
 
 ### TODO
-+ Add "Real" nested sub-groups tree levels. Now the params are recreated on one depth level.
-+ Add colors types, vectors, using templates...
++ Add "Real" nested sub-groups tree levels. Now the params are recreated on one depth level only.
++ Add more types: colors, 2D/3D vectors, using templates ? ...
 + Add thresholds/onSet/bonk independent for each variable/channel: make it functional. Add callbacks...
 + Add param to calibrate max history smooth/speed.
 
