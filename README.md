@@ -14,7 +14,7 @@ Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)
 <img src="docs/readme_images/ofxSurfingSmooth.gif" width="80%" height="80%">
 
 ## Features
-- Just pass your ```ofParameterGroup``` container.
+- Just pass your ```ofParameterGroup``` parameters container.
 - Another smoothed ```ofParameterGroup``` will be created with the same parameters structure.
 - 2 Smoothing algorithms: **Accumulator** and **Slide**.
 - 3 Mean types: **Arithmetic**, **Geometric** and **Harmonic**.
