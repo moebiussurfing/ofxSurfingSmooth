@@ -15,7 +15,7 @@ Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)
 
 ## Features
 - Just pass your ```ofParameterGroup``` container.
-- Another smoothed ```ofParameterGroup``` will be created with the same structure.
+- Another smoothed ```ofParameterGroup``` will be created with the same parameters structure.
 - 2 Smoothing algorithms: **Accumulator** and **Slide**.
 - 3 Mean types: **Arithmetic**, **Geometric** and **Harmonic**.
 - Only ```float``` and ```int``` types yet.
@@ -110,19 +110,20 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 + Add "real" nested sub-groups tree levels. Now the params are recreated on one depth level only. This could help when duplicated names or to indent sub-groups on a GUI too.
 + Add independent thresholds/onSet for each parameter/channel. Make it functional. Add callbacks...
 + Add a global param to calibrate max history/speed.
++ Simplify API getters.
 
 #### ALTERNATIVE
 There's another more powerful but complex filtering add-on that you can check too:  
 https://github.com/bensnell/ofxFilter
 
 ## Authors
-Original Author:  
+Original **ofxDataStream** engine author:  
 Paul Turowski. http://paulturowski.com  
 Thanks @**turowskipaul** !  
 
-An add-on [updated] by **@moebiusSurfing**  
+An add-on by **@moebiusSurfing**  
 *( ManuMolina ) 2019-2021*  
 
 [Twitter](https://twitter.com/moebiussurfing/)  
-[Instagram](https://www.instagram.com/moebiussurfing/)  
 [YouTube](https://www.youtube.com/channel/UCzUw96_wjmNxyIoFXf84hQg)  
+[Instagram](https://www.instagram.com/moebiussurfing/)  
