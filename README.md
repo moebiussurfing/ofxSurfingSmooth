@@ -57,7 +57,7 @@ void ofApp::update()
 {
 	// we can get the smoothed params using different approaches:
 
-	// 1. just the values
+	// 1. just the param values
 	int _shapeType = surfingSmooth.getParamIntValue(shapeType);
 	int _amount = surfingSmooth.getParamIntValue(amount);
 	float _speed = surfingSmooth.getParamFloatValue(speed);
@@ -66,13 +66,14 @@ void ofApp::update()
 	ofParameter<int> _amount = surfingSmooth.getParamInt(amount.getName());
 	ofParameter<float> _lineWidth = surfingSmooth.getParamFloat(lineWidth.getName());
 	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
-	
-	// 3. the whole ofParameterGroup
-	ofParameterGroup& _paramsSmoothed = surfingSmooth.getParamsSmoothed();
-	//requires more work after
 
-	// 4. the ofAbstractParameter to be casted to correct type after
+	// 3. the ofAbstractParameter
 	ofAbstractParameter& _lineWidth = surfingSmooth.getParamAbstract(lineWidth);
+	// to be casted to his correct type after
+	
+	// 4. the whole ofParameterGroup
+	ofParameterGroup& _paramsSmoothed = surfingSmooth.getParamsSmoothed();
+	// requires more work after, like iterate the group content, get a param by name...etc.
 }
 ```
 
