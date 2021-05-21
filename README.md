@@ -105,12 +105,12 @@ Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compi
 </details>
 
 ### TODO
++ Simplify API getters.
 + Add more types: 2D/3D vectors and colors. Using templates [?] ...  
   [ _**ANY HELP/PULL ON THIS IS REALLY APPRECIATED!**_ ]
-+ Add "real" nested sub-groups tree levels. Now the params are recreated on one depth level only. This could help when duplicated names or to indent sub-groups on a GUI too.
-+ Add independent thresholds/onSet for each parameter/channel. Make it functional. Add callbacks...
++ Add "real" nested sub-groups with tree levels. Now the params are recreated on one depth level only. This could help when duplicated names or to indent sub-groups on a GUI too.
++ Add independent thresholds/onSet for each parameter/channel and make it functional. Add callbacks to trig other events...
 + Add a global param to calibrate max history/speed.
-+ Simplify API getters.
 
 #### ALTERNATIVE
 There's another more powerful but complex filtering add-on that you can check too:  
