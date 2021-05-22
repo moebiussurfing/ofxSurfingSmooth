@@ -23,7 +23,7 @@ void ofApp::setup() {
 	params.add(params2);
 
 	// smoother
-	surfingSmooth.setup(params);
+	data.setup(params);
 
 	//--
 
@@ -37,31 +37,44 @@ void ofApp::setup() {
 
 	// output
 	guiSmooth.setup("Output"); // smoothed
-	guiSmooth.add(surfingSmooth.getParamsSmoothed());
+	guiSmooth.add(data.getParamsSmoothed());
 	guiSmooth.setPosition(220, 10);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
+
 	/*
 	// NOTE:
 	// learn how to access the smoothed parameters.
 	// notice that we can't overwrite the smoothing on the source parameters!
 	// we can get the smoothed params/variables doing these different approaches:
 
+	// 0. simplified getters
+	float _lineWidth = data.get(lineWidth);
+	int _shapeType = data.get(shapeType);
+	int _size = data.get(size);
+	int _amount = data.get(amount);
+	string str;
+	str += lineWidth.getName() + ":" + ofToString(_lineWidth); str += " \t ";
+	str += shapeType.getName() + ":" + ofToString(_shapeType); str += " \t ";
+	str += size.getName() + ":" + ofToString(_size); str += " \t ";
+	str += amount.getName() + ":" + ofToString(_amount); str += " \t ";
+	ofLogNotice(__FUNCTION__) << str;
+
 	// 1. just the values
-	int _shapeType = surfingSmooth.getParamIntValue(shapeType);
-	int _size = surfingSmooth.getParamIntValue(size);
-	int _amount = surfingSmooth.getParamIntValue(amount);
+	int _shapeType = data.getParamIntValue(shapeType);
+	int _size = data.getParamIntValue(size);
+	int _amount = data.getParamIntValue(amount);
 
 	// 2. the parameters itself
-	ofParameter<float> _lineWidth = surfingSmooth.getParamFloat(lineWidth.getName());
-	ofParameter<float> _separation = surfingSmooth.getParamFloat(separation.getName());
-	ofParameter<float> _separation3 = surfingSmooth.getParamFloat(separation3.getName());
-	ofParameter<float> _speed3 = surfingSmooth.getParamFloat(speed3.getName());
+	ofParameter<float> _lineWidth = data.getParamFloat(lineWidth.getName());
+	ofParameter<float> _separation = data.getParamFloat(separation.getName());
+	ofParameter<float> _separation3 = data.getParamFloat(separation3.getName());
+	ofParameter<float> _speed3 = data.getParamFloat(speed3.getName());
 
 	// 3. the whole group
-	auto &group = surfingSmooth.getParamsSmoothed();
+	auto &group = data.getParamsSmoothed();
 	for (int i = 0; i < group.size(); i++)
 	{
 		auto type = group[i].type();
@@ -85,7 +98,7 @@ void ofApp::update() {
 	}
 
 	// 4. as ofAbstractParameter to be casted after
-	auto &ap = surfingSmooth.getParamAbstract(lineWidth);
+	auto &ap = data.getParamAbstract(lineWidth);
 	{
 		auto type = ap.type();
 		bool isGroup = type == typeid(ofParameterGroup).name();
@@ -112,29 +125,13 @@ void ofApp::draw() {
 		gui.draw();
 		guiSmooth.draw();
 
-		// help info
-		string s = "";
-		s += "HELP KEYS";
-		s += "\n\n";
-		s += "H       :  SHOW HELP"; s += "\n";
-		s += "G       :  SHOW GUI"; s += "\n\n";
-		s += "TESTER"; s += "\n";
-		s += "SPACE   :  Randomize params"; s += "\n";
-		s += "RETURN  :  Play Randomizer"; s += "\n";
-		s += "\n"; 
-		s += "TAB     :  Switch Smooth Type"; s += "\n";
-		s += "SHIFT   :  Switch Mean Type"; s += "\n";
-		s += "+|-     :  Adjust OnSet Thresholds"; s += "\n"; // WIP
-		s += "\n"; 
-		s += "S       :  Solo Plot param"; s += "\n";
-		s += "Up|Down :  Browse Solo params"; s += "\n";
-		ofDrawBitmapStringHighlight(s, ofGetWidth() - 280, 25);
+		ofDrawBitmapStringHighlight(data.getHelpInfo(), ofGetWidth() - 280, 25);
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	surfingSmooth.keyPressed(key);
+	data.keyPressed(key);
 
 	if (key == 'h' || key == 'H') bGui = !bGui;
 }

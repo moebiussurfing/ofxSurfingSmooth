@@ -13,7 +13,7 @@ class ofApp : public ofBaseApp{
 		void draw();
 		void keyPressed(int key);
 
-		ofxSurfingSmooth surfingSmooth;
+		ofxSurfingSmooth data;
 
 		ofParameterGroup params;
 		ofParameter<float> lineWidth;

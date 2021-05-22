@@ -80,6 +80,8 @@ public:
 	}
 
 public:
+	float get(ofParameter<float> &e);
+	int get(ofParameter<int> &e);
 	float getParamFloatValue(ofAbstractParameter &e);
 	int getParamIntValue(ofAbstractParameter &e);
 	ofAbstractParameter& getParamAbstract(ofAbstractParameter &e);
@@ -225,6 +227,12 @@ private:
 	void nextTypeMean() {
 		if (typeMean >= typeMean.getMax()) typeMean = 0;
 		else typeMean++;
+	}
+
+	string helpInfo;
+public:
+	std::string getHelpInfo() {
+		return helpInfo;
 	}
 
 public:

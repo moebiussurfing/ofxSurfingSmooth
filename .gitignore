@@ -571,3 +571,5 @@ example2/bin/data/ofxMidiParams/AppState.xml
 example2/bin/data/Rectangle_Rect_Plots.xml
 example2/bin/data/settings.json
 example2/bin/imgui.ini
+example-Basic/bin/data/DataStreamGroup.xml
+example-Basic/bin/imgui.ini

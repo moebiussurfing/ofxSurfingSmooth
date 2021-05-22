@@ -35,7 +35,7 @@ ofxDataStream::ofxDataStream(int _size){
 
 void ofxDataStream::init(int _size) {
     if (_size < 1) {
-        ofLogError("ofxDataStream") << "ofxDataStream(): size must be at least 1";
+        ofLogError(__FUNCTION__) << "size must be at least 1";
         return;
     }
     // clear all vectors in case they have been already set
@@ -109,7 +109,7 @@ void ofxDataStream::initAccum(int _depth){
 
 void ofxDataStream::initSlide(float _sU, float _sD){
     if (_sU == 0 || _sD == 0) {
-        ofLogError("ofxDataStream") << "slide values must be non-zero";
+        ofLogError(__FUNCTION__) << "slide values must be non-zero";
         return;
     }
     smoothingType = SMOOTHING_SLIDE;
@@ -134,7 +134,7 @@ void ofxDataStream::incrUpdate(float _val, int _idx) {
         }
     }
     else if (_idx < -1 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "update(): index " << _idx << " doesn't exist";
+        ofLogError(__FUNCTION__) << "index " << _idx << " doesn't exist";
         return;
     }
     else {
@@ -144,7 +144,7 @@ void ofxDataStream::incrUpdate(float _val, int _idx) {
 
 void ofxDataStream::update(const vector<float>& _vals) {
     if (_vals.size() != streamSize) {
-        ofLogError("ofxDataStream") << "update(): vector size mismatch";
+        ofLogError(__FUNCTION__) << "vector size mismatch";
         return;
     }
 
@@ -164,7 +164,7 @@ void ofxDataStream::update(const vector<float>& _vals) {
 
 void ofxDataStream::update(float _val, int _idx) {
     if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "update(): index " << _idx << " doesn't exist";
+        ofLogError(__FUNCTION__) << "index " << _idx << " doesn't exist";
         return;
     }
 
@@ -256,7 +256,7 @@ void ofxDataStream::update(float _val, int _idx) {
 
 float ofxDataStream::smooth(int _idx, float _val) {
     if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "smooth(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
         return -1;
     }
 
@@ -292,7 +292,7 @@ float ofxDataStream::smooth(int _idx, float _val) {
         if (deltaVals[_idx] >= 0) smoothedValue = prevVals[_idx] + (deltaVals[_idx]/slideUp);
         else smoothedValue = prevVals[_idx] + (deltaVals[_idx]/slideDown);
     }
-    else {ofLogError("ofxDataStream") << "smooth(): not valid smoothing type";}
+    else {ofLogError(__FUNCTION__) << "not valid smoothing type";}
 
     return smoothedValue;
 }
@@ -317,7 +317,7 @@ void ofxDataStream::setDecayGrow(float _ratio) {
 
 void ofxDataStream::setNormalized(bool _n, ofVec2f _range, bool _isClamped) {
     if (_range.y - _range.x == 0) {
-        ofLogError("ofxDataStream") << "setNormalized(): value range cannot be zero";
+        ofLogError(__FUNCTION__) << "value range cannot be zero";
         return;
     }
     isNormalized = _n;
@@ -353,7 +353,7 @@ void ofxDataStream::setBonk(float _hiThresh, float _loThresh) {
 
 float ofxDataStream::getValue(int _idx) {
     if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "getValue(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
         return 0;
     }
     return vals[_idx];
@@ -361,7 +361,7 @@ float ofxDataStream::getValue(int _idx) {
 
 float ofxDataStream::getValueN(int _idx) {
     if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "getValue(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
         return 0;
     }
     return valsN[_idx];
@@ -369,12 +369,12 @@ float ofxDataStream::getValueN(int _idx) {
 
 float ofxDataStream::getValueAboveThreshN(int _idx) {
     if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "getValueAboveThreshN(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
         return 0;
     }
     
     if (getThreshN() == valRange.y) {
-        ofLogError("ofxDataStream") << "getValueAboveThreshN(): threshold == max value";
+        ofLogError(__FUNCTION__) << "threshold == max value";
         return 0;
     }
     
@@ -387,7 +387,7 @@ float ofxDataStream::getValueAboveThreshN(int _idx) {
 
 float ofxDataStream::getDeltaValue(int _idx) {
     if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "getDeltaValue(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
         return 0;
     }
     return deltaVals[_idx];
@@ -399,7 +399,7 @@ bool ofxDataStream::getTrigger(int _idx) {
     if (_idx >= 0 || _idx < streamSize) {
         returnedTrig = triggers[_idx];
     }
-    else ofLogError("ofxDataStream") << "getTrigger(): index doesn't exist";
+    else ofLogError(__FUNCTION__) << "getTrigger(): index doesn't exist";
 
     return returnedTrig;
 }
@@ -408,10 +408,10 @@ bool ofxDataStream::getBonk(int _idx) {
     bool returnedBonk = false;
     
     if (!isBonked) {
-        ofLogError("ofxDataStream") << "getBonk(): need to call setBonk first";
+        ofLogError(__FUNCTION__) << "need to call setBonk first";
     }
     else if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "getBonk(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
     }
     else returnedBonk = bonks[_idx];
     
@@ -430,10 +430,10 @@ float ofxDataStream::getDirectionTimeDiff(int _idx) {
     float returnedDiff = false;
     
     if (!directionChangeCalculated) {
-        ofLogError("ofxDataStream") << "getDirectionTimeDiff(): directionChangeCalculated needs to be enabled";
+        ofLogError(__FUNCTION__) << "directionChangeCalculated needs to be enabled";
     }
     else if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "getDirectionTimeDiff(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
     }
     else returnedDiff = directionChangeTimes[_idx];
     
@@ -444,10 +444,10 @@ float ofxDataStream::getDirectionValDiff(int _idx) {
     float returnedDiff = false;
     
     if (!directionChangeCalculated) {
-        ofLogError("ofxDataStream") << "getDirectionValDiff(): directionChangeCalculated needs to be enabled";
+        ofLogError(__FUNCTION__) << "directionChangeCalculated needs to be enabled";
     }
     else if (_idx < 0 || _idx >= streamSize) {
-        ofLogError("ofxDataStream") << "getDirectionValDiff(): index doesn't exist";
+        ofLogError(__FUNCTION__) << "index doesn't exist";
     }
     else returnedDiff = directionChangeVals[_idx];
     

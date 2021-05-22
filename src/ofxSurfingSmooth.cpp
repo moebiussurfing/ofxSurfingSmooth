@@ -642,6 +642,24 @@ void ofxSurfingSmooth::setupParams() {
 	bReset.setSerializable(false);
 
 	ofAddListener(params.parameterChangedE(), this, &ofxSurfingSmooth::Changed_Params); // setup()
+
+	// help info
+	string s = "";
+	s += "HELP KEYS";
+	s += "\n\n";
+	s += "H       :  SHOW HELP"; s += "\n";// for external ofApp..
+	s += "G       :  SHOW GUI"; s += "\n\n";
+	s += "TESTER"; s += "\n";
+	s += "SPACE   :  Randomize params"; s += "\n";
+	s += "RETURN  :  Play Randomizer"; s += "\n";
+	s += "\n";
+	s += "TAB     :  Switch Smooth Type"; s += "\n";
+	s += "SHIFT   :  Switch Mean Type"; s += "\n";
+	s += "+|-     :  Adjust OnSet Thresholds"; s += "\n"; // WIP
+	s += "\n";
+	s += "S       :  Solo Plot param"; s += "\n";
+	s += "Up|Down :  Browse Solo params"; s += "\n";
+	helpInfo = s;
 }
 
 //--------------------------------------------------------------
@@ -1318,6 +1336,36 @@ void ofxSurfingSmooth::Changed_Controls_Out(ofAbstractParameter &e)
 
 // to get the smoothed parameters indiviauly and externaly
 
+//simplified getters
+//--------------------------------------------------------------
+float ofxSurfingSmooth::get(ofParameter<float> &e) {
+	string name = e.getName();
+	auto &p = mParamsGroup_COPY.get(name);
+	if (p.type() == typeid(ofParameter<float>).name()) 
+	{
+		return p.cast<float>().get();
+	}
+	else
+	{
+		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		return -1;
+	}
+}
+//--------------------------------------------------------------
+int ofxSurfingSmooth::get(ofParameter<int> &e) {
+	string name = e.getName();
+	auto &p = mParamsGroup_COPY.get(name);
+	if (p.type() == typeid(ofParameter<int>).name()) 
+	{
+		return p.cast<int>().get();
+	}
+	else
+	{
+		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		return -1;
+	}
+}
+
 //--------------------------------------------------------------
 ofAbstractParameter& ofxSurfingSmooth::getParamAbstract(ofAbstractParameter &e) {
 	string name = e.getName();
@@ -1339,7 +1387,6 @@ ofAbstractParameter& ofxSurfingSmooth::getParamAbstract(ofAbstractParameter &e) 
 
 	return p;
 }
-
 
 //--------------------------------------------------------------
 ofAbstractParameter& ofxSurfingSmooth::getParamAbstract(string name) {
@@ -1380,6 +1427,7 @@ ofParameter<float>& ofxSurfingSmooth::getParamFloat(string name) {
 	else
 	{
 		ofParameter<float> pf{ "empty", -1 };
+		ofLogError(__FUNCTION__) << "Not expected type: " << name;
 		return pf;
 	}
 }
@@ -1407,6 +1455,7 @@ float ofxSurfingSmooth::getParamFloatValue(ofAbstractParameter &e) {
 	}
 	else
 	{
+		ofLogError(__FUNCTION__) << "Not expected type: " << name;
 		return -1;
 	}
 }
@@ -1434,6 +1483,7 @@ int ofxSurfingSmooth::getParamIntValue(ofAbstractParameter &e) {
 	}
 	else
 	{
+		ofLogError(__FUNCTION__) << "Not expected type: " << name;
 		return -1;
 	}
 }
@@ -1464,6 +1514,7 @@ ofParameter<int>& ofxSurfingSmooth::getParamInt(string name) {
 	else
 	{
 		ofParameter<int> pf{ "empty", -1 };
+		ofLogError(__FUNCTION__) << "Not expected type: " << name;
 		return pf;
 	}
 }
