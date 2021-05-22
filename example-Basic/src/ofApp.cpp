@@ -62,18 +62,38 @@ void ofApp::update() {
 	str += amount.getName() + ":" + ofToString(_amount); str += " \t ";
 	ofLogNotice(__FUNCTION__) << str;
 
-	// 1. just the values
+	// 1. just the param values
 	int _shapeType = data.getParamIntValue(shapeType);
-	int _size = data.getParamIntValue(size);
 	int _amount = data.getParamIntValue(amount);
+	float _speed = data.getParamFloatValue(speed);
 
-	// 2. the parameters itself
+	// 2. the parameter itself
+	ofParameter<int> _amount = data.getParamInt(amount.getName());
 	ofParameter<float> _lineWidth = data.getParamFloat(lineWidth.getName());
 	ofParameter<float> _separation = data.getParamFloat(separation.getName());
-	ofParameter<float> _separation3 = data.getParamFloat(separation3.getName());
-	ofParameter<float> _speed3 = data.getParamFloat(speed3.getName());
 
-	// 3. the whole group
+	// 4. the ofAbstractParameter
+	// to be casted to his correct type after
+	auto &ap = data.getParamAbstract(lineWidth);
+	{
+		auto type = ap.type();
+		bool isGroup = type == typeid(ofParameterGroup).name();
+		bool isFloat = type == typeid(ofParameter<float>).name();
+		bool isInt = type == typeid(ofParameter<int>).name();
+		bool isBool = type == typeid(ofParameter<bool>).name();
+		string str = ap.getName();
+		if (isFloat)
+		{
+			ofParameter<float> fp = ap.cast<float>();
+		}
+		else if (isInt)
+		{
+			ofParameter<int> ip = ap.cast<int>();
+		}
+	}
+
+	// 4. the whole group
+	// requires more work after, like iterate the group content, get a param by name...etc.
 	auto &group = data.getParamsSmoothed();
 	for (int i = 0; i < group.size(); i++)
 	{
@@ -94,25 +114,6 @@ void ofApp::update() {
 			ofParameter<int> ip = group[i].cast<int>();
 			//do something with this parameter
 			//like push_back to your vector or something
-		}
-	}
-
-	// 4. as ofAbstractParameter to be casted after
-	auto &ap = data.getParamAbstract(lineWidth);
-	{
-		auto type = ap.type();
-		bool isGroup = type == typeid(ofParameterGroup).name();
-		bool isFloat = type == typeid(ofParameter<float>).name();
-		bool isInt = type == typeid(ofParameter<int>).name();
-		bool isBool = type == typeid(ofParameter<bool>).name();
-		string str = ap.getName();
-		if (isFloat)
-		{
-			ofParameter<float> fp = ap.cast<float>();
-		}
-		else if (isInt)
-		{
-			ofParameter<int> ip = ap.cast<int>();
 		}
 	}
 	*/

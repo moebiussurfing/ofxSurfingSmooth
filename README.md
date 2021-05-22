@@ -55,29 +55,19 @@ void ofApp::setup()
 
 void ofApp::update() 
 {
-	// we can get the smoothed params using different approaches:
+	// we can get the smoothed params using different approaches.
+  // this is the simpler approach:
+  
+  float _lineWidth = data.get(lineWidth);
+  int _shapeType = data.get(shapeType);
+  int _size = data.get(size);
+  int _amount = data.get(amount);
 
-	// 1. just the param values
-	int _shapeType = data.getParamIntValue(shapeType);
-	int _amount = data.getParamIntValue(amount);
-	float _speed = data.getParamFloatValue(speed);
-	
-	// 2. the parameter itself
-	ofParameter<int> _amount = data.getParamInt(amount.getName());
-	ofParameter<float> _lineWidth = data.getParamFloat(lineWidth.getName());
-	ofParameter<float> _separation = data.getParamFloat(separation.getName());
-
-	// 3. the ofAbstractParameter
-	ofAbstractParameter& _lineWidth = data.getParamAbstract(lineWidth);
-	// to be casted to his correct type after
-	
-	// 4. the whole ofParameterGroup
-	ofParameterGroup& _paramsSmoothed = data.getParamsSmoothed();
-	// requires more work after, like iterate the group content, get a param by name...etc.
+	*Look on the **example-Basic** for more helping snippets to access the smoothed parameters on the newly re-created smoothed group.* 
 }
 ```
 
-*Look on the **example-Basic** for more helping snippets to access the smoothed parameters on the newly re-created smoothed group.*  
+ 
 
 
 <details>
