@@ -63,7 +63,8 @@ void ofApp::update()
   int _size = data.get(size);
   int _amount = data.get(amount);
 
-  // Look on the example-Basic for more helping snippets to access the smoothed parameters on the newly re-created smoothed group. 
+  // Look on the example-Basic for more helping snippets 
+  // to access the smoothed parameters on the newly re-created smoothed group. 
 }
 ```
 
