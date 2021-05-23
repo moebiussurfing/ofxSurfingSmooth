@@ -1523,6 +1523,7 @@ ofParameter<int>& ofxSurfingSmooth::getParamInt(string name) {
 
 //-----
 
+//TODO: not using..
 // will populate widgets params, to monitor the smoothed outputs, not the raw parameters (inputs)
 // not using the recreated smooth parameters...
 //--------------------------------------------------------------
