@@ -57,9 +57,9 @@ void ofApp::update() {
 		int _shapeType = data.get(shapeType);
 		int _size = data.get(size);
 		int _amount = data.get(amount);
-		string sp = "\t\t       ";
+		string sp = "   \t\t       ";
 		string str = "SMOOTHED >" + sp;
-		str += lineWidth.getName() + ":" + ofToString(_lineWidth); str += sp;
+		str += lineWidth.getName() + ":" + ofToString(_lineWidth, 2); str += sp;
 		str += shapeType.getName() + ":" + ofToString(_shapeType); str += sp;
 		str += size.getName() + ":" + ofToString(_size); str += sp;
 		str += amount.getName() + ":" + ofToString(_amount); str += sp;

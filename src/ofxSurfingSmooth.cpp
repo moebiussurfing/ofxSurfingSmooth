@@ -346,6 +346,8 @@ void ofxSurfingSmooth::draw(ofEventArgs & args) {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::doRandomize() {
+	ofLogNotice(__FUNCTION__);
+
 	for (int i = 0; i < mParamsGroup.size(); i++) {
 		auto &p = mParamsGroup[i];
 
