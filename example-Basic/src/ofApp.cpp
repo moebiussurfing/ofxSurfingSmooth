@@ -49,19 +49,24 @@ void ofApp::update() {
 	// learn how to access the smoothed parameters.
 	// notice that we can't overwrite the smoothing on the source parameters!
 	// we can get the smoothed params/variables doing these different approaches:
+	*/
 
 	// 0. simplified getters
-	float _lineWidth = data.get(lineWidth);
-	int _shapeType = data.get(shapeType);
-	int _size = data.get(size);
-	int _amount = data.get(amount);
-	string str;
-	str += lineWidth.getName() + ":" + ofToString(_lineWidth); str += " \t ";
-	str += shapeType.getName() + ":" + ofToString(_shapeType); str += " \t ";
-	str += size.getName() + ":" + ofToString(_size); str += " \t ";
-	str += amount.getName() + ":" + ofToString(_amount); str += " \t ";
-	ofLogNotice(__FUNCTION__) << str;
+	if (ofGetFrameNum() % 6 == 0) {// slowdown a bit
+		float _lineWidth = data.get(lineWidth);
+		int _shapeType = data.get(shapeType);
+		int _size = data.get(size);
+		int _amount = data.get(amount);
+		string sp = "\t\t       ";
+		string str = "SMOOTHED >" + sp;
+		str += lineWidth.getName() + ":" + ofToString(_lineWidth); str += sp;
+		str += shapeType.getName() + ":" + ofToString(_shapeType); str += sp;
+		str += size.getName() + ":" + ofToString(_size); str += sp;
+		str += amount.getName() + ":" + ofToString(_amount); str += sp;
+		ofLogNotice(__FUNCTION__) << str;
+	}
 
+	/*
 	// 1. just the param values
 	int _shapeType = data.getParamIntValue(shapeType);
 	int _amount = data.getParamIntValue(amount);
