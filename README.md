@@ -55,16 +55,15 @@ void ofApp::setup()
 
 void ofApp::update() 
 {
-  // we can get the smoothed params using different approaches.
-  // this is the simpler approach:
+	// Get the smoothed parameters:
+	float _lineWidth = data.get(lineWidth);
+	int _shapeType = data.get(shapeType);
+	int _size = data.get(size);
+	int _amount = data.get(amount);
 
-  float _lineWidth = data.get(lineWidth);
-  int _shapeType = data.get(shapeType);
-  int _size = data.get(size);
-  int _amount = data.get(amount);
-
-  // Look on the example-Basic for more helping snippets 
-  // to access the smoothed parameters on the newly re-created smoothed group. 
+	// We can get the smoothed params using other approaches.
+	// Look on the example-Basic for more helping snippets 
+	// to access the newly re-created smoothed parameters group. 
 }
 ```
 
@@ -78,7 +77,7 @@ void ofApp::update()
 Clone these add-ons and include into the **OF PROJECT GENERATOR** to allow compile your projects or the examples:
 * [ofxHistoryPlot](https://github.com/moebiussurfing/ofxHistoryPlot)  [ FORK ]
 * [ofxScaleDragRect](https://github.com/moebiussurfing/ofxScaleDragRect)  [ FORK ]
-* [ofxImGui](https://github.com/moebiussurfing/ofxImGui)  [ FORK ]  
+* [ofxImGui](https://github.com/Daandelange/ofxImGui/tree/ofParameters-Helpers-Test)  [ FORK/BRANCH ]  
 * [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers)  
 * [ofxWindowApp](https://github.com/moebiussurfing/ofxWindowApp)  [ Only for **example-Advanced** ]  
 * [ofxMidiParams](https://github.com/moebiussurfing/ofxMidiParams)  [ FORK | **Only for example-Advanced** ]  
