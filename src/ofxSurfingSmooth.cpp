@@ -11,6 +11,9 @@ ofxSurfingSmooth::ofxSurfingSmooth()
 //--------------------------------------------------------------
 ofxSurfingSmooth::~ofxSurfingSmooth()
 {
+	ofRemoveListener(ofEvents().update, this, &ofxSurfingSmooth::update);
+	ofRemoveListener(ofEvents().draw, this, &ofxSurfingSmooth::draw, OF_EVENT_ORDER_AFTER_APP);
+
 	exit();
 }
 
