@@ -55,16 +55,16 @@ void ofApp::setup()
 
 void ofApp::update() 
 {
-  // we can get the smoothed params using different approaches.
-  // this is the simpler approach:
-
+  
+  // Get the smoothed parameters:
   float _lineWidth = data.get(lineWidth);
   int _shapeType = data.get(shapeType);
   int _size = data.get(size);
   int _amount = data.get(amount);
 
+  // We can get the smoothed params using other approaches.
   // Look on the example-Basic for more helping snippets 
-  // to access the smoothed parameters on the newly re-created smoothed group. 
+  // to access the newly re-created smoothed parameters group. 
 }
 ```
 
