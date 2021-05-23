@@ -48,7 +48,7 @@ void ofApp::setup()
 	params.add(separation.set("separation", 50.0, 1.0, 100.0));
 	params.add(speed.set("speed", 0.5, 0.0, 1.0));
 	params.add(amount.set("amount", 1, 1, 10));
-	params.add(speed.set("shapeType", 0, 0, 3));
+	params.add(shapeType.set("shapeType", 0, 0, 3));
 
 	data.setup(params);
 }
@@ -57,9 +57,10 @@ void ofApp::update()
 {
 	// Get the smoothed parameters:
 	float _lineWidth = data.get(lineWidth);
-	int _shapeType = data.get(shapeType);
-	int _size = data.get(size);
+	float _separation = data.get(separation);
+	float _speed = data.get(speed);
 	int _amount = data.get(amount);
+	int _shapeType = data.get(shapeType);
 
 	// We can get the smoothed params using other approaches.
 	// Look on the example-Basic for more helping snippets 
