@@ -8,8 +8,12 @@
 #include "ofxWindowApp.h"
 
 /*
+
 This examples adds the ofxSurfingRandomizer addon to add some randomizer tools
+https://github.com/moebiussurfing/ofxSurfingRandomizer
+
 */
+
 
 class ofApp : public ofBaseApp{
 
@@ -20,6 +24,8 @@ class ofApp : public ofBaseApp{
 		void keyPressed(int key);
 
 		ofxSurfingSmooth smoother;
+
+		ofxSurfingRandomizer randomizer;
 
 		ofParameterGroup params;
 		ofParameter<float> lineWidth;
@@ -41,10 +47,10 @@ class ofApp : public ofBaseApp{
 		ofxPanel gui;
 		ofxPanel guiInput;
 		ofxPanel guiOutput;
+		ofParameter<bool> bIn{ "Input", false };
+		ofParameter<bool> bOut{ "Output", false };
 		bool bGui = true;
 		bool bLog = false;
-
-		ofxSurfingRandomizer randomizer;
 
 		ofxWindowApp windowApp;
 };

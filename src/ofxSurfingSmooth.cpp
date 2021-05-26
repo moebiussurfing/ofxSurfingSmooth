@@ -348,7 +348,6 @@ void ofxSurfingSmooth::draw(ofEventArgs & args) {
 	}
 
 	if (bGui) draw_ImGui();
-	//gui.draw();
 }
 
 //--------------------------------------------------------------
@@ -883,7 +882,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter &e)
 void ofxSurfingSmooth::setup_ImGui()
 {
 	ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable;
-	bool bAutoDraw = true;
+	bool bAutoDraw = false;
 	bool bRestore = true;
 	bool bMouse = false;
 	gui.setup(nullptr, bAutoDraw, flags, bRestore, bMouse);
@@ -1077,9 +1076,9 @@ void ofxSurfingSmooth::draw_ImGui()
 						ofxSurfingHelpers::AddBigToggle(bPlay, _w100, _h, false);
 						if (b) ImGui::PopStyleColor();
 
-						//if (ImGui::Button("RANDOMiZE", ImVec2(_w100, _h50))) {
-						//	doRandomize();
-						//}
+						if (ImGui::Button("RANDOMiZE", ImVec2(_w100, _h50))) {
+							doRandomize();
+						}
 						if (bPlay) {
 							//ImGui::SliderFloat("Speed", &playSpeed, 0, 1);
 							ofxImGui::AddParameter(playSpeed);

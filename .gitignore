@@ -577,3 +577,8 @@ example-Basic/bin/imgui.ini
 example-Basic/bin/data/Rectangle_Rect_Plots.xml
 example-Basic/bin/data/Rectangle_Rect_Plots.xml
 example-Basic/bin/data/Rectangle_Rect_Plots.xml
+example-Randomizer/bin/data/DataStreamGroup.xml
+example-Randomizer/bin/data/ofxSurfingRandomizer/ofxSurfingRandomizer_Editor.json
+example-Randomizer/bin/data/ofxSurfingRandomizer/ofxSurfingRandomizer_State.json
+example-Randomizer/bin/data/Rectangle_Rect_Plots.xml
+example-Randomizer/bin/imgui.ini

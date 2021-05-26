@@ -27,7 +27,6 @@ void ofApp::setup() {
 
 	// randomizer
 	randomizer.setup(params);
-	randomizer.bGui = false;
 
 	//--
 
@@ -36,6 +35,8 @@ void ofApp::setup() {
 
 	// panels
 	gui.setup("Panels");
+	gui.add(bIn);
+	gui.add(bOut);
 	gui.add(randomizer.bGui);
 	gui.add(smoother.bGui);
 	gui.setPosition(100 + 210 * 1, 10);
@@ -78,7 +79,6 @@ void ofApp::update() {
 		str += amount.getName() + ":" + ofToString(_amount); str += sp;
 		ofLogNotice(__FUNCTION__) << str;
 	}
-
 }
 
 //--------------------------------------------------------------
@@ -87,8 +87,8 @@ void ofApp::draw() {
 	if (bGui)
 	{
 		gui.draw();
-		guiInput.draw();
-		guiOutput.draw();
+		if (bIn) guiInput.draw();
+		if (bOut) guiOutput.draw();
 	}
 }
 
