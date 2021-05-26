@@ -167,6 +167,7 @@ private:
 	ofParameter<bool> bShowPlots;
 	ofParameter<bool> bShowInputs;
 	ofParameter<bool> bShowOutputs;
+	ofParameter<bool> bShowHelp;
 	ofParameter<bool> bUseGenerators;
 	ofParameter<bool> solo;
 	ofParameter<int> index;
@@ -193,6 +194,7 @@ private:
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
 
+	//tester timers
 	int tf;
 	float tn;
 
@@ -209,10 +211,11 @@ private:
 	ofxImGui::Gui gui;
 	ofxImGui::Settings mainSettings = ofxImGui::Settings();
 	ImFont* customFont = nullptr;
-	ofParameter<bool> bGui{ "Show ImGui", true };
 	ofParameter<bool> auto_resize{ "Auto Resize", true };
 	ofParameter<bool> bLockMouseByImGui{ "Mouse Locked", false };
 	ofParameter<bool> auto_lockToBorder{ "Lock GUI", false };
+public:
+	ofParameter<bool> bGui{ "SURFING SMOOTHER", true };
 
 private:
 	std::vector<std::string> typeSmoothLabels;

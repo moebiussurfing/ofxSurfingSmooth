@@ -1,0 +1,28 @@
+{
+    "filter": {
+        "ENABLE": "1",
+        "Full_Screen": "0",
+        "Help": "0",
+        "INPUTS": "1",
+        "Normalized": "0",
+        "OUTPUTS": "0",
+        "Onset_Decay": "0.1",
+        "Onset_Grow": "0.1",
+        "PLAY": "0",
+        "PLOTS": "1",
+        "SMOOTH": "1",
+        "Slide_In": "0.2",
+        "Slide_Out": "0.2",
+        "Smooth_Power": "0.123",
+        "Speed": "0.5",
+        "Threshold": "1",
+        "Type_Mean": "0",
+        "Type_Smooth": "2",
+        "Use_Generators": "0",
+        "index": "0",
+        "max_Input": "1",
+        "max_Output": "1",
+        "min_Input": "0",
+        "min_Output": "0"
+    }
+}
