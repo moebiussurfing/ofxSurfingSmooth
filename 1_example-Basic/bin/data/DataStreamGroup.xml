@@ -1,0 +1,42 @@
+{
+    "filter": {
+        "ENABLE": "1",
+        "Full_Screen": "0",
+        "Help": "0",
+        "INPUTS": "0",
+        "Normalized": "0",
+        "OUTPUTS": "0",
+        "Onset_Decay": "0.1",
+        "Onset_Grow": "0.1",
+        "PLAY": "0",
+        "PLOTS": "0",
+        "Params": {
+            "amount": "1",
+            "amount2": "1",
+            "lineWidth": "1",
+            "lineWidth3": "1",
+            "separation": "1",
+            "separation3": "1",
+            "shapeType": "1",
+            "shapeType2": "1",
+            "size": "1",
+            "size2": "1",
+            "speed": "1",
+            "speed3": "1"
+        },
+        "SMOOTH": "1",
+        "Slide_In": "0.2",
+        "Slide_Out": "0.2",
+        "Smooth_Power": "0.75",
+        "Speed": "0.5",
+        "Threshold": "1",
+        "Type_Mean": "0",
+        "Type_Smooth": "1",
+        "Use_Generators": "0",
+        "index": "0",
+        "max_Input": "1",
+        "max_Output": "1",
+        "min_Input": "0",
+        "min_Output": "0"
+    }
+}

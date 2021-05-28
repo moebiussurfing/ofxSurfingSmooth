@@ -4,11 +4,12 @@
 
 TODO:
 
-+ add bool to enable/disable each param..
++ add bool to enable/disable each param.. copy from randomizer addon
++ add colors types, vectors, using templates..
+
 + independent settings for each param..
 + "real" nested sub-groups tree levels..
-+ add colors types, vectors, using templates..
-+ add thresholds/bonk independent for each variable/channel: make it functional. add callbacks..
++ add thresholds/onSet independent for each variable/channel: make it functional. add callbacks..
 + add param to calibrate max history smooth/speed..
 + fix broke-continuity/state when tweak smooth power "on playing"..
 + plotting int type should be stepped/not continuous..
@@ -26,7 +27,7 @@ TODO:
 #include "imgui_internal.h"
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfing_Timers.h"
-#include "ofxSurfing_ImGui.h"
+#include "ofxSurfing_ImGuiBundle.h"
 #include "ofxInteractiveRect.h"
 
 #define NUM_GENERATORS 6
@@ -38,6 +39,14 @@ class ofxSurfingSmooth : public ofBaseApp {
 public:
 	ofxSurfingSmooth();
 	~ofxSurfingSmooth();
+
+	ofParameterGroup params_EditorEnablers;//the enabled params to randomize
+	vector<ofParameter<bool>> enablersForParams;
+	void drawToggles();
+	
+	void doSetAll(bool b);
+	void doDisableAll();
+	void doEnableAll();
 
 	//----
 
@@ -70,7 +79,7 @@ public:
 	void add(ofParameter<int>& aparam);
 	void addParam(ofAbstractParameter& aparam);
 
-	void addGroupSmooth_ImGuiWidgets(ofParameterGroup &group);//monitor preview: to populate the widgets inside an ImGui begin/end
+	//void addGroupSmooth_ImGuiWidgets(ofParameterGroup &group);//monitor preview: to populate the widgets inside an ImGui begin/end
 
 	// api getters
 public:
@@ -89,7 +98,9 @@ public:
 	ofParameter<float>& getParamFloat(string name);
 	ofParameter<int>& getParamInt(string name);
 
-	void doRandomize();
+public:
+	void doRandomize();//do and set random in min/max range for all params
+	//void doRandomize(int index, bool bForce);//do random in min/max range for a param. bForce ignores enabler
 
 	//---
 

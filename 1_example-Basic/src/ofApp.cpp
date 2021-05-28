@@ -51,8 +51,10 @@ void ofApp::update() {
 	// we can get the smoothed params/variables doing these different approaches:
 	*/
 
-	// 0. simplified getters
-	if (ofGetFrameNum() % 6 == 0) {// slowdown a bit
+	// 0. simple getters
+
+	// slowdown log a bit
+	if (ofGetFrameNum() % 6 == 0) {
 		float _lineWidth = data.get(lineWidth);
 		int _shapeType = data.get(shapeType);
 		int _size = data.get(size);
@@ -69,6 +71,9 @@ void ofApp::update() {
 	}
 
 	/*
+
+	// more snippets for inspiration:
+
 	// 1. just the param values
 	int _shapeType = data.getParamIntValue(shapeType);
 	int _amount = data.getParamIntValue(amount);
@@ -132,8 +137,6 @@ void ofApp::draw() {
 	if (bGui) {
 		gui.draw();
 		guiSmooth.draw();
-
-		ofDrawBitmapStringHighlight(data.getHelpInfo(), ofGetWidth() - 280, 25);
 	}
 }
 

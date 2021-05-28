@@ -23,6 +23,12 @@ void ofxSurfingSmooth::setup() {
 
 	setupParams();
 
+	//-
+
+	enablersForParams.clear();// an enabler toggler for each param
+	params_EditorEnablers.clear();// an enabler toggler for each param
+	params_EditorEnablers.setName("Params");
+
 	//--
 
 	generators.resize(NUM_GENERATORS);
@@ -33,7 +39,7 @@ void ofxSurfingSmooth::setup() {
 
 	//--
 
-	mParamsGroup.setName("ofxMidiParams");
+	mParamsGroup.setName("ofxSurfingSmooth");
 	ofAddListener(mParamsGroup.parameterChangedE(), this, &ofxSurfingSmooth::Changed_Controls_Out);
 }
 
@@ -41,7 +47,7 @@ void ofxSurfingSmooth::setup() {
 void ofxSurfingSmooth::startup() {
 	bDISABLE_CALLBACKS = false;
 
-	doReset();
+	//doReset();
 
 	//--
 
@@ -158,6 +164,16 @@ void ofxSurfingSmooth::updateSmooths() {
 	for (int i = 0; i < mParamsGroup.size(); i++) {
 		ofAbstractParameter& p = mParamsGroup[i];
 
+		//toggle
+		auto &_p = params_EditorEnablers[i];// ofAbstractParameter
+		auto type = _p.type();
+		bool isBool = type == typeid(ofParameter<bool>).name();
+		string name = _p.getName();
+		ofParameter<bool> _bSmooth = _p.cast<bool>();
+		//if (!_bSmooth) continue;//skip if it's disabled
+
+		//-
+
 		//string str = "";
 		//string name = aparam.getName();
 		float vn = 0;//normalized params
@@ -169,7 +185,7 @@ void ofxSurfingSmooth::updateSmooths() {
 			//smooth group
 			auto pc = mParamsGroup_COPY.getFloat(_p.getName() + suffix);
 
-			if (enableSmooth) {
+			if (enableSmooth && _bSmooth) {
 				float v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax());
 				pc.set(v);
 			}
@@ -185,7 +201,7 @@ void ofxSurfingSmooth::updateSmooths() {
 			//smooth group
 			auto pc = mParamsGroup_COPY.getInt(_p.getName() + suffix);
 
-			if (enableSmooth) {
+			if (enableSmooth && _bSmooth) {
 				int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax());
 				pc.set(v);
 			}
@@ -215,14 +231,23 @@ void ofxSurfingSmooth::updateEngine() {
 
 	for (int i = 0; i < NUM_VARS; i++)
 	{
+		//toggle
+		auto &p = params_EditorEnablers[i];// ofAbstractParameter
+		auto type = p.type();
+		bool isBool = type == typeid(ofParameter<bool>).name();
+		string name = p.getName();
+		ofParameter<bool> _bSmooth = p.cast<bool>();
+		//if (!_bSmooth) continue;//skip if it's disabled
+
 		//input
 		float _input = ofClamp(inputs[i], minInput, maxInput);
 		if (bShowPlots) plots[2 * i]->update(_input);//source
 
 		//output
-		if (bShowPlots)
-			if (enableSmooth) plots[2 * i + 1]->update(outputs[i].getValue());//filtered
+		if (bShowPlots) {
+			if (enableSmooth && _bSmooth) plots[2 * i + 1]->update(outputs[i].getValue());//filtered
 			else plots[2 * i + 1]->update(_input);//source
+		}
 
 		if (i == index) input = _input;
 	}
@@ -231,14 +256,23 @@ void ofxSurfingSmooth::updateEngine() {
 
 	// index selected
 
+	//toggle
+	int i = index;
+	auto &_p = params_EditorEnablers[i];// ofAbstractParameter
+	auto type = _p.type();
+	bool isBool = type == typeid(ofParameter<bool>).name();
+	string name = _p.getName();
+	ofParameter<bool> _bSmooth = _p.cast<bool>();
+	//if (!_bSmooth) continue;//skip if it's disabled
+
 	//output
-	if (enableSmooth) {
+	if (enableSmooth && _bSmooth) {
+
 		if (bNormalized) output = outputs[index].getValueN();
 		else output = outputs[index].getValue();
 	}
-
+	else
 	//bypass
-	if (!enableSmooth)
 	{
 		output = input;
 	}
@@ -365,6 +399,71 @@ void ofxSurfingSmooth::doRandomize() {
 			ofParameter<int> pr = p.cast<int>();
 			pr = ofRandom(pr.getMin(), pr.getMax());
 		}
+	}
+}
+
+////--------------------------------------------------------------
+//void ofxSurfingSmooth::doRandomize(int index, bool bForce) {
+//	ofLogVerbose(__FUNCTION__) << index;
+//
+//	int i = index;
+//
+//	//for (auto p : enablersForParams)
+//	//for (int i = 0; i<enablersForParams.size(); i++)
+//	{
+//		auto p = enablersForParams[i];
+//
+//		if (!bForce)
+//			if (!p.get()) return;//only reset this param if it's enabled
+//
+//		//-
+//
+//		string name = p.getName();//name
+//		auto &g = params_EditorGroups.getGroup(name);//ofParameterGroup
+//		auto &e = g.get(name);//ofAbstractParameter
+//
+//		auto type = e.type();
+//		bool isFloat = type == typeid(ofParameter<float>).name();
+//		bool isInt = type == typeid(ofParameter<int>).name();
+//		bool isBool = type == typeid(ofParameter<bool>).name();
+//
+//		if (isFloat)
+//		{
+//			auto pmin = g.getFloat("Min").get();
+//			auto pmax = g.getFloat("Max").get();
+//			ofParameter<float> p0 = e.cast<float>();
+//			p0.set((float)ofRandom(pmin, pmax));//random
+//		}
+//
+//		else if (isInt)
+//		{
+//			auto pmin = g.getInt("Min").get();
+//			auto pmax = g.getInt("Max").get();
+//			ofParameter<int> p0 = e.cast<int>();
+//			p0.set((int)ofRandom(pmin, pmax + 1));//random
+//		}
+//
+//		else if (isBool)
+//		{
+//			bool b = (ofRandom(0, 2) >= 1);
+//			ofParameter<bool> p0 = e.cast<bool>();
+//			p0.set(b);
+//		}
+//	}
+//}
+
+//--------------------------------------------------------------
+void ofxSurfingSmooth::drawToggles() {
+	for (int i = 0; i < enablersForParams.size(); i++)
+	{
+		//numerize
+		string tag;//to push ids
+		string n = "#" + ofToString(i < 10 ? "0" : "") + ofToString(i);
+		//ImGui::Dummy(ImVec2(0,10));
+		ImGui::Text(n.c_str());
+		ImGui::SameLine();
+
+
 	}
 }
 
@@ -685,11 +784,11 @@ void ofxSurfingSmooth::doReset() {
 
 	enable = true;
 	//bPlay = false;
-	bUseGenerators = false;
-	bShowPlots = true;
-	bShowInputs = true;
-	bShowOutputs = true;
-	enableSmooth = true;
+	//bUseGenerators = false;
+	//bShowPlots = true;
+	//bShowInputs = true;
+	//bShowOutputs = true;
+	//enableSmooth = true;
 	minInput = 0;
 	maxInput = 1;
 	minOutput = 0;
@@ -706,6 +805,9 @@ void ofxSurfingSmooth::doReset() {
 	bClamp = true;
 	threshold = 1.0;
 	playSpeed = 0.5;
+
+	//--
+
 }
 
 // callback for a parameter group
@@ -761,12 +863,12 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter &e)
 			outputs[i].initAccum(v);
 		}
 
-		if (typeSmooth != ofxDataStream::SMOOTHING_ACCUM) typeSmooth = ofxDataStream::SMOOTHING_ACCUM;
+		//if (typeSmooth != ofxDataStream::SMOOTHING_ACCUM) typeSmooth = ofxDataStream::SMOOTHING_ACCUM;
 	}
 
 	if (name == enableSmooth.getName())
 	{
-		if (!typeSmooth) typeSmooth = 1;
+		//if (!typeSmooth) typeSmooth = 1;
 	}
 
 	if (name == slideMin.getName() || name == slideMax.getName())
@@ -779,7 +881,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter &e)
 
 			outputs[i].initSlide(_slmin, _slmax);
 
-			if (typeSmooth != ofxDataStream::SMOOTHING_SLIDE) typeSmooth = ofxDataStream::SMOOTHING_SLIDE;
+			//if (typeSmooth != ofxDataStream::SMOOTHING_SLIDE) typeSmooth = ofxDataStream::SMOOTHING_SLIDE;
 		}
 	}
 
@@ -882,7 +984,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter &e)
 void ofxSurfingSmooth::setup_ImGui()
 {
 	ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable;
-	bool bAutoDraw = false;
+	bool bAutoDraw = true;
 	bool bRestore = true;
 	bool bMouse = false;
 	gui.setup(nullptr, bAutoDraw, flags, bRestore, bMouse);
@@ -1001,7 +1103,58 @@ void ofxSurfingSmooth::draw_ImGui()
 
 					ImGui::Dummy(ImVec2(0.0f, 2.0f));
 					ofxSurfingHelpers::AddBigToggle(bReset, _w100, _h50);
+					ImGui::Dummy(ImVec2(0.0f, 2.0f));
 				}
+
+				//----
+
+				// enable toggles
+
+				bool bOpen;
+				ImGuiColorEditFlags _flagc;
+
+				bOpen = false;
+				_flagc = (bOpen ? ImGuiWindowFlags_NoCollapse : ImGuiWindowFlags_None);
+				if (ImGui::CollapsingHeader("ENABLE PARAMETERS", _flagc))
+				{
+					ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+
+					//ImGui::Text("ENABLE PARAMETERS");
+
+					static bool bNone, bAll;
+					if (ImGui::Button("NONE", ImVec2(_w50, _h / 2)))
+					{
+						doDisableAll();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("ALL", ImVec2(_w50, _h / 2)))
+					{
+						doEnableAll();
+					}
+					ImGui::Dummy(ImVec2(0.0f, 2.0f));
+
+					for (int i = 0; i < params_EditorEnablers.size(); i++)
+					{
+						auto &p = params_EditorEnablers[i];// ofAbstractParameter
+						auto type = p.type();
+						bool isBool = type == typeid(ofParameter<bool>).name();
+						//bool isGroup = type == typeid(ofParameterGroup).name();
+						//bool isFloat = type == typeid(ofParameter<float>).name();
+						//bool isInt = type == typeid(ofParameter<int>).name();
+						string name = p.getName();
+
+						if (isBool)//just in case... 
+						{
+							// 1. toggle enable
+							ofParameter<bool> pb = p.cast<bool>();
+							ofxSurfingHelpers::AddBigToggle(pb, _w100, _h / 2, false);
+							//ImGui::SameLine();
+						}
+					}
+				}
+				//ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+				//-
 
 				if (enableSmooth) {
 					if (ImGui::CollapsingHeader("EXTRA"))
@@ -1138,7 +1291,7 @@ void ofxSurfingSmooth::draw_ImGui()
 				if (ofxImGui::BeginWindow(name.c_str(), mainSettings, flagsw))
 				{
 					//ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
-					
+
 					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 					flags |= ImGuiTreeNodeFlags_DefaultOpen;
 					ofxImGui::AddGroup(mParamsGroup_COPY, flags);
@@ -1216,19 +1369,42 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 		ofParameter<float> p = aparam.cast<float>();
 		ofParameter<float> _p{ _name + suffix, p.get(), p.getMin(), p.getMax() };
 		mParamsGroup_COPY.add(_p);
+
+		//-
+
+		ofParameter<bool> b0{ _name, true };
+		enablersForParams.push_back(b0);
+		params_EditorEnablers.add(b0);
 	}
 	else if (isInt) {
 		ofParameter<int> p = aparam.cast<int>();
 		ofParameter<int> _p{ _name + suffix, p.get(), p.getMin(), p.getMax() };
 		mParamsGroup_COPY.add(_p);
+
+		//-
+
+		ofParameter<bool> b0{ _name, true };
+		enablersForParams.push_back(b0);
+		params_EditorEnablers.add(b0);
 	}
 	else if (isBool) {
 		ofParameter<bool> p = aparam.cast<bool>();
 		ofParameter<bool> _p{ _name + suffix, p.get() };
 		mParamsGroup_COPY.add(_p);
+
+		//-
+
+		ofParameter<bool> b0{ _name, true };
+		enablersForParams.push_back(b0);
+		params_EditorEnablers.add(b0);
 	}
 	else {
 	}
+
+	//-
+
+	params.add(params_EditorEnablers);
+
 
 	//auto mac = make_shared<ofxSurfingSmooth::MidiParamAssoc>();
 	//mac->paramIndex = mParamsGroup.size();
@@ -1311,6 +1487,8 @@ void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 	////TODO:
 	//mParamsGroup_COPY.setName(aparams.getName() + "_COPY");//name
 	//mParamsGroup_COPY = mParamsGroup;//this kind of copy links param per param. but we want to clone the "structure" only
+
+
 }
 
 //--------------------------------------------------------------
@@ -1357,7 +1535,7 @@ void ofxSurfingSmooth::Changed_Controls_Out(ofAbstractParameter &e)
 float ofxSurfingSmooth::get(ofParameter<float> &e) {
 	string name = e.getName();
 	auto &p = mParamsGroup_COPY.get(name);
-	if (p.type() == typeid(ofParameter<float>).name()) 
+	if (p.type() == typeid(ofParameter<float>).name())
 	{
 		return p.cast<float>().get();
 	}
@@ -1371,7 +1549,7 @@ float ofxSurfingSmooth::get(ofParameter<float> &e) {
 int ofxSurfingSmooth::get(ofParameter<int> &e) {
 	string name = e.getName();
 	auto &p = mParamsGroup_COPY.get(name);
-	if (p.type() == typeid(ofParameter<int>).name()) 
+	if (p.type() == typeid(ofParameter<int>).name())
 	{
 		return p.cast<int>().get();
 	}
@@ -1536,43 +1714,71 @@ ofParameter<int>& ofxSurfingSmooth::getParamInt(string name) {
 }
 
 //-----
+//
+////TODO: not using..
+//// will populate widgets params, to monitor the smoothed outputs, not the raw parameters (inputs)
+//// not using the recreated smooth parameters...
+////--------------------------------------------------------------
+//void ofxSurfingSmooth::addGroupSmooth_ImGuiWidgets(ofParameterGroup &group) {
+//	string n = group.getName() + " > Smoothed";
+//	if (ImGui::TreeNodeEx(n.c_str(), ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoAutoOpenOnLog))
+//	{
+//		for (int i = 0; i < group.size(); i++)
+//		{
+//			auto type = group[i].type();
+//			bool isGroup = type == typeid(ofParameterGroup).name();
+//			bool isFloat = type == typeid(ofParameter<float>).name();
+//			bool isInt = type == typeid(ofParameter<int>).name();
+//			bool isBool = type == typeid(ofParameter<bool>).name();
+//			string str = group[i].getName();
+//
+//			if (isFloat)
+//			{
+//				float v = outputs[i].getValue();
+//				float min = group[i].cast<float>().getMin();
+//				float max = group[i].cast<float>().getMax();
+//				v = ofMap(v, 0, 1, min, max);
+//				ImGui::SliderFloat(str.c_str(), &v, min, max);
+//			}
+//			else if (isInt)
+//			{
+//				float vf = outputs[i].getValue();
+//				int vi;
+//				int min = group[i].cast<int>().getMin();
+//				int max = group[i].cast<int>().getMax();
+//				vi = (int)ofMap(vf, 0, 1, min, max);
+//				ImGui::SliderInt(str.c_str(), &vi, min, max);
+//			}
+//		}
+//
+//		ImGui::TreePop();
+//	}
+//}
 
-//TODO: not using..
-// will populate widgets params, to monitor the smoothed outputs, not the raw parameters (inputs)
-// not using the recreated smooth parameters...
 //--------------------------------------------------------------
-void ofxSurfingSmooth::addGroupSmooth_ImGuiWidgets(ofParameterGroup &group) {
-	string n = group.getName() + " > Smoothed";
-	if (ImGui::TreeNodeEx(n.c_str(), ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoAutoOpenOnLog))
+void ofxSurfingSmooth::doSetAll(bool b) {
+	ofLogNotice(__FUNCTION__) << b;
+
+	for (int i = 0; i < params_EditorEnablers.size(); i++)
 	{
-		for (int i = 0; i < group.size(); i++)
-		{
-			auto type = group[i].type();
-			bool isGroup = type == typeid(ofParameterGroup).name();
-			bool isFloat = type == typeid(ofParameter<float>).name();
-			bool isInt = type == typeid(ofParameter<int>).name();
-			bool isBool = type == typeid(ofParameter<bool>).name();
-			string str = group[i].getName();
+		auto &p = params_EditorEnablers[i];//ofAbstractParameter
+		auto type = p.type();
+		bool isBool = type == typeid(ofParameter<bool>).name();
+		string name = p.getName();
 
-			if (isFloat)
-			{
-				float v = outputs[i].getValue();
-				float min = group[i].cast<float>().getMin();
-				float max = group[i].cast<float>().getMax();
-				v = ofMap(v, 0, 1, min, max);
-				ImGui::SliderFloat(str.c_str(), &v, min, max);
-			}
-			else if (isInt)
-			{
-				float vf = outputs[i].getValue();
-				int vi;
-				int min = group[i].cast<int>().getMin();
-				int max = group[i].cast<int>().getMax();
-				vi = (int)ofMap(vf, 0, 1, min, max);
-				ImGui::SliderInt(str.c_str(), &vi, min, max);
-			}
+		if (isBool) {
+			ofParameter<bool> pb = p.cast<bool>();
+			pb.set(b);
 		}
-
-		ImGui::TreePop();
 	}
+}
+
+//--------------------------------------------------------------
+void ofxSurfingSmooth::doDisableAll() {
+	doSetAll(false);
+}
+
+//--------------------------------------------------------------
+void ofxSurfingSmooth::doEnableAll() {
+	doSetAll(true);
 }

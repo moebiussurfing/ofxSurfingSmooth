@@ -1,19 +1,10 @@
 #pragma once
 #include "ofMain.h"
 
+#include "ofxWindowApp.h"
 #include "ofxSurfingSmooth.h"
 #include "ofxGui.h"
 #include "ofxSurfing_ofxGui.h"
-#include "ofxSurfingRandomizer.h"
-#include "ofxWindowApp.h"
-
-/*
-
-This examples adds the ofxSurfingRandomizer addon to add some randomizer tools
-https://github.com/moebiussurfing/ofxSurfingRandomizer
-
-*/
-
 
 class ofApp : public ofBaseApp{
 
@@ -23,9 +14,7 @@ class ofApp : public ofBaseApp{
 		void draw();
 		void keyPressed(int key);
 
-		ofxSurfingSmooth smoother;
-
-		ofxSurfingRandomizer randomizer;
+		ofxSurfingSmooth data;
 
 		ofParameterGroup params;
 		ofParameter<float> lineWidth;
@@ -45,12 +34,8 @@ class ofApp : public ofBaseApp{
 		ofParameter<int> shapeType3;
 		
 		ofxPanel gui;
-		ofxPanel guiInput;
-		ofxPanel guiOutput;
-		ofParameter<bool> bIn{ "Input", false };
-		ofParameter<bool> bOut{ "Output", false };
-		bool bGui = true;
-		bool bLog = false;
+		ofxPanel guiSmooth;
+		bool bGui = false;
 
 		ofxWindowApp windowApp;
 };

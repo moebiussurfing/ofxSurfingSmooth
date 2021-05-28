@@ -1,8 +1,0 @@
-{
-    "Midi": {
-        "In": "MPD218 1",
-        "Midi_In": "1",
-        "Midi_Out": "4",
-        "Out": "loopMIDI Port 1 4"
-    }
-}

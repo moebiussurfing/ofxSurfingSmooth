@@ -4,3 +4,4 @@ ofxImGui
 ofxScaleDragRect
 ofxSurfingHelpers
 ofxSurfingSmooth
+ofxWindowApp
