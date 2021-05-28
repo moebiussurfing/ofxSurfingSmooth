@@ -64,7 +64,6 @@ void ofApp::update()
 
 	// We can get the smoothed params using other approaches.
 	// Look on the example-Basic for more helping snippets 
-	// to access the newly re-created smoothed parameters group. 
 }
 ```
 
