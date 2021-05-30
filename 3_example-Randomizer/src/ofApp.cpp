@@ -23,9 +23,16 @@ void ofApp::setup() {
 	params.add(params2);
 
 	// smoother
+	//tiny workaround required when using more than one addon with an ImGui instance.
+	//bc each addon has the autodraw enabled and must be only one of them enabled.
+	//maybe we should check ofxImGui/example-sharedcontext..
+	//ofAppGui.setSharedMode(true); // Force shared context
+	//smoother.setImGuiSharedMode(true);
+	smoother.setImGuiAutodraw(false);
 	smoother.setup(params);
 
 	// randomizer
+	//randomizer.setImGuiAutodraw(false);//tiny workaround
 	randomizer.setup(params);
 
 	//--

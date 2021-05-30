@@ -21,6 +21,12 @@ ofxSurfingSmooth::~ofxSurfingSmooth()
 void ofxSurfingSmooth::setup() {
 	ofLogNotice() << __FUNCTION__;
 
+	path_Global = "ofxSurfingSmooth/";
+	path_Settings = path_Global + "ofxSurfingSmooth_Settings.xml";
+	ofxSurfingHelpers::CheckFolder(path_Global);
+
+	//-
+
 	setupParams();
 
 	//-
@@ -129,6 +135,7 @@ void ofxSurfingSmooth::setupPlots() {
 
 	// draggable rectangle
 	ofColor c0(0, 90);
+	//rectangle_PlotsBg.set
 	rectangle_PlotsBg.setColorEditingHover(c0);
 	rectangle_PlotsBg.setColorEditingMoving(c0);
 	rectangle_PlotsBg.enableEdit();
@@ -170,7 +177,6 @@ void ofxSurfingSmooth::updateSmooths() {
 		bool isBool = type == typeid(ofParameter<bool>).name();
 		string name = _p.getName();
 		ofParameter<bool> _bSmooth = _p.cast<bool>();
-		//if (!_bSmooth) continue;//skip if it's disabled
 
 		//-
 
@@ -186,7 +192,7 @@ void ofxSurfingSmooth::updateSmooths() {
 			auto pc = mParamsGroup_COPY.getFloat(_p.getName() + suffix);
 
 			if (enableSmooth && _bSmooth) {
-				float v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax());
+				float v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax(), true);
 				pc.set(v);
 			}
 			else {
@@ -202,7 +208,8 @@ void ofxSurfingSmooth::updateSmooths() {
 			auto pc = mParamsGroup_COPY.getInt(_p.getName() + suffix);
 
 			if (enableSmooth && _bSmooth) {
-				int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax());
+				int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax() + 1, true);//TODO: round fix..
+				//int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax());
 				pc.set(v);
 			}
 			else {
@@ -229,6 +236,8 @@ void ofxSurfingSmooth::updateSmooths() {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::updateEngine() {
 
+	//TODO: crash when added other types than int/float
+	//for (int i = 0; i < NUM_VARS && i < params_EditorEnablers.size(); i++)
 	for (int i = 0; i < NUM_VARS; i++)
 	{
 		//toggle
@@ -272,7 +281,7 @@ void ofxSurfingSmooth::updateEngine() {
 		else output = outputs[index].getValue();
 	}
 	else
-	//bypass
+		//bypass
 	{
 		output = input;
 	}
@@ -731,6 +740,8 @@ void ofxSurfingSmooth::setupParams() {
 	params.add(input.set("INPUT", 0, _inputMinRange, _inputMaxRange));
 	params.add(output.set("OUTPUT", 0, _outMinRange, _outMaxRange));
 
+	params.add(bGui);
+
 	typeSmoothLabels.clear();
 	typeSmoothLabels.push_back("None");
 	typeSmoothLabels.push_back("Accumulator");
@@ -742,6 +753,7 @@ void ofxSurfingSmooth::setupParams() {
 	typeMeanLabels.push_back("Harm");
 
 	//exclude
+	bUseGenerators.setSerializable(false);//fails if enabled
 	input.setSerializable(false);
 	output.setSerializable(false);
 	solo.setSerializable(false);
@@ -984,7 +996,6 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter &e)
 void ofxSurfingSmooth::setup_ImGui()
 {
 	ImGuiConfigFlags flags = ImGuiConfigFlags_DockingEnable;
-	bool bAutoDraw = true;
 	bool bRestore = true;
 	bool bMouse = false;
 	gui.setup(nullptr, bAutoDraw, flags, bRestore, bMouse);
@@ -1225,7 +1236,7 @@ void ofxSurfingSmooth::draw_ImGui()
 						if (b) a = 1 - tn;
 						//if (b) a = ofxSurfingHelpers::getFadeBlink();
 						else a = 1.0f;
-						if (b) ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)ImColor::HSV(0.5f, 0.0f, 1.0f, a));
+						if (b) ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)ImColor::HSV(0.5f, 0.0f, 1.0f, 0.5 * a));
 						ofxSurfingHelpers::AddBigToggle(bPlay, _w100, _h, false);
 						if (b) ImGui::PopStyleColor();
 
@@ -1521,7 +1532,6 @@ void ofxSurfingSmooth::Changed_Controls_Out(ofAbstractParameter &e)
 	std::string name = e.getName();
 
 	ofLogVerbose(__FUNCTION__) << name << " : " << e;
-
 }
 
 //------------

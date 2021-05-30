@@ -4,11 +4,11 @@
 
 TODO:
 
-+ add bool to enable/disable each param.. copy from randomizer addon
 + add colors types, vectors, using templates..
+	+ avoid crash to unsuported types
 
-+ independent settings for each param..
-+ "real" nested sub-groups tree levels..
++ independent settings for each param.. ?
++ "real" nested sub-groups tree levels.. ?
 + add thresholds/onSet independent for each variable/channel: make it functional. add callbacks..
 + add param to calibrate max history smooth/speed..
 + fix broke-continuity/state when tweak smooth power "on playing"..
@@ -40,6 +40,7 @@ public:
 	ofxSurfingSmooth();
 	~ofxSurfingSmooth();
 
+private:
 	ofParameterGroup params_EditorEnablers;//the enabled params to randomize
 	vector<ofParameter<bool>> enablersForParams;
 	void drawToggles();
@@ -47,6 +48,17 @@ public:
 	void doSetAll(bool b);
 	void doDisableAll();
 	void doEnableAll();
+	
+public:
+	//--------------------------------------------------------------
+	void setImGuiAutodraw(bool b) {
+		bAutoDraw = b;
+	}//required to set to false when only one ImGui instance is created
+	
+	//--------------------------------------------------------------
+	void setImGuiSharedMode(bool b) {
+		gui.setSharedMode(b); // Force shared context
+	}
 
 	//----
 
@@ -152,9 +164,10 @@ private:
 	vector<float> inputs;//feed normnalized signals here
 	vector<float> generators;//testing signals
 
-	string path_Settings = "DataStreamGroup.xml";
-
-	ofxInteractiveRect rectangle_PlotsBg = { "Rect_Plots" };
+	string path_Global;
+	string path_Settings;
+	
+	ofxInteractiveRect rectangle_PlotsBg = { "Rect_Plots", "ofxSurfingSmooth/" };
 
 	int NUM_PLOTS;
 	int NUM_VARS;
@@ -218,6 +231,7 @@ private:
 	ofColor colorBg;
 
 	void setup_ImGui();
+	bool bAutoDraw = true;
 	void draw_ImGui();
 	ofxImGui::Gui gui;
 	ofxImGui::Settings mainSettings = ofxImGui::Settings();
