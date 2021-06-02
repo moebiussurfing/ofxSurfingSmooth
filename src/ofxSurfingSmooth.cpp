@@ -1183,7 +1183,7 @@ void ofxSurfingSmooth::draw_ImGui()
 							}
 
 						bool bOpen = false;
-						ImGuiColorEditFlags _flagt = (bOpen ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None);
+						ImGuiTreeNodeFlags _flagt = (bOpen ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None);
 						if (ImGui::TreeNodeEx("Clamp", _flagt))
 						{
 							ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
@@ -1490,7 +1490,7 @@ void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 	{
 		outputs[i].initAccum(100);
 		outputs[i].directionChangeCalculated = true;
-		//outputs[i].setBonk(0.1, 0.0);
+		outputs[i].setBonk(0.1, 0.0);
 	}
 
 	////--

@@ -18,62 +18,62 @@
             "amount": {
                 "Max": "22",
                 "Min": "2",
-                "amount": "20"
+                "amount": "5"
             },
             "amount2": {
                 "Max": "22",
                 "Min": "2",
-                "amount2": "8"
+                "amount2": "3"
             },
             "lineWidth": {
                 "Max": "1",
                 "Min": "0.129",
-                "lineWidth": "0.451515"
+                "lineWidth": "0.47605"
             },
             "lineWidth3": {
                 "Max": "0.9",
                 "Min": "0.1",
-                "lineWidth3": "0.86118"
+                "lineWidth3": "0.456432"
             },
             "separation": {
                 "Max": "100",
                 "Min": "3.225",
-                "separation": "74.0718"
+                "separation": "96.9639"
             },
             "separation3": {
                 "Max": "90.1",
                 "Min": "10.9",
-                "separation3": "21.8421"
+                "separation3": "76.678"
             },
             "shapeType": {
                 "Max": "40",
                 "Min": "-40",
-                "shapeType": "35"
+                "shapeType": "-3"
             },
             "shapeType2": {
                 "Max": "40",
                 "Min": "-40",
-                "shapeType2": "0"
+                "shapeType2": "31"
             },
             "size": {
                 "Max": "90",
                 "Min": "10",
-                "size": "76"
+                "size": "75"
             },
             "size2": {
                 "Max": "90",
                 "Min": "10",
-                "size2": "16"
+                "size2": "34"
             },
             "speed": {
                 "Max": "0.9",
                 "Min": "0.1",
-                "speed": "0.153615"
+                "speed": "0.672869"
             },
             "speed3": {
                 "Max": "0.9",
                 "Min": "0.1",
-                "speed3": "0.553944"
+                "speed3": "0.838279"
             }
         }
     }
