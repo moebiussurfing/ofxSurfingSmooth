@@ -27,7 +27,7 @@ TODO:
 #include "imgui_internal.h"
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfing_Timers.h"
-#include "ofxSurfing_ImGuiBundle.h"
+#include "ofxSurfingImGui.h"
 #include "ofxInteractiveRect.h"
 
 #define NUM_GENERATORS 6

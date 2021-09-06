@@ -1018,7 +1018,7 @@ void ofxSurfingSmooth::setup_ImGui()
 	//-
 
 	// theme
-	ofxSurfingHelpers::ImGui_ThemeMoebiusSurfing();
+	ofxImGuiSurfing::ImGui_ThemeMoebiusSurfing();
 	//ofxSurfingHelpers::ImGui_ThemeModernDark();
 }
 
@@ -1046,7 +1046,7 @@ void ofxSurfingSmooth::draw_ImGui()
 		float _w33;
 		float _w25;
 		float _h;
-		ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+		ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 		float _h50 = _h / 2;
 
 		mainSettings = ofxImGui::Settings();
@@ -1066,25 +1066,25 @@ void ofxSurfingSmooth::draw_ImGui()
 			//std::string n = "DATA STREAM";
 			if (ofxImGui::BeginWindow(n.c_str(), mainSettings, flagsw))
 			{
-				ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+				ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 
 				ImGuiTreeNodeFlags _f;
 				_f = ImGuiTreeNodeFlags_None;
 				//_f = ImGuiTreeNodeFlags_DefaultOpen;
 
-				ofxSurfingHelpers::AddBigToggle(bShowInputs, _w50, _h50); ImGui::SameLine();
-				ofxSurfingHelpers::AddBigToggle(bShowOutputs, _w50, _h50);
+				ofxImGuiSurfing::AddBigToggle(bShowInputs, _w50, _h50); ImGui::SameLine();
+				ofxImGuiSurfing::AddBigToggle(bShowOutputs, _w50, _h50);
 				ImGui::Dummy(ImVec2(0.0f, 2.0f));
 
-				ofxSurfingHelpers::AddBigToggle(bShowPlots, _w50, _h50); ImGui::SameLine();
-				ofxSurfingHelpers::AddBigToggle(bFullScreen, _w50, _h50);
+				ofxImGuiSurfing::AddBigToggle(bShowPlots, _w50, _h50); ImGui::SameLine();
+				ofxImGuiSurfing::AddBigToggle(bFullScreen, _w50, _h50);
 				ImGui::Dummy(ImVec2(0.0f, 2.0f));
 
 				//ofxImGui::AddGroup(params, mainSettings);// group
 
-				//ofxSurfingHelpers::AddBigToggle(enable, _w100, _h);//TODO:
+				//ofxImGuiSurfing::AddBigToggle(enable, _w100, _h);//TODO:
 
-				ofxSurfingHelpers::AddBigToggle(enableSmooth, _w100, _h);
+				ofxImGuiSurfing::AddBigToggle(enableSmooth, _w100, _h);
 				if (enableSmooth)
 				{
 					if (ImGui::Button("> Smooth", ImVec2(_w50, _h / 2))) {
@@ -1113,7 +1113,7 @@ void ofxSurfingSmooth::draw_ImGui()
 					ofxImGui::AddCombo(typeMean, typeMeanLabels);
 
 					ImGui::Dummy(ImVec2(0.0f, 2.0f));
-					ofxSurfingHelpers::AddBigToggle(bReset, _w100, _h50);
+					ofxImGuiSurfing::AddBigToggle(bReset, _w100, _h50);
 					ImGui::Dummy(ImVec2(0.0f, 2.0f));
 				}
 
@@ -1128,7 +1128,7 @@ void ofxSurfingSmooth::draw_ImGui()
 				_flagc = (bOpen ? ImGuiWindowFlags_NoCollapse : ImGuiWindowFlags_None);
 				if (ImGui::CollapsingHeader("ENABLE PARAMETERS", _flagc))
 				{
-					ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+					ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 
 					//ImGui::Text("ENABLE PARAMETERS");
 
@@ -1158,7 +1158,7 @@ void ofxSurfingSmooth::draw_ImGui()
 						{
 							// 1. toggle enable
 							ofParameter<bool> pb = p.cast<bool>();
-							ofxSurfingHelpers::AddBigToggle(pb, _w100, _h / 2, false);
+							ofxImGuiSurfing::AddBigToggle(pb, _w100, _h / 2, false);
 							//ImGui::SameLine();
 						}
 					}
@@ -1173,7 +1173,7 @@ void ofxSurfingSmooth::draw_ImGui()
 						if (enableSmooth)
 							if (ImGui::TreeNode("OnSets"))
 							{
-								ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+								ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 								ofxImGui::AddParameter(onsetGrow);
 								ofxImGui::AddParameter(onsetDecay);
 								ofxImGui::AddParameter(threshold);
@@ -1186,12 +1186,12 @@ void ofxSurfingSmooth::draw_ImGui()
 						ImGuiTreeNodeFlags _flagt = (bOpen ? ImGuiTreeNodeFlags_DefaultOpen : ImGuiTreeNodeFlags_None);
 						if (ImGui::TreeNodeEx("Clamp", _flagt))
 						{
-							ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+							ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 							ofxImGui::AddParameter(minInput);
 							ofxImGui::AddParameter(maxInput);
 							ofxImGui::AddParameter(minOutput);
 							ofxImGui::AddParameter(maxOutput);
-							ofxSurfingHelpers::AddBigToggle(bNormalized, _w100, _h50);
+							ofxImGuiSurfing::AddBigToggle(bNormalized, _w100, _h50);
 							ImGui::TreePop();
 						}
 
@@ -1204,7 +1204,7 @@ void ofxSurfingSmooth::draw_ImGui()
 						//ofxImGui::AddParameter(_param);
 						//ImGui::PopItemWidth();
 						//if (ImGui::Button("_Button", ImVec2(_w100, _h / 2))) {}
-						//ofxSurfingHelpers::AddBigToggle(_param, _w100, _h);
+						//ofxImGuiSurfing::AddBigToggle(_param, _w100, _h);
 						//ImGui::PushButtonRepeat(true);
 						//float __w = ofxSurfingHelpers::getImGui_WidgetWidth(w, 2);
 						//if (ImGui::Button("<", ImVec2(__w, _h))) {} ImGui::SameLine();
@@ -1218,7 +1218,7 @@ void ofxSurfingSmooth::draw_ImGui()
 							if (ofxImGui::AddStepper(index)) {
 								index = ofClamp(index, index.getMin(), index.getMax());
 							}
-							ofxSurfingHelpers::AddBigToggle(solo, _w100, _h50);
+							ofxImGuiSurfing::AddBigToggle(solo, _w100, _h50);
 							ofxImGui::AddParameter(input);
 							ofxImGui::AddParameter(output);
 							//ImGui::Dummy(ImVec2(0.0f, 2.0f));
@@ -1237,7 +1237,7 @@ void ofxSurfingSmooth::draw_ImGui()
 						//if (b) a = ofxSurfingHelpers::getFadeBlink();
 						else a = 1.0f;
 						if (b) ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)ImColor::HSV(0.5f, 0.0f, 1.0f, 0.5 * a));
-						ofxSurfingHelpers::AddBigToggle(bPlay, _w100, _h, false);
+						ofxImGuiSurfing::AddBigToggle(bPlay, _w100, _h, false);
 						if (b) ImGui::PopStyleColor();
 
 						if (ImGui::Button("RANDOMiZE", ImVec2(_w100, _h50))) {
@@ -1262,7 +1262,7 @@ void ofxSurfingSmooth::draw_ImGui()
 					ImGui::Dummy(ImVec2(0.0f, 2.0f));
 					if (ImGui::CollapsingHeader("ADVANCED"))
 					{
-						ofxSurfingHelpers::AddBigToggle(bUseGenerators, _w100, _h50);
+						ofxImGuiSurfing::AddBigToggle(bUseGenerators, _w100, _h50);
 						ofxImGui::AddParameter(bShowHelp);
 						ofxImGui::AddParameter(rectangle_PlotsBg.bEditMode);
 						ImGui::Dummy(ImVec2(0.0f, 2.0f));
@@ -1285,7 +1285,7 @@ void ofxSurfingSmooth::draw_ImGui()
 				name = "INPUTS";
 				if (ofxImGui::BeginWindow(name.c_str(), mainSettings, flagsw))
 				{
-					//ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+					//ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 
 					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 					flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -1301,7 +1301,7 @@ void ofxSurfingSmooth::draw_ImGui()
 				//name = "SMOOTH PARAMS";
 				if (ofxImGui::BeginWindow(name.c_str(), mainSettings, flagsw))
 				{
-					//ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+					//ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 
 					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 					flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -1314,7 +1314,7 @@ void ofxSurfingSmooth::draw_ImGui()
 				//name = "OUTPUTS";
 				//if (ofxImGui::BeginWindow(name.c_str(), mainSettings, flagsw))
 				//{
-				//	//ofxSurfingHelpers::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
+				//	//ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
 				//	addGroupSmooth_ImGuiWidgets(mParamsGroup);
 				//}
 				//ofxImGui::EndWindow(mainSettings);
