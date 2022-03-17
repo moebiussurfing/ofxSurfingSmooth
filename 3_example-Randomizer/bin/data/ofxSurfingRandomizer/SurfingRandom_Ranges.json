@@ -1,0 +1,80 @@
+{
+    "Ranges_Editor": {
+        "Params": {
+            "amount": "0",
+            "amount2": "0",
+            "lineWidth": "0",
+            "lineWidth3": "0",
+            "separation": "0",
+            "separation3": "0",
+            "shapeType": "0",
+            "shapeType2": "0",
+            "size": "0",
+            "size2": "0",
+            "speed": "0",
+            "speed3": "0"
+        },
+        "paramsGroup": {
+            "amount": {
+                "Max": "22",
+                "Min": "2",
+                "amount": "8"
+            },
+            "amount2": {
+                "Max": "22",
+                "Min": "2",
+                "amount2": "3"
+            },
+            "lineWidth": {
+                "Max": "0.9",
+                "Min": "0.1",
+                "lineWidth": "0.775658"
+            },
+            "lineWidth3": {
+                "Max": "0.9",
+                "Min": "0.1",
+                "lineWidth3": "0.201239"
+            },
+            "separation": {
+                "Max": "90.1",
+                "Min": "10.9",
+                "separation": "88.9449"
+            },
+            "separation3": {
+                "Max": "90.1",
+                "Min": "10.9",
+                "separation3": "15.4118"
+            },
+            "shapeType": {
+                "Max": "40",
+                "Min": "-40",
+                "shapeType": "48"
+            },
+            "shapeType2": {
+                "Max": "40",
+                "Min": "-40",
+                "shapeType2": "-13"
+            },
+            "size": {
+                "Max": "90",
+                "Min": "10",
+                "size": "81"
+            },
+            "size2": {
+                "Max": "90",
+                "Min": "10",
+                "size2": "96"
+            },
+            "speed": {
+                "Max": "0.9",
+                "Min": "0.1",
+                "speed": "0.487991"
+            },
+            "speed3": {
+                "Max": "0.9",
+                "Min": "0.1",
+                "speed3": "0.723014"
+            }
+        }
+    }
+}

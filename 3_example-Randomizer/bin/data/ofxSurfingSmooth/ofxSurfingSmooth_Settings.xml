@@ -31,7 +31,7 @@
         "Smooth_Power": "0.25",
         "Speed": "0.5",
         "Threshold": "0.85",
-        "Type_Mean": "0",
+        "Type_Mean": "1",
         "Type_Smooth": "0",
         "index": "0",
         "max_Input": "1",

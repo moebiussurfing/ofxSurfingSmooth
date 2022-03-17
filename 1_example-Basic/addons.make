@@ -3,5 +3,6 @@ ofxHistoryPlot
 ofxImGui
 ofxScaleDragRect
 ofxSurfingHelpers
+ofxSurfingImGui
 ofxSurfingSmooth
 ofxWindowApp

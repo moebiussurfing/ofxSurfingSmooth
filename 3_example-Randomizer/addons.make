@@ -1,8 +1,10 @@
 ofxGui
 ofxHistoryPlot
 ofxImGui
+ofxMSAInteractiveObject
 ofxScaleDragRect
 ofxSurfingHelpers
+ofxSurfingImGui
 ofxSurfingRandomizer
 ofxSurfingSmooth
 ofxWindowApp

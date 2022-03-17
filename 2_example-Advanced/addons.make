@@ -3,8 +3,10 @@ ofxHistoryPlot
 ofxImGui
 ofxMidi
 ofxMidiParams
+ofxMSAInteractiveObject
 ofxScaleDragRect
 ofxSurfingDebugVariables
 ofxSurfingHelpers
+ofxSurfingImGui
 ofxSurfingSmooth
 ofxWindowApp

@@ -39,7 +39,7 @@ void ofApp::setup() {
 
 	// gui
 #ifdef USE_MIDI
-	paramsApp.add(mMidiParams.bShowGui);
+	paramsApp.add(mMidiParams.bGui);
 #endif
 	paramsApp.add(dataStreamGroup.bShowGui);
 

@@ -1047,7 +1047,8 @@ void ofxSurfingSmooth::draw_ImGui()
 		float _w25;
 		float _h;
 		ofxImGuiSurfing::refreshImGui_WidgetsSizes(_spcx, _spcy, _w100, _h100, _w99, _w50, _w33, _w25, _h);
-		float _h50 = _h / 2;
+		float _h50 = _h;
+		//float _h50 = _h / 2;
 
 		mainSettings = ofxImGui::Settings();
 
@@ -1087,11 +1088,11 @@ void ofxSurfingSmooth::draw_ImGui()
 				ofxImGuiSurfing::AddBigToggle(enableSmooth, _w100, _h);
 				if (enableSmooth)
 				{
-					if (ImGui::Button("> Smooth", ImVec2(_w50, _h / 2))) {
+					if (ImGui::Button("> Smooth", ImVec2(_w50, _h))) {
 						nextTypeSmooth();
 					}
 					ImGui::SameLine();
-					if (ImGui::Button("> Mean", ImVec2(_w50, _h / 2))) {
+					if (ImGui::Button("> Mean", ImVec2(_w50, _h))) {
 						nextTypeMean();
 					}
 					ImGui::Dummy(ImVec2(0.0f, 2.0f));
@@ -1133,12 +1134,12 @@ void ofxSurfingSmooth::draw_ImGui()
 					//ImGui::Text("ENABLE PARAMETERS");
 
 					static bool bNone, bAll;
-					if (ImGui::Button("NONE", ImVec2(_w50, _h / 2)))
+					if (ImGui::Button("NONE", ImVec2(_w50, _h)))
 					{
 						doDisableAll();
 					}
 					ImGui::SameLine();
-					if (ImGui::Button("ALL", ImVec2(_w50, _h / 2)))
+					if (ImGui::Button("ALL", ImVec2(_w50, _h)))
 					{
 						doEnableAll();
 					}
@@ -1158,7 +1159,7 @@ void ofxSurfingSmooth::draw_ImGui()
 						{
 							// 1. toggle enable
 							ofParameter<bool> pb = p.cast<bool>();
-							ofxImGuiSurfing::AddBigToggle(pb, _w100, _h / 2, false);
+							ofxImGuiSurfing::AddBigToggle(pb, _w100, _h, false);
 							//ImGui::SameLine();
 						}
 					}
@@ -1203,7 +1204,7 @@ void ofxSurfingSmooth::draw_ImGui()
 						//ImGui::PushItemWidth(-100);
 						//ofxImGui::AddParameter(_param);
 						//ImGui::PopItemWidth();
-						//if (ImGui::Button("_Button", ImVec2(_w100, _h / 2))) {}
+						//if (ImGui::Button("_Button", ImVec2(_w100, _h))) {}
 						//ofxImGuiSurfing::AddBigToggle(_param, _w100, _h);
 						//ImGui::PushButtonRepeat(true);
 						//float __w = ofxSurfingHelpers::getImGui_WidgetWidth(w, 2);
@@ -1289,7 +1290,7 @@ void ofxSurfingSmooth::draw_ImGui()
 
 					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 					flags |= ImGuiTreeNodeFlags_DefaultOpen;
-					ofxImGui::AddGroup(mParamsGroup, flags);
+					ofxImGuiSurfing::AddGroup(mParamsGroup, flags);
 				}
 				ofxImGui::EndWindow(mainSettings);
 			}
@@ -1305,7 +1306,7 @@ void ofxSurfingSmooth::draw_ImGui()
 
 					ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 					flags |= ImGuiTreeNodeFlags_DefaultOpen;
-					ofxImGui::AddGroup(mParamsGroup_COPY, flags);
+					ofxImGuiSurfing::AddGroup(mParamsGroup_COPY, flags);
 				}
 				ofxImGui::EndWindow(mainSettings);
 

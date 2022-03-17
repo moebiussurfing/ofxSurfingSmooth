@@ -106,7 +106,7 @@ void ofApp::keyPressed(int key) {
 	if (key == 'l' || key == 'L') bLog = !bLog;
 
 	// randomizer
-	if (randomizer.bGui) randomizer.keyPressed(key);
+	//if (randomizer.bGui) randomizer.keyPressed(key);
 
 	// smoothers
 	else if (smoother.bGui) smoother.keyPressed(key);

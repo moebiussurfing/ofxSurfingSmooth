@@ -1,9 +1,11 @@
 {
     "AppState": {
-        "Auto_Name_Learn": "1",
+        "AutoName": "1",
+        "AutoRecon": "0",
+        "AutoSave": "1",
+        "MIDI": "1",
+        "Mapping": "1",
         "Minimize": "0",
-        "Position_GUI": "651, 514",
-        "SHOW_MIDI_PARAMS": "1",
         "Show_Internal": "0"
     }
 }
