@@ -1,14 +1,16 @@
 #pragma once
 #include "ofMain.h"
 
-#include "ofxWindowApp.h"
 #include "ofxSurfingSmooth.h"
+
+#include "ofxWindowApp.h"
 #include "ofxGui.h"
 #include "ofxSurfing_ofxGui.h"
 
-class ofApp : public ofBaseApp{
-
+class ofApp : public ofBaseApp
+{
 	public:
+
 		void setup();
 		void update();
 		void draw();
@@ -33,9 +35,5 @@ class ofApp : public ofBaseApp{
 		ofParameter<float> speed3;
 		ofParameter<int> shapeType3;
 		
-		ofxPanel gui;
-		ofxPanel guiSmooth;
-		bool bGui = false;
-
 		ofxWindowApp windowApp;
 };

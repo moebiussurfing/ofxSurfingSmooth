@@ -1,7 +1,6 @@
 ofxGui
 ofxHistoryPlot
 ofxImGui
-ofxScaleDragRect
 ofxSurfingHelpers
 ofxSurfingImGui
 ofxSurfingSmooth

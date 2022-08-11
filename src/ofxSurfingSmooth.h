@@ -22,9 +22,6 @@ TODO:
 #include "ofxDataStream.h"
 
 #include "ofxHistoryPlot.h"
-#include "ofxImGui.h"
-#include "imgui.h"
-#include "imgui_internal.h"
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfing_Timers.h"
 #include "ofxSurfingImGui.h"
@@ -37,10 +34,24 @@ TODO:
 class ofxSurfingSmooth : public ofBaseApp {
 
 public:
+
 	ofxSurfingSmooth();
 	~ofxSurfingSmooth();
 
+	void draw();
+	void keyPressed(int key);
+
 private:
+
+	void update(ofEventArgs & args);
+	void exit();
+
+	//--
+
+private:
+	
+	ofxSurfing_ImGui_Manager guiManager;
+
 	ofParameterGroup params_EditorEnablers;//the enabled params to randomize
 	vector<ofParameter<bool>> enablersForParams;
 	void drawToggles();
@@ -49,40 +60,12 @@ private:
 	void doDisableAll();
 	void doEnableAll();
 	
-public:
-	//--------------------------------------------------------------
-	void setImGuiAutodraw(bool b) {
-		bAutoDraw = b;
-	}//required to set to false when only one ImGui instance is created
-	
-	//--------------------------------------------------------------
-	void setImGuiSharedMode(bool b) {
-		gui.setSharedMode(b); // Force shared context
-	}
-
-	//----
+	//--
+	//
+	// API INITIALIZERS
 
 public:
-	void update(ofEventArgs & args);
-	void draw(ofEventArgs & args);
-	void exit();
 
-	void keyPressed(int key);
-	//void keyReleased(int key);
-	//void mouseMoved(int x, int y);
-	//void mouseDragged(int x, int y, int button);
-	//void mousePressed(int x, int y, int button);
-	//void mouseReleased(int x, int y, int button);
-	//void mouseEntered(int x, int y);
-	//void mouseExited(int x, int y);
-	//void windowResized(int w, int h);
-	//void gotMessage(ofMessage msg);
-	//void dragEvent(ofDragInfo dragInfo);
-
-	//---
-
-	// api initializers
-public:
 	void setup(ofParameterGroup& aparams);//main setup method. to all pass the params with one line
 
 	void add(ofParameterGroup aparams);
@@ -91,16 +74,19 @@ public:
 	void add(ofParameter<int>& aparam);
 	void addParam(ofAbstractParameter& aparam);
 
-	//void addGroupSmooth_ImGuiWidgets(ofParameterGroup &group);//monitor preview: to populate the widgets inside an ImGui begin/end
+	//--
+	// 
+	// API GETTERS
 
-	// api getters
 public:
+
 	//--------------------------------------------------------------
 	ofParameterGroup& getParamsSmoothed() {
 		return mParamsGroup_COPY;
 	}
 
 public:
+
 	float get(ofParameter<float> &e);
 	int get(ofParameter<int> &e);
 	float getParamFloatValue(ofAbstractParameter &e);
@@ -111,12 +97,14 @@ public:
 	ofParameter<int>& getParamInt(string name);
 
 public:
+
 	void doRandomize();//do and set random in min/max range for all params
 	//void doRandomize(int index, bool bForce);//do random in min/max range for a param. bForce ignores enabler
 
 	//---
 
 private:
+
 	void setup();
 	void startup();
 	void setupPlots();
@@ -125,32 +113,8 @@ private:
 	void updateEngine();
 	void drawPlots(ofRectangle r);
 
-	//----
-
-	//private:
-	//	enum ParamType {
-	//		PTYPE_FLOAT = 0,
-	//		PTYPE_INT,
-	//		PTYPE_BOOL,
-	//		PTYPE_UNKNOWN
-	//	};
-	//
-	//private:
-	//	class MidiParamAssoc {
-	//	public:
-	//		//int midiId = -1;
-	//		int paramIndex = 0;
-	//		ParamType ptype = PTYPE_UNKNOWN;
-	//		//ofRectangle drawRect;
-	//		string displayMidiName = "";
-	//		//bool bListening = false;
-	//		//bool bNeedsTextPrompt = false;
-	//		string xmlParentName = "";
-	//		string xmlName = "";
-	//	}; 
-	//vector< shared_ptr<MidiParamAssoc> > mAssocParams;
-
 private:
+
 	ofParameterGroup mParamsGroup;
 
 	ofParameterGroup mParamsGroup_COPY;//TODO:
@@ -160,6 +124,7 @@ private:
 	void Changed_Controls_Out(ofAbstractParameter &e);
 
 private:
+
 	vector<ofxDataStream> outputs;//the smooth class
 	vector<float> inputs;//feed normnalized signals here
 	vector<float> generators;//testing signals
@@ -167,7 +132,7 @@ private:
 	string path_Global;
 	string path_Settings;
 	
-	ofxInteractiveRect rectangle_PlotsBg = { "Rect_Plots", "ofxSurfingSmooth/" };
+	ofxInteractiveRect boxPlots = { "Rect_Plots", "/ofxSurfingSmooth/" };
 
 	int NUM_PLOTS;
 	int NUM_VARS;
@@ -182,18 +147,19 @@ private:
 	ofColor colorBaseLine;
 
 private:
+
 	void Changed_Params(ofAbstractParameter &e);
+
 	bool bDISABLE_CALLBACKS = true;
 
 	ofParameterGroup params;
 	ofParameter<bool> enable;
 	ofParameter<bool> bFullScreen;
-	ofParameter<bool> bShowPlots;
-	ofParameter<bool> bShowInputs;
-	ofParameter<bool> bShowOutputs;
-	ofParameter<bool> bShowHelp;
+	ofParameter<bool> bGui_Plots;
+	ofParameter<bool> bGui_Inputs;
+	ofParameter<bool> bGui_Outputs;
 	ofParameter<bool> bUseGenerators;
-	ofParameter<bool> solo;
+	ofParameter<bool> bSolo;
 	ofParameter<int> index;
 	ofParameter<int> typeSmooth;
 	ofParameter<string> typeSmooth_Str;
@@ -205,7 +171,7 @@ private:
 	ofParameter<bool> bNormalized;
 	ofParameter<float> minOutput;
 	ofParameter<float> maxOutput;
-	ofParameter<bool> enableSmooth;
+	ofParameter<bool> bEnableSmooth;
 	ofParameter<float> smoothPower;
 	ofParameter<float> threshold;
 	ofParameter<float> onsetGrow;
@@ -218,31 +184,27 @@ private:
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
 
-	//tester timers
+	// tester timers
 	int tf;
 	float tn;
 
 	void doReset();
 	void setupParams();
 
-	bool bTrigManual = false;//flip first
-	bool bModeFast = false;//fast generators
+	bool bTrigManual = false; // flip first
+	bool bModeFast = false; // fast generators
 
 	ofColor colorBg;
 
 	void setup_ImGui();
-	bool bAutoDraw = true;
 	void draw_ImGui();
-	ofxImGui::Gui gui;
-	ofxImGui::Settings mainSettings = ofxImGui::Settings();
-	ImFont* customFont = nullptr;
-	ofParameter<bool> auto_resize{ "Auto Resize", true };
-	ofParameter<bool> bLockMouseByImGui{ "Mouse Locked", false };
-	ofParameter<bool> auto_lockToBorder{ "Lock GUI", false };
+
 public:
-	ofParameter<bool> bGui{ "SURFING SMOOTHER", true };
+
+	ofParameter<bool> bGui{ "SMOOTHER", true };
 
 private:
+
 	std::vector<std::string> typeSmoothLabels;
 	std::vector<std::string> typeMeanLabels;
 
@@ -258,11 +220,40 @@ private:
 	}
 
 	string helpInfo;
-public:
-	std::string getHelpInfo() {
-		return helpInfo;
-	}
 
+	//--------------------------------------------------------------
+	void buildHelp() {
+		// Help info
+		string s = "";
+		s += "HELP SMOOTH \n";
+		s += "\n";
+
+		if (!guiManager.bKeys)
+		{
+			s += "Keys toggle is disabled! \n";
+			s += "Enable Keys toggle on Advanced sub menu. \n";
+		}
+		else {
+			s += "H           HELP \n";
+			s += "G           GUI \n";
+			s += "\n";
+			s += "TAB         Smooth Type \n";
+			s += "SHIFT       Mean Type \n";
+			s += "\n";
+			s += "+|-         OnSet Thresholds \n";
+			s += "\n";
+			s += "S           Solo Plot \n";
+			s += "Up|Down     Solo Browse \n";
+			s += "\n";
+			s += "TESTER\n";
+			s += "SPACE       Randomize \n";
+			s += "RETURN      Play \n";
+		}
+		helpInfo = s;
+
+		guiManager.setHelpInfoApp(helpInfo);
+	}
 public:
-	ofParameter<bool> bShowGui{ "SHOW SMOOTH SURFER", true };// exposed to use in external gui's
+
+	ofParameter<bool> bGui_Global{ "SMOOTH SURFER", true };// exposed to use in external gui's
 };

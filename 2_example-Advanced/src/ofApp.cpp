@@ -58,7 +58,8 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-
+	smoother.draw();
+	
 #ifdef USE_MIDI
 	mMidiParams.draw();
 #endif

@@ -90,9 +90,10 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-
+	smoother.draw();
+	
 	if (bGui)
-	{
+	{		
 		gui.draw();
 		if (bIn) guiInput.draw();
 		if (bOut) guiOutput.draw();

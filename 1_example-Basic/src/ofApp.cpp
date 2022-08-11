@@ -24,21 +24,6 @@ void ofApp::setup() {
 
 	// smoother
 	data.setup(params);
-
-	//--
-
-	// gui
-	ofxSurfingHelpers::setThemeDark_ofxGui();
-
-	// input
-	gui.setup("Input"); // source
-	gui.add(params);
-	gui.setPosition(10, 10);
-
-	// output
-	guiSmooth.setup("Output"); // smoothed
-	guiSmooth.add(data.getParamsSmoothed());
-	guiSmooth.setPosition(220, 10);
 }
 
 //--------------------------------------------------------------
@@ -54,19 +39,21 @@ void ofApp::update() {
 	// 0. simple getters
 
 	// slowdown log a bit
-	if (ofGetFrameNum() % 6 == 0) {
+	if (ofGetFrameNum() % 20 == 0) 
+	{
 		float _lineWidth = data.get(lineWidth);
 		int _shapeType = data.get(shapeType);
 		int _size = data.get(size);
 		int _amount = data.get(amount);
 
-		//log
-		string sp = "   \t\t       ";
+		// log
+		string sp = " \t ";
 		string str = "SMOOTHED >" + sp;
 		str += lineWidth.getName() + ":" + ofToString(_lineWidth, 2); str += sp;
 		str += shapeType.getName() + ":" + ofToString(_shapeType); str += sp;
 		str += size.getName() + ":" + ofToString(_size); str += sp;
 		str += amount.getName() + ":" + ofToString(_amount); str += sp;
+
 		ofLogNotice(__FUNCTION__) << str;
 	}
 
@@ -134,15 +121,10 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	if (bGui) {
-		gui.draw();
-		guiSmooth.draw();
-	}
+	data.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 	data.keyPressed(key);
-
-	if (key == 'h' || key == 'H') bGui = !bGui;
 }
