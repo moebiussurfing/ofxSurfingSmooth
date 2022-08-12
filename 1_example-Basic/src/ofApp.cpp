@@ -30,36 +30,40 @@ void ofApp::setup() {
 void ofApp::update() {
 
 	/*
-	// NOTE:
-	// learn how to access the smoothed parameters.
-	// notice that we can't overwrite the smoothing on the source parameters!
-	// we can get the smoothed params/variables doing these different approaches:
+		NOTE:
+		Learn how to access the smoothed parameters.
+		Notice that we can't overwrite the smoothing on the source parameters!
+		We can get the smoothed params/variables doing these different approaches:
 	*/
 
-	// 0. simple getters
+	// 0. Simple Getters
 
-	// slowdown log a bit
-	if (ofGetFrameNum() % 20 == 0) 
+	// slowdown the log a bit
+	if(0)
+	if (ofGetFrameNum() % 20 == 0)
 	{
 		float _lineWidth = data.get(lineWidth);
 		int _shapeType = data.get(shapeType);
 		int _size = data.get(size);
 		int _amount = data.get(amount);
 
-		// log
+		// Log
 		string sp = " \t ";
 		string str = "SMOOTHED >" + sp;
 		str += lineWidth.getName() + ":" + ofToString(_lineWidth, 2); str += sp;
 		str += shapeType.getName() + ":" + ofToString(_shapeType); str += sp;
 		str += size.getName() + ":" + ofToString(_size); str += sp;
 		str += amount.getName() + ":" + ofToString(_amount); str += sp;
-
 		ofLogNotice(__FUNCTION__) << str;
 	}
 
+
+	//----
+
+
 	/*
 
-	// more snippets for inspiration:
+	// More snippets for inspiration:
 
 	// 1. just the param values
 	int _shapeType = data.getParamIntValue(shapeType);
@@ -121,7 +125,28 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
+	string s;
+
+	// Gui
 	data.draw();
+
+	//--
+
+	// Trigs
+
+	// Log
+	string sp = "   ";
+	string str = "  TRIGGERED  " + sp;
+	str += lineWidth.getName() + ":" + (data.isTriggered(lineWidth) ? "x" : " ") + sp;
+	str += separation.getName() + ":" + (data.isTriggered(separation) ? "x" : " ") + sp;
+
+	str += speed.getName() + ":" + (data.isTriggered(speed) ? "x" : " ") + (data.isRedirected(speed) ? "o" : " ") + sp;
+	
+	str += shapeType.getName() + ":" + (data.isTriggered(shapeType) ? "x" : " ") + sp;
+	str += size.getName() + ":" + (data.isTriggered(size) ? "x" : " ") + sp;
+	str += amount.getName() + ":" + (data.isTriggered(amount) ? "x" : " ") + sp;
+
+	ofDrawBitmapStringHighlight(str, 4, 15);
 }
 
 //--------------------------------------------------------------

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <interactiveRect>
 	<path>Gui/HelpBox_App//</path>
-	<x>454</x>
-	<y>510</y>
+	<x>1628</x>
+	<y>730</y>
 	<width>253</width>
 	<height>298.6</height>
 	<name>_HelpBox</name>
