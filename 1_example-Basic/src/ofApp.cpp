@@ -5,22 +5,18 @@ void ofApp::setup() {
 
 	// parameters to smooth
 	params.setName("paramsGroup");// main container
-	params2.setName("paramsGroup2");// nested
-	params3.setName("paramsGroup3");// nested
+	params.add(speed.set("speed", 0.5, 0, 1));
 	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
 	params.add(separation.set("separation", 50, 1, 100));
-	params.add(speed.set("speed", 0.5, 0, 1));
 	params.add(shapeType.set("shapeType", 0, -50, 50));
 	params.add(size.set("size", 100, 0, 100));
 	params.add(amount.set("amount", 10, 0, 25));
-	params2.add(shapeType2.set("shapeType2", 0, -50, 50));
-	params2.add(size2.set("size2", 100, 0, 100));
-	params2.add(amount2.set("amount2", 10, 0, 25));
-	params3.add(lineWidth3.set("lineWidth3", 0.5, 0, 1));
-	params3.add(separation3.set("separation3", 50, 1, 100));
-	params3.add(speed3.set("speed3", 0.5, 0, 1));
-	params2.add(params3);
-	params.add(params2);
+	params.add(shapeType2.set("shapeType2", 0, -50, 50));
+	params.add(size2.set("size2", 100, 0, 100));
+	params.add(amount2.set("amount2", 10, 0, 25));
+	params.add(lineWidth3.set("lineWidth3", 0.5, 0, 1));
+	params.add(separation3.set("separation3", 50, 1, 100));
+	params.add(speed3.set("speed3", 0.5, 0, 1));
 
 	// smoother
 	data.setup(params);
@@ -125,8 +121,6 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 
-	string s;
-
 	// Gui
 	data.draw();
 
@@ -135,16 +129,22 @@ void ofApp::draw() {
 	// Trigs
 
 	// Log
-	string sp = "   ";
-	string str = "  TRIGGERED  " + sp;
-	str += lineWidth.getName() + ":" + (data.isTriggered(lineWidth) ? "x" : " ") + sp;
-	str += separation.getName() + ":" + (data.isTriggered(separation) ? "x" : " ") + sp;
+	string sp = "   ";//space
+	string str = "  Trig-Bonk-Direct   " + sp;
 
-	str += speed.getName() + ":" + (data.isTriggered(speed) ? "x" : " ") + (data.isRedirected(speed) ? "o" : " ") + sp;
-	
-	str += shapeType.getName() + ":" + (data.isTriggered(shapeType) ? "x" : " ") + sp;
-	str += size.getName() + ":" + (data.isTriggered(size) ? "x" : " ") + sp;
-	str += amount.getName() + ":" + (data.isTriggered(amount) ? "x" : " ") + sp;
+	str += speed.getName() + ":" + (data.isTriggered(speed) ? "x" : " ");//is above threshold
+	str += (data.isBonked(speed) ? "o" : " ");//is bonk trigged. TODOL WIP. not working yet
+	if (data.isRedirectedTo(speed) == 0) str += " ";
+	else if (data.isRedirectedTo(speed) < 0) str += "-";//going down
+	else if (data.isRedirectedTo(speed) > 0) str += "+";//going up
+	//str += (data.isRedirected(speed) ? "o" : " ");//ignoring direction
+
+	//str += sp;
+	//str += lineWidth.getName() + ":" + (data.isTriggered(lineWidth) ? "x" : " ") + sp;
+	//str += separation.getName() + ":" + (data.isTriggered(separation) ? "x" : " ") + sp;
+	//str += shapeType.getName() + ":" + (data.isTriggered(shapeType) ? "x" : " ") + sp;
+	//str += size.getName() + ":" + (data.isTriggered(size) ? "x" : " ") + sp;
+	//str += amount.getName() + ":" + (data.isTriggered(amount) ? "x" : " ") + sp;
 
 	ofDrawBitmapStringHighlight(str, 4, 15);
 }

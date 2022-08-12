@@ -93,7 +93,9 @@ public:
 	//--
 	// 
 	// Bang/Bonk/Triggers under threshold detectors
-private:
+
+//private:
+ 
 	//--------------------------------------------------------------
 	bool isTriggered(int i) {//flag true when triggered this index param
 		if (i > params_EditorEnablers.size() - 1) {
@@ -139,16 +141,52 @@ private:
 		if (!bEnableSmooth || !_bSmooth) return false;
 
 		// if the direction has changed and
-		// if the time of change is greater than 0.5 sec
+		// if the time of change is greater than (0.5) timeRedirection sec
 		// print the time between changes and amount of change
-		if (outputs[i].getDirectionTimeDiff() > 0.5f && outputs[i].directionHasChanged())
+		if (outputs[i].getDirectionTimeDiff() > timeRedirection && 
+			outputs[i].directionHasChanged())
 		{
-			if (i == index)
-				ofLogVerbose(__FUNCTION__) << "Redirected: " << i << " " << outputs[i].getDirectionTimeDiff() << " "
-				<< outputs[i].getDirectionValDiff();
+				ofLogNotice(__FUNCTION__) << "Redirected: " << i << " " << 
+					outputs[i].getDirectionTimeDiff() << ", " << 
+					outputs[i].getDirectionValDiff();
+
+				return true;
 		}
 		return false;
 	}
+
+	//--------------------------------------------------------------
+	int isRedirectedTo(int i) {
+		// return 0 when no direction changed. -1 or 1 depending direction.
+		// above or below threshold
+
+		int rdTo = 0;
+
+		if (i > params_EditorEnablers.size() - 1) {
+			ofLogError(__FUNCTION__) << "Index Out of Range: " << i;
+			return rdTo;
+		}
+		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
+		bool _bSmooth = _p.cast<bool>().get();
+		if (!bEnableSmooth || !_bSmooth) return rdTo;
+
+		// if the direction has changed and
+		// if the time of change is greater than 0.5 sec
+		// print the time between changes and amount of change
+		if (outputs[i].getDirectionTimeDiff() > timeRedirection && 
+			outputs[i].directionHasChanged())
+		{
+				ofLogVerbose(__FUNCTION__) << "Redirected: " << i << " " << 
+					outputs[i].getDirectionTimeDiff() << ", " << 
+					outputs[i].getDirectionValDiff();
+
+				if (outputs[i].getDirectionValDiff() < 0) rdTo = 1;
+				else rdTo = -1;
+				return rdTo;
+		}
+		return rdTo;//0
+	}
+
 
 public:
 
@@ -170,12 +208,18 @@ public:
 		if (i != -1) return isRedirected(i);
 		else return false;
 	}
+	//--------------------------------------------------------------
+	int isRedirectedTo(ofAbstractParameter& e) {
+		int i = getIndex(e);
+		if (i != -1) return isRedirectedTo(i);
+		else return 0;
+	}
 
 	//----
 
 public:
 
-	int getIndex(ofAbstractParameter& e) const;
+	int getIndex(ofAbstractParameter& e) /*const*/;
 
 	float get(ofParameter<float>& e);
 	int get(ofParameter<int>& e);
@@ -218,7 +262,7 @@ private:
 private:
 
 	vector<ofxDataStream> outputs;//the smooth class
-	vector<float> inputs;//feed normnalized signals here
+	vector<float> inputs;//feed normalized signals here
 	vector<float> generators;//testing signals
 
 	string path_Global;
@@ -254,8 +298,6 @@ private:
 	ofParameter<bool> bGui_Inputs;
 	ofParameter<bool> bGui_Outputs;
 	ofParameter<bool> bUseGenerators;
-	ofParameter<bool> bSolo;//solo selected index
-	ofParameter<int> index;// index of the selected param!
 	ofParameter<int> typeSmooth;
 	ofParameter<string> typeSmooth_Str;
 	ofParameter<int> typeMean;
@@ -267,17 +309,17 @@ private:
 	ofParameter<float> minOutput;
 	ofParameter<float> maxOutput;
 	ofParameter<bool> bEnableSmooth;
-	ofParameter<float> smoothPower;
-	ofParameter<float> threshold;
+	ofParameter<float> timeRedirection;
 	ofParameter<float> onsetGrow;
 	ofParameter<float> onsetDecay;
 	ofParameter<float> slideMin;
 	ofParameter<float> slideMax;
 	ofParameter<float> input;//index selected
 	ofParameter<float> output;
-	ofParameter<bool> bReset;
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
+
+	//bool bDirectionLast = false;
 
 	// tester timers
 	int tf;
@@ -344,7 +386,17 @@ private:
 		guiManager.setHelpInfoApp(helpInfo);
 	}
 
+	//----
+
+	// Useful for external gui's!
+
 public:
+
+	ofParameter<int> index;// index of the selected param!
+	ofParameter<bool> bSolo;//solo selected index
+	ofParameter<float> smoothPower;
+	ofParameter<float> threshold;
+	ofParameter<bool> bReset;
 
 	ofParameter<bool> bGui{ "SMOOTHER", true };
 	ofParameter<bool> bGui_Global{ "SMOOTH SURFER", true };// exposed to use in external gui's
