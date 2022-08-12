@@ -5,6 +5,7 @@
 	TODO:
 
 	+ independent settings for each param.. ?
+		threshold, power, pre amp
 
 	+ add colors types, vectors, using templates..
 		+ avoid crash to unsuported types
@@ -294,7 +295,6 @@ private:
 
 	//ofParameter<bool> enable;
 	ofParameter<bool> bFullScreenPlot;
-	ofParameter<bool> bGui_Plots;
 	ofParameter<bool> bGui_Inputs;
 	ofParameter<bool> bGui_Outputs;
 	ofParameter<bool> bUseGenerators;
@@ -309,7 +309,6 @@ private:
 	ofParameter<float> minOutput;
 	ofParameter<float> maxOutput;
 	ofParameter<bool> bEnableSmooth;
-	ofParameter<float> timeRedirection;
 	ofParameter<float> onsetGrow;
 	ofParameter<float> onsetDecay;
 	ofParameter<float> slideMin;
@@ -396,8 +395,10 @@ public:
 	ofParameter<bool> bSolo;//solo selected index
 	ofParameter<float> smoothPower;
 	ofParameter<float> threshold;
+	ofParameter<float> timeRedirection;
 	ofParameter<bool> bReset;
 
 	ofParameter<bool> bGui{ "SMOOTHER", true };
 	ofParameter<bool> bGui_Global{ "SMOOTH SURFER", true };// exposed to use in external gui's
+	ofParameter<bool> bGui_Plots;
 };

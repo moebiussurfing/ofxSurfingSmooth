@@ -72,7 +72,8 @@ void ofxSurfingSmooth::setupPlots() {
 
 	// colors
 #ifdef COLORS_MONCHROME
-	colorPlots = (ofColor::green);
+	//colorPlots = (ofColor::green);
+	colorPlots = (ofColor::yellow);
 #endif
 	colorBaseLine = ofColor(255, 48);
 	colorSelected = ofColor(255, 150);
@@ -142,7 +143,7 @@ void ofxSurfingSmooth::setupPlots() {
 	boxPlots.bEditMode.setName("Edit Plots");
 	boxPlots.setColorEditingHover(c0);
 	boxPlots.setColorEditingMoving(c0);
-	boxPlots.enableEdit();
+	//boxPlots.enableEdit();
 }
 
 //--------------------------------------------------------------
@@ -176,7 +177,8 @@ void ofxSurfingSmooth::update(ofEventArgs& args) {
 void ofxSurfingSmooth::updateSmooths() {
 	//getting from the params not from the generators!
 
-	for (int i = 0; i < mParamsGroup.size(); i++) {
+	for (int i = 0; i < mParamsGroup.size(); i++)
+	{
 		ofAbstractParameter& p = mParamsGroup[i];
 
 		//toggle
@@ -229,7 +231,8 @@ void ofxSurfingSmooth::updateSmooths() {
 		//	ofParameter<bool> ti = p.cast<bool>();
 		//}
 
-		else {
+		else
+		{
 			continue;
 		}
 
@@ -579,15 +582,20 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		if (isBonked(i)) s += "o" + _spacing; // bonked
 		else s += " " + _spacing;
 
-		if (isRedirectedTo(i) == 0) s += " " + _spacing; // redirected
-		else if (isRedirectedTo(i) < 0) s += "-" + _spacing; // redirected
-		else if (isRedirectedTo(i) > 0) s += "+" + _spacing; // redirected
+		// redirected
+		if (isRedirected(i)) s += "*" + _spacing; 
+		else s += " " + _spacing;
+
+		//if (isRedirectedTo(i) == 0) s += " " + _spacing; // redirected
+		//else if (isRedirectedTo(i) < 0) s += "-" + _spacing; // redirected
+		//else if (isRedirectedTo(i) > 0) s += "+" + _spacing; // redirected
 
 		//latched
-		//if (isRedirectedTo(i) < 0) bDirectionLast = false; // redirected
-		//else if (isRedirectedTo(i) > 0) bDirectionLast = true; // redirected
-		//if (bDirectionLast) s += "+"; // redirected
-		//else s += "-"; // redirected
+		static bool bDirectionLast = false;
+		if (isRedirectedTo(i) < 0) bDirectionLast = false; // redirected
+		else if (isRedirectedTo(i) > 0) bDirectionLast = true; // redirected
+		if (bDirectionLast) s += "+"; // redirected
+		else s += "-"; // redirected
 
 		// display text
 		ofDrawBitmapString(s, x + 5, y + 11);
@@ -602,9 +610,9 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		//ofColor _c2 = ofColor(colors[ii]);
 
 		// alpha blink
-		int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(0.5),0,1, 200, 255);// 
-		float _a1 = MAX(0.5, ofxSurfingHelpers::Bounce(0.2));// bonked
-		float _a2 = MAX(0.5, ofxSurfingHelpers::Bounce(0.2));// trigged
+		int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(0.5),0,1, 128, 255); // standby
+		float _a1 = MAX(1.0, ofxSurfingHelpers::Bounce(0.2)); // bonked
+		float _a2 = MAX(0.5, ofxSurfingHelpers::Bounce(0.2)); // trigged
 
 		// threshold
 		{
@@ -614,7 +622,7 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 			if (isRedirected(i)) c.set(ofColor(_c2, 200 * _a1)); // redirected
 			else if (isBonked(i)) {
 				c.set(ofColor(_c2, 255)); // bonked
-				l = 5;
+				l = 10;
 			}
 			else if (outputs[i].getTrigger()) c.set(ofColor(_c3, 200 * _a2)); // trigged
 			else 
@@ -736,12 +744,12 @@ void ofxSurfingSmooth::setupParams() {
 	params.add(typeSmooth_Str.set(" ", ""));
 	params.add(typeMean.set("Type Mean", 0, 0, 2));
 	params.add(typeMean_Str.set(" ", ""));
-	params.add(smoothPower.set("Power", 0.25, 0.0, 1));
+	params.add(smoothPower.set("Power", 0.2, 0.0, 1));
 	params.add(slideMin.set("SlideIn", 0.2, 0.0, 1));
 	params.add(slideMax.set("SlideOut", 0.2, 0.0, 1));
-	params.add(onsetGrow.set("OnGrow", 0.f, 0.0, 1));
+	params.add(onsetGrow.set("OnGrow", 0.1f, 0.0, 1));
 	params.add(onsetDecay.set("OnDecay", 0.1, 0.0, 1));
-	params.add(threshold.set("Thresh", 0.7, 0.0, 1));
+	params.add(threshold.set("Thresh", 0.5, 0.0, 1));
 	params.add(timeRedirection.set("TimeDir", 0.5, 0.0, 1));
 	params.add(bReset.set("Reset", false));
 	//params.add(bClamp.set("CLAMP", true));
@@ -809,15 +817,15 @@ void ofxSurfingSmooth::doReset() {
 	maxOutput = 1;
 	slideMin = 0.2;
 	slideMax = 0.2;
-	onsetGrow = 0.0;
+	onsetGrow = 0.1;
 	onsetDecay = 0.1;
 	output = 0;
 	bNormalized = false;
-	smoothPower = 0.75;
+	smoothPower = 0.2;
 	typeSmooth = 1;
 	typeMean = 0;
 	bClamp = true;
-	threshold = 0.7;
+	threshold = 0.5;
 	timeRedirection = 0.5;
 	playSpeed = 0.5;
 
