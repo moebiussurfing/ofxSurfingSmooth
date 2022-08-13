@@ -7,8 +7,12 @@ class SmoothChannel
 {
 public:
 
-	SmoothChannel() {};
+	SmoothChannel() {
+		ofAddListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
+	};
+
 	~SmoothChannel() {
+		ofRemoveListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
 		ofxSurfingHelpers::CheckFolder(path_Global);
 		ofxSurfingHelpers::saveGroup(params, path_Settings);
 	};
@@ -46,9 +50,9 @@ public:
 
 	ofParameterGroup params;
 
-private:
-
 	vector<string> bangDetectors = { "Trig","Bonk", "Direction", "Above", "Below" };
+
+private:
 
 	string path_Global;
 	string path_Settings;
@@ -84,5 +88,26 @@ private:
 	float _outMaxRange = 1;
 
 	string name = "SmoothChannel";
+
+
+
+	//--------------------------------------------------------------
+	void SmoothChannel::Changed(ofAbstractParameter& e)
+	{
+		std::string name = e.getName();
+
+		ofLogVerbose("SmoothChannel") << name << " : " << e;
+
+		if (0) {}
+
+		else if (name == bReset.getName())
+		{
+			if (bReset)
+			{
+				bReset = false;
+				doReset();
+			}
+		}
+	}
 };
 

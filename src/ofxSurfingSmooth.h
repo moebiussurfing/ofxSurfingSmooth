@@ -69,7 +69,7 @@ private:
 	ofxSurfing_ImGui_Manager guiManager;
 
 	ofParameterGroup params_EditorEnablers;//the enabled params to randomize
-	vector<ofParameter<bool>> enablersForParams;
+	vector<ofParameter<bool>> editorEnablers;
 	void drawToggles();
 
 	void doSetAll(bool b);
@@ -346,7 +346,7 @@ private:
 	
 	void draw_ImGui();
 	void draw_ImGuiMain();
-	void draw_ImGuiUser();
+	void draw_ImGuiGameMode();
 	void draw_ImGuiExtra();
 
 private:
