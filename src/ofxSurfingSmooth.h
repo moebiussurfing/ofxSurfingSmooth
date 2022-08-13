@@ -320,8 +320,11 @@ private:
 	ofParameter<bool> bUseGenerators;
 
 	ofParameter<bool> bEnableSmooth;
-	ofParameter<float> input;//index selected
+	
+	/// TODO:remove
+	ofParameter<float> input;//for index selected
 	ofParameter<float> output;
+
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
 

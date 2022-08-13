@@ -78,8 +78,8 @@ private:
 		onsetDecay = 0.1;
 	}
 
-	float _inputMaxRange = 1;
 	float _inputMinRange = 0;
+	float _inputMaxRange = 1;
 	float _outMinRange = 0;
 	float _outMaxRange = 1;
 

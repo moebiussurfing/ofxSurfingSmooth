@@ -121,8 +121,12 @@ void ofxSurfingSmooth::setupPlots() {
 		_name2 = ofToString(mParamsGroup[i / 2].getName());//param name
 		//_name2 = ofToString(i / 2);//index as name
 
-		bool b1 = (i % 2 == 0);//1st plot of each var. input
+		//TODO: fix when disable out plot..
+		// 1st plot of each var. input
+		// has bg and name labels
+		bool b1 = (i % 2 == 0);
 		_name = _name2;
+
 		//if (b1) _name = "Input " + _name2;
 		//else _name = "Output " + _name2;
 
@@ -255,22 +259,30 @@ void ofxSurfingSmooth::updateEngine() {
 	{
 		// toggle
 		auto& p = params_EditorEnablers[i];// ofAbstractParameter
-		auto type = p.type();
-		bool isBool = type == typeid(ofParameter<bool>).name();
-		string name = p.getName();
-		ofParameter<bool> _bSmooth = p.cast<bool>();
-		//if (!_bSmooth) continue;//skip if it's disabled
+		bool isBool = (p.type() == typeid(ofParameter<bool>).name());
+		if (!isBool) {
+			ofLogError("ofxSurfingSmooth") << (__FUNCTION__) << "Skip to avoid crash!";
+			continue;
+		}
 
-		// input
-		float _input = ofClamp(inputs[i], minInput, maxInput);
+		bool _bSmooth = p.cast<bool>().get();
+
+		// get input as source or clamped
+		float _input;
+		if (bClamp) _input = ofClamp(inputs[i], minInput, maxInput);
+		else _input = inputs[i];
+
+		// plot
 		if (bGui_Plots) plots[2 * i]->update(_input);//source
 
 		// output
-		if (bGui_Plots) {
-			if (bEnableSmooth && _bSmooth) plots[2 * i + 1]->update(outputs[i].getValue());//filtered
-			else plots[2 * i + 1]->update(_input);//source
+		if (bGui_Plots)
+		{
+			if (bEnableSmooth && _bSmooth) plots[2 * i + 1]->update(outputs[i].getValue());//use filtered
+			else plots[2 * i + 1]->update(_input);//use source
 		}
 
+		//TODO: ?
 		if (i == index) input = _input;
 	}
 
@@ -281,20 +293,15 @@ void ofxSurfingSmooth::updateEngine() {
 	// toggle
 	int i = index;
 	auto& _p = params_EditorEnablers[i];// ofAbstractParameter
-	//auto type = _p.type();
-	//bool isBool = type == typeid(ofParameter<bool>).name();
-	//string name = _p.getName();
 	bool _bSmooth = _p.cast<bool>().get();
-	//ofParameter<bool> _bSmooth = _p.cast<bool>();
-	//if (!_bSmooth) continue;//skip if it's disabled
 
-	// output
+	// output. get the output as it is or normalized
 	if (bEnableSmooth && _bSmooth)
 	{
 		if (bNormalized) output = outputs[index].getValueN();
 		else output = outputs[index].getValue();
 	}
-	else //bypass
+	else // bypass
 	{
 		output = input;
 	}
@@ -302,19 +309,19 @@ void ofxSurfingSmooth::updateEngine() {
 	//----
 
 	//TODO:
-	// Log bangs / onSets
+	// Log bangs / onSets but for only the selected/index channel/param !
 	// add individual thresholds
 	// add callbacks notifiers
 	for (int i = 0; i < NUM_VARS; i++)
 	{
-		//if (i!=0)continue;
-
-		if (outputs[i].getTrigger()) {
-			if (i == index) ofLogVerbose() << "Trigger: " << i;
+		if (outputs[i].getTrigger())
+		{
+			if (i == index) ofLogVerbose("ofxSurfingSmooth") << "Trigger: " << i;
 		}
 
-		if (outputs[i].getBonk()) {
-			if (i == index) ofLogVerbose() << "Bonk: " << i;
+		if (outputs[i].getBonk())
+		{
+			if (i == index) ofLogVerbose("ofxSurfingSmooth") << "Bonk: " << i;
 		}
 
 		// if the direction has changed and
@@ -323,9 +330,14 @@ void ofxSurfingSmooth::updateEngine() {
 		if (outputs[i].getDirectionTimeDiff() > 0.5f && outputs[i].directionHasChanged())
 		{
 			if (i == index)
-				ofLogVerbose() << "Direction: " << i << " " << outputs[i].getDirectionTimeDiff() << " "
-				<< outputs[i].getDirectionValDiff();
+			{
+				ofLogVerbose("ofxSurfingSmooth") << "Direction: " << i << " " <<
+					outputs[i].getDirectionTimeDiff() << " " <<
+					outputs[i].getDirectionValDiff();
+			}
 		}
+
+		if (i == index) break;//already done! bc we are monitoring the selected channel!
 	}
 }
 
@@ -408,8 +420,24 @@ void ofxSurfingSmooth::draw() {
 	if (bGui_Plots)
 	{
 		if (bPlotFullScreen) drawPlots(ofGetCurrentViewport());
-		else drawPlots(boxPlots.getRectangle());
+		else
+		{
+			//fix
+			if (0) {
+				ofColor c;
+				if (!bPlotIn) c = plots[0]->getBackgroundColor();
+				ofPushStyle();
+				ofFill();
+				ofSetColor(c);
+				ofDrawRectangle(boxPlots.getRectangle());
+				ofPopStyle();
+			}
+
+			drawPlots(boxPlots.getRectangle());
+		}
+
 		boxPlots.draw();
+
 		if (boxPlots.isEditing()) boxPlots.drawBorderBlinking(ofColor::yellow);
 	}
 
@@ -548,10 +576,12 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		// # number
 
 		if (!bSolo)  ofSetColor(colorTextSelected);
-		else {
+		else
+		{
 			if (i == index) ofSetColor(colorTextSelected);
 			else ofSetColor(colorBaseLine);
 		}
+
 		s = "#" + ofToString(i);
 
 		// add param name and value
@@ -711,8 +741,8 @@ void ofxSurfingSmooth::setupParams() {
 
 	string name = "SMOOTH SURF";
 
-	float _inputMaxRange = 1;
 	float _inputMinRange = 0;
+	float _inputMaxRange = 1;
 	float _outMinRange = 0;
 	float _outMaxRange = 1;
 
@@ -1055,9 +1085,16 @@ void ofxSurfingSmooth::draw_ImGuiExtra()
 				if (guiManager.beginTree("PLOTS"))
 				{
 					guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
-					guiManager.Add(bPlotIn, OFX_IM_TOGGLE_ROUNDED_SMALL);
-					guiManager.Add(bPlotOut, OFX_IM_TOGGLE_ROUNDED_SMALL);
-					guiManager.Add(bPlotFullScreen, OFX_IM_TOGGLE_ROUNDED_MINI);
+					if (bGui_Plots)
+					{
+						guiManager.Indent();
+						guiManager.Add(bPlotIn, OFX_IM_TOGGLE_ROUNDED_SMALL);
+						guiManager.Add(bPlotOut, OFX_IM_TOGGLE_ROUNDED_SMALL);
+						guiManager.Indent();
+						guiManager.Add(bPlotFullScreen, OFX_IM_TOGGLE_ROUNDED_MINI);
+						guiManager.Unindent();
+						guiManager.Unindent();
+					}
 					guiManager.endTree();
 				}
 				guiManager.AddSpacingSeparated();
@@ -1145,7 +1182,7 @@ void ofxSurfingSmooth::draw_ImGuiExtra()
 				{
 					guiManager.refreshLayout();
 
-					guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_BUTTON_ROUNDED);
+					guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_BUTTON_ROUNDED_MEDIUM);
 					guiManager.Add(guiManager.bHelp, OFX_IM_TOGGLE_BUTTON_ROUNDED_SMALL);
 					guiManager.Add(boxPlots.bEdit);
 				}
@@ -1256,6 +1293,63 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 
 			guiManager.Add(bEnableSmooth, OFX_IM_TOGGLE_BIG_BORDER_BLINK);
 
+			// Monitor
+
+			if (bEnableSmooth)
+			{
+				guiManager.AddSpacingSeparated();
+
+				if (ImGui::CollapsingHeader("MONITOR"))
+				{
+					guiManager.refreshLayout();
+
+					if (index < enablersForParams.size()) {
+						guiManager.AddLabelBig(enablersForParams[index].getName(), false);
+					}
+
+					if (!guiManager.bMinimize)
+					{
+						if (index.getMax() < 5) {
+							ofxImGuiSurfing::AddMatrixClicker(index);
+						}
+						else {
+							if (guiManager.Add(index, OFX_IM_STEPPER))
+							{
+								index = ofClamp(index, index.getMin(), index.getMax());
+							}
+						}
+
+						guiManager.Add(bSolo, OFX_IM_TOGGLE);
+
+						//if (!guiManager.bMinimize)
+						{
+							guiManager.Add(input, OFX_IM_HSLIDER_MINI);
+							guiManager.Add(output, OFX_IM_HSLIDER_MINI);
+						}
+					}
+					else
+					{
+						if (index.getMax() < 5) {
+							ofxImGuiSurfing::AddMatrixClicker(index);
+						}
+						else {
+							if (guiManager.Add(index, OFX_IM_STEPPER))
+							{
+								index = ofClamp(index, index.getMin(), index.getMax());
+							}
+						}
+
+						guiManager.Add(bSolo, OFX_IM_TOGGLE);
+						guiManager.AddSpacingSeparated();
+
+						guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
+						guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
+					}
+				}
+
+				guiManager.refreshLayout();
+			}
+
 			//--
 
 			if (bEnableSmooth)
@@ -1264,6 +1358,8 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 
 				if (ImGui::CollapsingHeader("ENGINE"))
 				{
+					guiManager.AddSpacing();
+
 					if (!guiManager.bMinimize)
 						if (guiManager.AddButton("SMOOTH >", OFX_IM_BUTTON))
 						{
@@ -1302,7 +1398,8 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 					if (!guiManager.bMinimize)
 					{
 						guiManager.AddSpacingSeparated();
-						guiManager.Add(bClamp, OFX_IM_TOGGLE_SMALL);
+						guiManager.Add(bClamp, OFX_IM_TOGGLE_SMALL, 2, true);
+						guiManager.Add(bNormalized, OFX_IM_TOGGLE_SMALL, 2);
 						if (bClamp) {
 							guiManager.Add(minInput);
 							guiManager.Add(maxInput);
@@ -1310,7 +1407,6 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 							guiManager.Add(minOutput);
 							guiManager.Add(maxOutput);
 							guiManager.AddSpacing();
-							guiManager.Add(bNormalized, OFX_IM_TOGGLE_SMALL);
 						}
 					}
 
@@ -1323,83 +1419,77 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 				}
 			}
 
-			// Monitor
-			//if (!guiManager.bMinimize)
-			{
-				if (bEnableSmooth)
-				{
-					guiManager.AddSpacingSeparated();
-
-					if (ImGui::CollapsingHeader("MONITOR"))
-					{
-						guiManager.refreshLayout();
-
-						if (index < enablersForParams.size()) {
-							guiManager.AddLabelBig(enablersForParams[index].getName(), false);
-						}
-
-						if (index.getMax() < 5) {
-							ofxImGuiSurfing::AddMatrixClicker(index);
-						}
-						else {
-							if (guiManager.Add(index, OFX_IM_STEPPER))
-							{
-								index = ofClamp(index, index.getMin(), index.getMax());
-							}
-						}
-
-						guiManager.Add(bSolo, OFX_IM_TOGGLE);
-
-						if (!guiManager.bMinimize)
-						{
-							guiManager.Add(input, OFX_IM_HSLIDER_MINI);
-							guiManager.Add(output, OFX_IM_HSLIDER_MINI);
-						}
-						else {
-							guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
-							guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
-						}
-					}
-				}
-			}
-
 			//--
 
 			if (bEnableSmooth)
 			{
 				guiManager.AddSpacingSeparated();
 
-				if (ImGui::CollapsingHeader("DETECTORS"))
+				if (ImGui::CollapsingHeader("DETECTOR"))
 				{
 					guiManager.refreshLayout();
 
-					if (guiManager.bMinimize)
+					//guiManager.AddCombo(bangDetectorIndex, bangDetectors);
+
+					if (!guiManager.bMinimize)
 					{
-						guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
-						guiManager.AddSpacing();
-						guiManager.Add(timeRedirection, OFX_IM_STEPPER);
-						guiManager.Add(onsetGrow);
-						guiManager.Add(onsetDecay);
-					}
-					else
-					{
-						//guiManager.AddLabel("Trigger");
 						guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
 						guiManager.Add(threshold, OFX_IM_STEPPER);
 						guiManager.AddSpacing();
 						guiManager.AddLabel("Direction");
 						guiManager.Add(timeRedirection, OFX_IM_STEPPER);
 						guiManager.AddLabel("Bonks");
-						guiManager.Add(onsetGrow);
-						guiManager.Add(onsetDecay);
+						guiManager.Add(onsetGrow, OFX_IM_STEPPER);
+						guiManager.Add(onsetDecay, OFX_IM_STEPPER);
 					}
+					else
+					{
+						//if (bangDetectorIndex == 2 || bangDetectorIndex == 3 || bangDetectorIndex == 4)
+						{
+							guiManager.Add(timeRedirection, OFX_IM_HSLIDER_SMALL);
+						}
+					
+						//if (bangDetectorIndex == 1)
+						{
+							guiManager.Add(onsetGrow, OFX_IM_STEPPER);
+							guiManager.Add(onsetDecay, OFX_IM_STEPPER);
+						}
+					}
+
+					guiManager.AddSpacingBigSeparated();
+
+					if (guiManager.Add(bReset, OFX_IM_BUTTON_SMALL)) {
+						//signal_0_PreAmp = 0;
+						//signal_1_PreAmp = 0;
+					};
+
+					//if (guiManager.bMinimize)
+					//{
+					//	guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
+					//	guiManager.AddSpacing();
+					//	guiManager.Add(timeRedirection, OFX_IM_STEPPER);
+					//	guiManager.Add(onsetGrow, OFX_IM_STEPPER);
+					//	guiManager.Add(onsetDecay, OFX_IM_STEPPER);
+					//}
+					//else
+					//{
+					//	guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
+					//	guiManager.Add(threshold, OFX_IM_STEPPER);
+					//	guiManager.AddSpacing();
+					//	guiManager.AddLabel("Direction");
+					//	guiManager.Add(timeRedirection, OFX_IM_STEPPER);
+					//	guiManager.AddLabel("Bonks");
+					//	guiManager.Add(onsetGrow, OFX_IM_STEPPER);
+					//	guiManager.Add(onsetDecay, OFX_IM_STEPPER);
+					//}
 				}
+				guiManager.refreshLayout();
 			}
 
 			if (!guiManager.bMinimize)
 			{
 				guiManager.AddSpacingSeparated();
-				guiManager.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED);
+				guiManager.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 			}
 		}
 
