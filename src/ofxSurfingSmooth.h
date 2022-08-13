@@ -4,11 +4,20 @@
 
 	TODO:
 
+	+ plot smoothed only
+
 	+ independent settings for each param.. ?
 		threshold, power, pre amp
+		make new class
+
+	+ folder for panels
+
+	+ move enablers, testers to advanced. rename to extra
 
 	+ add colors types, vectors, using templates..
 		+ avoid crash to unsuported types
+
+	+ add clamp
 
 	+ "real" nested sub-groups tree levels.. ?
 	+ add thresholds/onSet independent for each variable/channel: make it functional. add callbacks..
@@ -27,13 +36,18 @@
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfing_Timers.h"
 #include "ofxSurfingImGui.h"
-#include "ofxInteractiveRect.h"
+#include "ofxSurfingBoxInteractive.h"
+#include "smoothChannel.h"
 
 #define NUM_GENERATORS 6
 
 #define COLORS_MONCHROME // all plots same color. green
 
 class ofxSurfingSmooth : public ofBaseApp {
+
+private:
+
+	vector<unique_ptr<SmoothChannel>> smoothChannels;
 
 public:
 
@@ -70,6 +84,8 @@ public:
 
 	void setup(ofParameterGroup& aparams);//main setup method. to all pass the params with one line
 
+private:
+
 	void add(ofParameterGroup aparams);
 	void add(ofParameter<float>& aparam);
 	void add(ofParameter<bool>& aparam);
@@ -88,7 +104,7 @@ public:
 
 	//--------------------------------------------------------------
 	ofParameterGroup& getParamsSmoothed() {
-		return mParamsGroup_COPY;
+		return mParamsGroup_Smoothed;
 	}
 
 	//--
@@ -100,7 +116,7 @@ public:
 	//--------------------------------------------------------------
 	bool isTriggered(int i) {//flag true when triggered this index param
 		if (i > params_EditorEnablers.size() - 1) {
-			ofLogError(__FUNCTION__) << "Index Out of Range: " << i;
+			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
@@ -108,7 +124,7 @@ public:
 		if (!bEnableSmooth || !_bSmooth) return false;
 
 		if (outputs[i].getTrigger()) {
-			ofLogVerbose(__FUNCTION__) << "Triggered: " << i;
+			ofLogVerbose("ofxSurfingSmooth") << "Triggered: " << i;
 			return true;
 		}
 		return false;
@@ -117,7 +133,7 @@ public:
 	//--------------------------------------------------------------
 	bool isBonked(int i) {//flag true when triggered this index param
 		if (i > params_EditorEnablers.size() - 1) {
-			ofLogError(__FUNCTION__) << "Index Out of Range: " << i;
+			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
@@ -125,7 +141,7 @@ public:
 		if (!bEnableSmooth || !_bSmooth) return false;
 
 		if (outputs[i].getBonk()) {
-			ofLogVerbose(__FUNCTION__) << "Bonked: " << i;
+			ofLogVerbose("ofxSurfingSmooth") << "Bonked: " << i;
 			return true;
 		}
 		return false;
@@ -134,7 +150,7 @@ public:
 	//--------------------------------------------------------------
 	bool isRedirected(int i) {//flag true when signal direction changed
 		if (i > params_EditorEnablers.size() - 1) {
-			ofLogError(__FUNCTION__) << "Index Out of Range: " << i;
+			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
@@ -147,7 +163,7 @@ public:
 		if (outputs[i].getDirectionTimeDiff() > timeRedirection && 
 			outputs[i].directionHasChanged())
 		{
-				ofLogNotice(__FUNCTION__) << "Redirected: " << i << " " << 
+				ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " << 
 					outputs[i].getDirectionTimeDiff() << ", " << 
 					outputs[i].getDirectionValDiff();
 
@@ -164,7 +180,7 @@ public:
 		int rdTo = 0;
 
 		if (i > params_EditorEnablers.size() - 1) {
-			ofLogError(__FUNCTION__) << "Index Out of Range: " << i;
+			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return rdTo;
 		}
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
@@ -177,7 +193,7 @@ public:
 		if (outputs[i].getDirectionTimeDiff() > timeRedirection && 
 			outputs[i].directionHasChanged())
 		{
-				ofLogVerbose(__FUNCTION__) << "Redirected: " << i << " " << 
+				ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " << 
 					outputs[i].getDirectionTimeDiff() << ", " << 
 					outputs[i].getDirectionValDiff();
 
@@ -254,7 +270,7 @@ private:
 
 	ofParameterGroup mParamsGroup;
 
-	ofParameterGroup mParamsGroup_COPY;//TODO:
+	ofParameterGroup mParamsGroup_Smoothed;//TODO:
 	string suffix = "";
 	//string suffix = "_COPY";
 
@@ -269,8 +285,12 @@ private:
 	string path_Global;
 	string path_Settings;
 
-	ofxInteractiveRect boxPlots = { "Rect_Plots", "/ofxSurfingSmooth/" };
+	//ofxInteractiveRect boxPlots = { "Rect_Plots", "/ofxSurfingSmooth/" };
 
+	public:
+	ofxSurfingBoxInteractive boxPlots;
+
+	private:
 	int NUM_PLOTS;
 	int NUM_VARS;
 
@@ -280,10 +300,12 @@ private:
 #ifdef COLORS_MONCHROME
 	ofColor colorPlots;
 #endif
-	ofColor colorSelected;
 	ofColor colorBaseLine;
-	ofColor colorBonk;
+	ofColor colorTextSelected;
+	ofColor colorThreshold;
 	ofColor colorTrig;
+	ofColor colorBonk;
+	ofColor colorDirect;
 
 private:
 
@@ -293,26 +315,11 @@ private:
 
 	ofParameterGroup params;
 
-	//ofParameter<bool> enable;
-	ofParameter<bool> bFullScreenPlot;
 	ofParameter<bool> bGui_Inputs;
 	ofParameter<bool> bGui_Outputs;
 	ofParameter<bool> bUseGenerators;
-	ofParameter<int> typeSmooth;
-	ofParameter<string> typeSmooth_Str;
-	ofParameter<int> typeMean;
-	ofParameter<string> typeMean_Str;
-	ofParameter<bool> bClamp;
-	ofParameter<float> minInput;
-	ofParameter<float> maxInput;
-	ofParameter<bool> bNormalized;
-	ofParameter<float> minOutput;
-	ofParameter<float> maxOutput;
+
 	ofParameter<bool> bEnableSmooth;
-	ofParameter<float> onsetGrow;
-	ofParameter<float> onsetDecay;
-	ofParameter<float> slideMin;
-	ofParameter<float> slideMax;
 	ofParameter<float> input;//index selected
 	ofParameter<float> output;
 	ofParameter<bool> bPlay;
@@ -333,7 +340,11 @@ private:
 	ofColor colorBg;
 
 	void setup_ImGui();
+	
 	void draw_ImGui();
+	void draw_ImGuiMain();
+	void draw_ImGuiUser();
+	void draw_ImGuiExtra();
 
 private:
 
@@ -362,7 +373,7 @@ private:
 		if (!guiManager.bKeys)
 		{
 			s += "Keys toggle is disabled! \n";
-			s += "Enable Keys toggle on Advanced sub menu. \n";
+			s += "Enable Keys toggle \non Advanced sub menu. \n";
 		}
 		else {
 			s += "H           HELP \n";
@@ -392,13 +403,36 @@ private:
 public:
 
 	ofParameter<int> index;// index of the selected param!
-	ofParameter<bool> bSolo;//solo selected index
+	ofParameter<bool> bSolo;// solo selected index
+
+	ofParameter<bool> bClamp;
+	ofParameter<float> minInput;
+	ofParameter<float> maxInput;
+	ofParameter<bool> bNormalized;
+	ofParameter<float> minOutput;
+	ofParameter<float> maxOutput;
+
+	ofParameter<int> typeSmooth;
+	ofParameter<int> typeMean;
+	ofParameter<string> typeSmooth_Str;
+	ofParameter<string> typeMean_Str;
+
 	ofParameter<float> smoothPower;
 	ofParameter<float> threshold;
 	ofParameter<float> timeRedirection;
+	ofParameter<float> slideMin;
+	ofParameter<float> slideMax;
+	ofParameter<float> onsetGrow;
+	ofParameter<float> onsetDecay;
+
 	ofParameter<bool> bReset;
 
 	ofParameter<bool> bGui{ "SMOOTHER", true };
 	ofParameter<bool> bGui_Global{ "SMOOTH SURFER", true };// exposed to use in external gui's
 	ofParameter<bool> bGui_Plots;
+	ofParameter<bool> bGui_Extra{ "Extra", true };
+	
+	ofParameter<bool> bPlotFullScreen;
+	ofParameter<bool> bPlotIn;
+	ofParameter<bool> bPlotOut;
 };

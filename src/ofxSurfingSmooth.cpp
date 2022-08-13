@@ -16,7 +16,7 @@ ofxSurfingSmooth::~ofxSurfingSmooth()
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::setup() {
-	ofLogNotice() << __FUNCTION__;
+	ofLogNotice() << ("ofxSurfingSmooth");
 
 	path_Global = "ofxSurfingSmooth/";
 	path_Settings = path_Global + "ofxSurfingSmooth_Settings.xml";
@@ -50,11 +50,11 @@ void ofxSurfingSmooth::setup() {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::startup() {
-	ofLogNotice() << __FUNCTION__;
+	ofLogNotice() << ("ofxSurfingSmooth");
 
 	bDISABLE_CALLBACKS = false;
 
-	//doReset();
+	doReset();
 
 	//--
 
@@ -71,14 +71,18 @@ void ofxSurfingSmooth::setupPlots() {
 	plots.resize(NUM_PLOTS);
 
 	// colors
+
 #ifdef COLORS_MONCHROME
 	//colorPlots = (ofColor::green);
 	colorPlots = (ofColor::yellow);
 #endif
+
 	colorBaseLine = ofColor(255, 48);
-	colorSelected = ofColor(255, 150);
+	colorTextSelected = ofColor(255, 150);
+	colorThreshold = ofColor(150, 150);
+	colorTrig = ofColor(ofColor::red, 255);
 	colorBonk = ofColor(ofColor::blue, 255);
-	colorTrig = ofColor(ofColor::yellow, 255);
+	colorDirect = ofColor(ofColor::green, 255);
 
 	// colors
 	colors.clear();
@@ -138,12 +142,10 @@ void ofxSurfingSmooth::setupPlots() {
 	}
 
 	// draggable rectangle
-	ofColor c0(0, 90);
-	//boxPlots.path
-	boxPlots.bEditMode.setName("Edit Plots");
-	boxPlots.setColorEditingHover(c0);
-	boxPlots.setColorEditingMoving(c0);
-	//boxPlots.enableEdit();
+
+	boxPlots.setPathGlobal(path_Global);
+	boxPlots.setup();
+	boxPlots.bEdit.setName("Edit Plots");
 }
 
 //--------------------------------------------------------------
@@ -199,7 +201,7 @@ void ofxSurfingSmooth::updateSmooths() {
 			vn = ofMap(_p, _p.getMin(), _p.getMax(), 0, 1);
 
 			//smooth group
-			auto pc = mParamsGroup_COPY.getFloat(_p.getName() + suffix);
+			auto pc = mParamsGroup_Smoothed.getFloat(_p.getName() + suffix);
 
 			if (bEnableSmooth && _bSmooth) {
 				float v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax(), true);
@@ -215,7 +217,7 @@ void ofxSurfingSmooth::updateSmooths() {
 			vn = ofMap(_p, _p.getMin(), _p.getMax(), 0, 1);
 
 			//smooth group
-			auto pc = mParamsGroup_COPY.getInt(_p.getName() + suffix);
+			auto pc = mParamsGroup_Smoothed.getInt(_p.getName() + suffix);
 
 			if (bEnableSmooth && _bSmooth) {
 				int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax() + 1, true);//TODO: round fix..
@@ -382,7 +384,7 @@ void ofxSurfingSmooth::updateGenerators() {
 			//else if (aparam.type() == typeid(ofParameter<bool>).name()) {
 			//	ofParameter<bool> ti = aparam.cast<bool>();
 			//	value = ofMap(ti, ti.getMin(), ti.getMax(), 0, 1);
-			//	//ofLogNotice() << __FUNCTION__ << " " << ti.getName() << " : " << ti.get() << " : " << value;
+			//	//ofLogNotice() << ("ofxSurfingSmooth") << " " << ti.getName() << " : " << ti.get() << " : " << value;
 			//}
 
 			else {//skip
@@ -400,17 +402,15 @@ void ofxSurfingSmooth::updateGenerators() {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw() {
-	if (!bGui_Global || !bGui) return;
+	if (!bGui_Global) return;
+	//if (!bGui) return;
 
 	if (bGui_Plots)
 	{
-		ofPushStyle();
-		if (bFullScreenPlot) drawPlots(ofGetCurrentViewport());
-		else drawPlots(boxPlots);
-
-		ofSetColor(ofColor(255, 4));
+		if (bPlotFullScreen) drawPlots(ofGetCurrentViewport());
+		else drawPlots(boxPlots.getRectangle());
 		boxPlots.draw();
-		ofPopStyle();
+		if (boxPlots.isEditing()) boxPlots.drawBorderBlinking(ofColor::yellow);
 	}
 
 	if (bGui) draw_ImGui();
@@ -418,7 +418,7 @@ void ofxSurfingSmooth::draw() {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::doRandomize() {
-	ofLogNotice(__FUNCTION__);
+	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__);
 
 	for (int i = 0; i < mParamsGroup.size(); i++) {
 		auto& p = mParamsGroup[i];
@@ -436,7 +436,7 @@ void ofxSurfingSmooth::doRandomize() {
 
 ////--------------------------------------------------------------
 //void ofxSurfingSmooth::doRandomize(int index, bool bForce) {
-//	ofLogVerbose(__FUNCTION__) << index;
+//	ofLogVerbose("ofxSurfingSmooth") << index;
 //
 //	int i = index;
 //
@@ -531,8 +531,8 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		//plot[ii]->setGridUnit(hg);
 		//plot[ii + 1]->setGridUnit(hg);
 
-		plots[ii]->draw(x, y, ww, h);
-		plots[ii + 1]->draw(x, y, ww, h);
+		if (bPlotIn) plots[ii]->draw(x, y, ww, h);
+		if (bPlotOut) plots[ii + 1]->draw(x, y, ww, h);
 
 		// baseline
 		ofSetColor(colorBaseLine);
@@ -540,94 +540,102 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		ofLine(x, y + h, x + ww, y + h);
 
 		// add labels
-		
+
 		string s;
 		string sp;
 		string _spacing = "\t";
 
-		// name
-		if (!bSolo)  ofSetColor(colorSelected);
+		// # number
+
+		if (!bSolo)  ofSetColor(colorTextSelected);
 		else {
-			if (i == index) ofSetColor(colorSelected);
+			if (i == index) ofSetColor(colorTextSelected);
 			else ofSetColor(colorBaseLine);
 		}
 		s = "#" + ofToString(i);
 
-		// add param name
-		// add raw value
-		int ip = i;
-		if(ip< outputs.size())
+		// add param name and value
+
+		if (0)
 		{
-			ofAbstractParameter& p = mParamsGroup[ip];
-			if (p.type() == typeid(ofParameter<int>).name()) {
-				ofParameter<int> tp = p.cast<int>();
-				int tmpRef = ofMap(outputs[ip].getValue(), 0, 1, tp.getMin(), tp.getMax());
-				sp = tp.getName() + _spacing;
-				sp += ofToString(tmpRef);
+			int ip = i;
+			if (ip < outputs.size())
+			{
+				ofAbstractParameter& p = mParamsGroup[ip];
+				if (p.type() == typeid(ofParameter<int>).name()) {
+					ofParameter<int> tp = p.cast<int>();
+					int tmpRef = ofMap(outputs[ip].getValue(), 0, 1, tp.getMin(), tp.getMax());
+					sp = tp.getName() + _spacing;
+					sp += ofToString(tmpRef);
+				}
+				else if (p.type() == typeid(ofParameter<float>).name()) {
+					ofParameter<float> tp = p.cast<float>();
+					float tmpRef = ofMap(outputs[ip].getValue(), 0, 1, tp.getMin(), tp.getMax());
+					sp = tp.getName() + _spacing;
+					sp += ofToString(tmpRef, 2);
+				}
 			}
-			else if (p.type() == typeid(ofParameter<float>).name()) {
-				ofParameter<float> tp = p.cast<float>();
-				float tmpRef = ofMap(outputs[ip].getValue(), 0, 1, tp.getMin(), tp.getMax());
-				sp = tp.getName() + _spacing;
-				sp += ofToString(tmpRef, 2);
-			}
+			s += " " + _spacing + sp;
 		}
-		s += " " + _spacing + sp;
+
+		// space
 		s += " " + _spacing;
 		_spacing = "";
 
 		// add flags for trig, bonk, redirected
-		if (outputs[i].getTrigger()) s += "x" + _spacing; // trigged
-		else s += " " + _spacing;
-		if (isBonked(i)) s += "o" + _spacing; // bonked
-		else s += " " + _spacing;
+		if (outputs[i].getTrigger()) s += "+" + _spacing; // trigged
+		else s += "-" + _spacing;
+		if (isBonked(i)) s += "+" + _spacing; // bonked
+		else s += "-" + _spacing;
 
 		// redirected
-		if (isRedirected(i)) s += "*" + _spacing; 
-		else s += " " + _spacing;
+		if (isRedirected(i)) s += "+" + _spacing;
+		else s += "-" + _spacing;
 
 		//if (isRedirectedTo(i) == 0) s += " " + _spacing; // redirected
 		//else if (isRedirectedTo(i) < 0) s += "-" + _spacing; // redirected
 		//else if (isRedirectedTo(i) > 0) s += "+" + _spacing; // redirected
 
-		//latched
+		// latched
 		static bool bDirectionLast = false;
 		if (isRedirectedTo(i) < 0) bDirectionLast = false; // redirected
 		else if (isRedirectedTo(i) > 0) bDirectionLast = true; // redirected
-		if (bDirectionLast) s += "+"; // redirected
-		else s += "-"; // redirected
+		if (bDirectionLast) s += ">"; // redirected
+		else s += "<"; // redirected
 
 		// display text
 		ofDrawBitmapString(s, x + 5, y + 11);
 
 		//--
 
-		ofColor _c1 = colorSelected;//monochrome
-		ofColor _c2 = colorBonk;
-		ofColor _c3 = colorTrig;
-
 		//ofColor _c1 = ofColor(colors[ii]);//colored
 		//ofColor _c2 = ofColor(colors[ii]);
 
-		// alpha blink
-		int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(0.5),0,1, 128, 255); // standby
-		float _a1 = MAX(1.0, ofxSurfingHelpers::Bounce(0.2)); // bonked
-		float _a2 = MAX(0.5, ofxSurfingHelpers::Bounce(0.2)); // trigged
+		ofColor _c0 = colorThreshold;
+		ofColor _c1 = colorTrig;
+		ofColor _c2 = colorBonk;
+		ofColor _c3 = colorDirect;
 
-		// threshold
+		// alpha blink
+		int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(0.5), 0, 1, 128, 200); // standby
+		int _a1 = (int)ofMap(ofxSurfingHelpers::Bounce(0.5), 0, 1, 128, 200); // trigged
+		int _a2 = (int)ofMap(ofxSurfingHelpers::Bounce(0.5), 0, 1, 128, 200); // bonked
+		int _a3 = (int)ofMap(ofxSurfingHelpers::Bounce(0.5), 0, 1, 128, 200); // direct
+
+		// threshold overlayed
 		{
 			int l = 3;
 			ofColor c;
 
-			if (isRedirected(i)) c.set(ofColor(_c2, 200 * _a1)); // redirected
+			if (isRedirected(i)) c.set(ofColor(_c3, _a3)); // redirected
 			else if (isBonked(i)) {
-				c.set(ofColor(_c2, 255)); // bonked
-				l = 10;
+				c.set(ofColor(_c2, _a2)); // bonked
+				l = 6;
 			}
-			else if (outputs[i].getTrigger()) c.set(ofColor(_c3, 200 * _a2)); // trigged
-			else 
+			else if (outputs[i].getTrigger()) c.set(ofColor(_c1, _a1)); // trigged
+			else
 			{
-				c.set(ofColor(_c1, _a0)); // standby
+				c.set(ofColor(_c0, _a0)); // standby
 				l = 1;
 			}
 
@@ -642,7 +650,7 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		//if (i == index && !bSolo)
 		//{
 		//	ofSetLineWidth(1);
-		//	ofSetColor(colorSelected);
+		//	ofSetColor(colorTextSelected);
 		//	ofLine(x, y, x, y + h);
 		//}
 
@@ -664,6 +672,7 @@ void ofxSurfingSmooth::keyPressed(int key)
 	if (key == ' ') doRandomize();
 
 	if (key == 's') bSolo = !bSolo;
+
 	if (key == OF_KEY_UP) {
 		index--;
 		index = ofClamp(index, index.getMin(), index.getMax());
@@ -698,66 +707,61 @@ void ofxSurfingSmooth::keyPressed(int key)
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::setupParams() {
-	ofLogNotice() << __FUNCTION__;
+	ofLogNotice() << ("ofxSurfingSmooth");
 
 	string name = "SMOOTH SURF";
 
-	//bool _bNormalized = true;
-	float _inputMinRange;
-	float _inputMaxRange;
-	float _outMinRange;
-	float _outMaxRange;
+	float _inputMaxRange = 1;
+	float _inputMinRange = 0;
+	float _outMinRange = 0;
+	float _outMaxRange = 1;
 
-	//if (_bNormalized)//normalizad
-	{
-		_inputMinRange = 0;
-		_inputMaxRange = 1;
-		_outMaxRange = 1;
-		_outMinRange = 0;
-	}
-	//else//midi range
-	//{
-	//    _inputMinRange = 0;
-	//    _inputMaxRange = 1;
-	//    _outMinRange = 0;
-	//    _outMaxRange = 127;
-	//}
+	//--
 
-	//params
+	// params
 	params.setName(name);
 	params.add(index.set("index", 0, 0, 0));
+	params.add(bSolo.set("SOLO", false));
 	params.add(bPlay.set("Play", false));
 	params.add(playSpeed.set("Speed", 0.5, 0, 1));
-	params.add(bGui_Plots.set("PLOTS", true));
+
+	params.add(bGui);
 	params.add(bGui_Inputs.set("INPUTS", true));
 	params.add(bGui_Outputs.set("OUTPUTS", true));
-	params.add(bFullScreenPlot.set("Full Screen", false));
+	params.add(bGui_Extra);
+
+	params.add(bGui_Plots.set("PLOTS", true));
+	params.add(bPlotFullScreen.set("Full Screen", false));
+	params.add(bPlotIn.set("Plot In", true));
+	params.add(bPlotOut.set("Plot Out", true));
+
 	params.add(bUseGenerators.set("Generators", false));
 	params.add(bEnableSmooth.set("SMOOTH", true));
-	params.add(bSolo.set("SOLO", false));
+
+	params.add(bClamp.set("Clamp", false));
 	params.add(minInput.set("minIn", 0, _inputMinRange, _inputMaxRange));
 	params.add(maxInput.set("maxIn", 1, _inputMinRange, _inputMaxRange));
 	params.add(minOutput.set("minOut", 0, _outMinRange, _outMaxRange));
 	params.add(maxOutput.set("maxOut", 1, _outMinRange, _outMaxRange));
 	params.add(bNormalized.set("Normalized", false));
-	params.add(typeSmooth.set("Type Smooth", 0, 0, 2));
-	params.add(typeSmooth_Str.set(" ", ""));
-	params.add(typeMean.set("Type Mean", 0, 0, 2));
+
 	params.add(typeMean_Str.set(" ", ""));
+	params.add(typeSmooth_Str.set(" ", ""));
+
+	params.add(typeSmooth.set("Type Smooth", 0, 0, 2));
+	params.add(typeMean.set("Type Mean", 0, 0, 2));
 	params.add(smoothPower.set("Power", 0.2, 0.0, 1));
-	params.add(slideMin.set("SlideIn", 0.2, 0.0, 1));
-	params.add(slideMax.set("SlideOut", 0.2, 0.0, 1));
-	params.add(onsetGrow.set("OnGrow", 0.1f, 0.0, 1));
-	params.add(onsetDecay.set("OnDecay", 0.1, 0.0, 1));
 	params.add(threshold.set("Thresh", 0.5, 0.0, 1));
 	params.add(timeRedirection.set("TimeDir", 0.5, 0.0, 1));
+	params.add(slideMin.set("SlideIn", 0.2, 0.0, 1));
+	params.add(slideMax.set("SlideOut", 0.2, 0.0, 1));
+	params.add(onsetGrow.set("Grow", 0.1f, 0.0, 1));
+	params.add(onsetDecay.set("Decay", 0.1, 0.0, 1));
+
 	params.add(bReset.set("Reset", false));
-	//params.add(bClamp.set("CLAMP", true));
 
 	params.add(input.set("INPUT", 0, _inputMinRange, _inputMaxRange));
 	params.add(output.set("OUTPUT", 0, _outMinRange, _outMaxRange));
-
-	params.add(bGui);
 
 	params.add(guiManager.bHelp);
 	params.add(guiManager.bMinimize);
@@ -778,13 +782,13 @@ void ofxSurfingSmooth::setupParams() {
 	//--
 
 	// exclude
+	typeSmooth_Str.setSerializable(false);
+	typeMean_Str.setSerializable(false);
+	bReset.setSerializable(false);
 	//bUseGenerators.setSerializable(false);//fails if enabled
 	//input.setSerializable(false);
 	//output.setSerializable(false);
 	//bPlay.setSerializable(false);
-	typeSmooth_Str.setSerializable(false);
-	typeMean_Str.setSerializable(false);
-	bReset.setSerializable(false);
 
 	ofAddListener(params.parameterChangedE(), this, &ofxSurfingSmooth::Changed_Params); // setup()
 
@@ -802,35 +806,27 @@ void ofxSurfingSmooth::exit() {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::doReset() {
-	ofLogNotice(__FUNCTION__);
+	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__);
 
-	//enable = true;
-	//bPlay = false;
-	//bUseGenerators = false;
-	//bGui_Plots = true;
-	//bGui_Inputs = true;
-	//bGui_Outputs = true;
-	//bEnableSmooth = true;
+	bClamp = false;
 	minInput = 0;
 	maxInput = 1;
 	minOutput = 0;
 	maxOutput = 1;
+	bNormalized = false;
+
+	typeSmooth = 1;
+	typeMean = 0;
+	smoothPower = 0.2;
+	threshold = 0.5;
+	timeRedirection = 0.5;
 	slideMin = 0.2;
 	slideMax = 0.2;
 	onsetGrow = 0.1;
 	onsetDecay = 0.1;
+
 	output = 0;
-	bNormalized = false;
-	smoothPower = 0.2;
-	typeSmooth = 1;
-	typeMean = 0;
-	bClamp = true;
-	threshold = 0.5;
-	timeRedirection = 0.5;
 	playSpeed = 0.5;
-
-	//--
-
 }
 
 // callback for a parameter group
@@ -843,7 +839,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	if (name != input.getName() && name != output.getName() && name != "")
 	{
-		ofLogNotice() << __FUNCTION__ << " : " << name << " : " << e;
+		ofLogNotice() << ("ofxSurfingSmooth") << " : " << name << " : " << e;
 	}
 
 	if (0) {}
@@ -878,7 +874,8 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	else if (name == bNormalized.getName())
 	{
-		for (int i = 0; i < NUM_VARS; i++) {
+		for (int i = 0; i < NUM_VARS; i++)
+		{
 			//outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
 
 			if (bNormalized) outputs[i].setNormalized(bNormalized, ofVec2f(0, 1));
@@ -1019,6 +1016,7 @@ void ofxSurfingSmooth::setup_ImGui()
 	guiManager.setup();
 
 	guiManager.addWindowSpecial(bGui);
+	guiManager.addWindowSpecial(bGui_Extra);
 	guiManager.addWindowSpecial(bGui_Inputs);
 	guiManager.addWindowSpecial(bGui_Outputs);
 
@@ -1031,272 +1029,394 @@ void ofxSurfingSmooth::setup_ImGui()
 }
 
 //--------------------------------------------------------------
-void ofxSurfingSmooth::draw_ImGui()
+void ofxSurfingSmooth::draw_ImGuiExtra()
 {
-	guiManager.begin();
+	if (bGui_Extra)
 	{
-		if (bGui)
+		IMGUI_SUGAR__WINDOWS_CONSTRAINTSW;
+
+		if (guiManager.beginWindowSpecial(bGui_Extra))
 		{
-			IMGUI_SUGAR__WINDOWS_CONSTRAINTSW;
-
-			if (guiManager.beginWindowSpecial(bGui))
+			// In / Out
+			if (!guiManager.bMinimize)
 			{
-				guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED);
-				if (!guiManager.bMinimize)
+				if (guiManager.beginTree("IN / OUT"))
 				{
-				guiManager.AddSpacingSeparated();
-					guiManager.AddLabelBig("PANELS");
-
 					guiManager.Add(bGui_Inputs, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 					guiManager.Add(bGui_Outputs, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
-					guiManager.AddSpacingSeparated();
-
-					guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED);
-					guiManager.Add(bFullScreenPlot, OFX_IM_TOGGLE_ROUNDED_SMALL);
+					guiManager.endTree();
 				}
+				guiManager.AddSpacingSeparated();
+			}
 
-				//----
-
-				// Enable Toggles
-
-				if (!guiManager.bMinimize)
+			// Plots
+			if (!guiManager.bMinimize)
+			{
+				if (guiManager.beginTree("PLOTS"))
 				{
-					guiManager.AddSpacingSeparated();
+					guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+					guiManager.Add(bPlotIn, OFX_IM_TOGGLE_ROUNDED_SMALL);
+					guiManager.Add(bPlotOut, OFX_IM_TOGGLE_ROUNDED_SMALL);
+					guiManager.Add(bPlotFullScreen, OFX_IM_TOGGLE_ROUNDED_MINI);
+					guiManager.endTree();
+				}
+				guiManager.AddSpacingSeparated();
+			}
 
-					bool bOpen;
-					ImGuiColorEditFlags _flagc;
+			//----
 
-					bOpen = false;
-					_flagc = (bOpen ? ImGuiWindowFlags_NoCollapse : ImGuiWindowFlags_None);
-					if (ImGui::CollapsingHeader("ENABLERS", _flagc))
+			// Enable Toggles
+
+			if (!guiManager.bMinimize)
+			{
+				if (guiManager.beginTree("ENABLERS"))
+				{
+					if (guiManager.AddButton("NONE", OFX_IM_BUTTON_SMALL, 2))
 					{
-						if (guiManager.AddButton("NONE", OFX_IM_BUTTON_SMALL, 2))
-						{
-							doDisableAll();
-						}
-						guiManager.SameLine();
-						if (guiManager.AddButton("ALL", OFX_IM_BUTTON_SMALL, 2))
-						{
-							doEnableAll();
-						}
+						doDisableAll();
+					}
+					guiManager.SameLine();
+					if (guiManager.AddButton("ALL", OFX_IM_BUTTON_SMALL, 2))
+					{
+						doEnableAll();
+					}
 
-						guiManager.AddSpacing();
+					guiManager.AddSpacing();
 
-						for (int i = 0; i < params_EditorEnablers.size(); i++)
+					for (int i = 0; i < params_EditorEnablers.size(); i++)
+					{
+						auto& p = params_EditorEnablers[i];// ofAbstractParameter
+						auto type = p.type();
+						bool isBool = type == typeid(ofParameter<bool>).name();
+						string name = p.getName();
+
+						if (isBool) // just in case... 
 						{
-							auto& p = params_EditorEnablers[i];// ofAbstractParameter
-							auto type = p.type();
-							bool isBool = type == typeid(ofParameter<bool>).name();
-							string name = p.getName();
-
-							if (isBool) // just in case... 
-							{
-								ofParameter<bool> pb = p.cast<bool>();
-								guiManager.Add(pb, OFX_IM_CHECKBOX);
-							}
+							ofParameter<bool> pb = p.cast<bool>();
+							guiManager.Add(pb, OFX_IM_CHECKBOX);
 						}
 					}
 
-					guiManager.AddSpacingSeparated();
-				}
-
-				if (!guiManager.bMinimize)
-				{
-					if (ImGui::CollapsingHeader("TESTER"))
-					{
-						guiManager.refreshLayout();
-
-						guiManager.Add(bUseGenerators, OFX_IM_TOGGLE);
-
-						//if (!bUseGenerators)
-						{
-							if (guiManager.AddButton("Randomizer", OFX_IM_BUTTON))
-							{
-								doRandomize();
-							}
-
-							//TODO:
-							// blink by timer
-							{
-								bool b = bPlay;
-								float a;
-								if (b) a = 1 - tn;
-								if (b) ImGui::PushStyleColor(ImGuiCol_Border,
-									(ImVec4)ImColor::HSV(0.5f, 0.0f, 1.0f, 0.5 * a));
-								guiManager.Add(bPlay, OFX_IM_TOGGLE);
-								if (b) ImGui::PopStyleColor();
-							}
-							if (bPlay)
-							{
-								guiManager.Add(playSpeed);
-							}
-						}
-					}
+					guiManager.endTree();
 				}
 
 				guiManager.AddSpacingSeparated();
+			}
 
-				// Main enable
-				guiManager.Add(bEnableSmooth, OFX_IM_TOGGLE_BIG_BORDER_BLINK);
+			if (!guiManager.bMinimize)
+			{
+				if (guiManager.beginTree("TESTER"))
+				{
+					//guiManager.refreshLayout();
+					guiManager.Add(bUseGenerators, OFX_IM_TOGGLE);
+
+					if (guiManager.AddButton("Randomizer", OFX_IM_BUTTON))
+					{
+						doRandomize();
+					}
+
+					//TODO:
+					// blink by timer
+					{
+						bool b = bPlay;
+						float a;
+						if (b) a = 1 - tn;
+						if (b) ImGui::PushStyleColor(ImGuiCol_Border,
+							(ImVec4)ImColor::HSV(0.5f, 0.0f, 1.0f, 0.5 * a));
+						guiManager.Add(bPlay, OFX_IM_TOGGLE);
+						if (b) ImGui::PopStyleColor();
+					}
+					if (bPlay)
+					{
+						guiManager.Add(playSpeed);
+					}
+
+					guiManager.endTree();
+				}
+			}
+
+			//--
+
+			if (!guiManager.bMinimize)
+			{
 				guiManager.AddSpacingSeparated();
 
-				//--
-
-				if (bEnableSmooth)
+				if (ImGui::CollapsingHeader("Advanced"))
 				{
-					if (ImGui::CollapsingHeader("ENGINE"))
-					{
-						//guiManager.AddLabelBig("ENGINE");
-						if (!guiManager.bMinimize)
-							if (guiManager.AddButton("> Smooth", OFX_IM_BUTTON))
-							{
-								nextTypeSmooth();
-							}
+					guiManager.refreshLayout();
 
-						ImGui::PushID("##CONVO1");
-						guiManager.AddCombo(typeSmooth, typeSmoothLabels);
-						ImGui::PopID();
-
-						if (typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
-						{
-							guiManager.Add(smoothPower, OFX_IM_HSLIDER_SMALL);
-						}
-
-						if (typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
-						{
-							guiManager.Add(slideMin, OFX_IM_HSLIDER_MINI);
-							guiManager.Add(slideMax, OFX_IM_HSLIDER_MINI);
-						}
-
-						guiManager.AddSpacingSeparated();
-
-						//--
-
-						if (!guiManager.bMinimize)
-							if (guiManager.AddButton("> Mean", OFX_IM_BUTTON))
-							{
-								nextTypeMean();
-							}
-
-						ImGui::PushID("##CONVO2");
-						guiManager.AddCombo(typeMean, typeMeanLabels);
-						ImGui::PopID();
-
-						if (!guiManager.bMinimize)
-						{
-							guiManager.AddSpacingSeparated();
-							if (ImGui::TreeNodeEx("Clamp", ImGuiTreeNodeFlags_None))
-							{
-								guiManager.refreshLayout();
-
-								guiManager.Add(minInput);
-								guiManager.Add(maxInput);
-								guiManager.AddSpacing();
-								guiManager.Add(minOutput);
-								guiManager.Add(maxOutput);
-
-								guiManager.Add(bNormalized, OFX_IM_TOGGLE_SMALL);
-
-								ImGui::TreePop();
-							}
-						}
-
-						//if (!guiManager.bMinimize) 
-						{
-							guiManager.AddSpacingSeparated();
-							guiManager.Add(bReset, OFX_IM_BUTTON_SMALL);
-						}
-					}
-				}
-
-				// monitor
-				//if (!guiManager.bMinimize)
-				{
-					if (bEnableSmooth)
-					{
-						guiManager.AddSpacingSeparated();
-
-						if (ImGui::CollapsingHeader("MONITOR"))
-						{
-							guiManager.refreshLayout();
-
-							if (index < enablersForParams.size()) {
-								guiManager.AddLabelBig(enablersForParams[index].getName(), false);
-							}
-							if (guiManager.Add(index, OFX_IM_STEPPER))
-							{
-								index = ofClamp(index, index.getMin(), index.getMax());
-							}
-
-							guiManager.Add(bSolo, OFX_IM_TOGGLE);
-
-							if (!guiManager.bMinimize)
-							{
-								guiManager.Add(input);
-							}
-							guiManager.Add(output);
-						}
-					}
-				}
-
-				//--
-
-				if (bEnableSmooth)
-				{
-					guiManager.AddSpacingSeparated();
-
-					if (ImGui::CollapsingHeader("DETECTORS"))
-					{
-						guiManager.refreshLayout();
-
-						if (guiManager.bMinimize)
-						{
-							guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
-							guiManager.Add(threshold, OFX_IM_STEPPER);
-							guiManager.AddSpacing();
-							guiManager.Add(timeRedirection, OFX_IM_STEPPER);
-							guiManager.Add(onsetGrow);
-							guiManager.Add(onsetDecay);
-						}
-						else
-							//if (ImGui::TreeNodeEx("OnSets", ImGuiTreeNodeFlags_DefaultOpen))
-							{
-								//guiManager.refreshLayout();
-
-								guiManager.AddLabel("Trigger");
-								guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
-								guiManager.Add(threshold, OFX_IM_STEPPER);
-								guiManager.AddSpacing();
-								guiManager.AddLabel("Direction");
-								guiManager.Add(timeRedirection, OFX_IM_STEPPER);
-								guiManager.AddLabel("Bonks");
-								guiManager.Add(onsetGrow);
-								guiManager.Add(onsetDecay);
-
-								//ImGui::TreePop();
-							}
-					}
-				}
-
-				//--
-
-				if (!guiManager.bMinimize)
-				{
-					guiManager.AddSpacingSeparated();
-
-					if (ImGui::CollapsingHeader("Advanced"))
-					{
-						guiManager.refreshLayout();
-
-						guiManager.Add(guiManager.bKeys);
-						guiManager.Add(guiManager.bHelp);
-						guiManager.Add(boxPlots.bEditMode);
-					}
+					guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_BUTTON_ROUNDED);
+					guiManager.Add(guiManager.bHelp, OFX_IM_TOGGLE_BUTTON_ROUNDED_SMALL);
+					guiManager.Add(boxPlots.bEdit);
 				}
 			}
 
 			guiManager.endWindowSpecial();
 		}
+	}
+}
+
+//--------------------------------------------------------------
+void ofxSurfingSmooth::draw_ImGuiUser()
+{
+	if (guiManager.beginWindow("User"))
+	{
+		if (guiManager.Add(index, OFX_IM_STEPPER))
+		{
+			index = ofClamp(index, index.getMin(), index.getMax());
+		}
+
+		int i = index.get();
+
+		//if (bEnableSmooth)
+		{
+			if (ImGui::CollapsingHeader("ENGINE"))
+			{
+				////guiManager.AddLabelBig("ENGINE");
+				//if (!guiManager.bMinimize)
+				//	if (guiManager.AddButton("> Smooth", OFX_IM_BUTTON))
+				//	{
+				//		nextTypeSmooth();
+				//	}
+
+				ImGui::PushID("##CONVO1111");
+				guiManager.AddCombo(smoothChannels[i]->typeSmooth, typeSmoothLabels);
+				ImGui::PopID();
+
+				if (typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
+				{
+					guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL);
+				}
+
+				if (typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
+				{
+					guiManager.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
+					guiManager.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
+				}
+
+				guiManager.AddSpacingSeparated();
+
+				//--
+
+				//if (!guiManager.bMinimize)
+				//	if (guiManager.AddButton("> Mean", OFX_IM_BUTTON))
+				//	{
+				//		nextTypeMean();
+				//	}
+
+				ImGui::PushID("##CONVO2222");
+				guiManager.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
+				ImGui::PopID();
+
+				//if (!guiManager.bMinimize)
+				//{
+				//	guiManager.AddSpacingSeparated();
+				//	if (ImGui::TreeNodeEx("Clamp", ImGuiTreeNodeFlags_None))
+				//	{
+				//		guiManager.refreshLayout();
+
+				//		guiManager.Add(minInput);
+				//		guiManager.Add(maxInput);
+				//		guiManager.AddSpacing();
+				//		guiManager.Add(minOutput);
+				//		guiManager.Add(maxOutput);
+
+				//		guiManager.Add(bNormalized, OFX_IM_TOGGLE_SMALL);
+
+				//		ImGui::TreePop();
+				//	}
+				//}
+
+				////if (!guiManager.bMinimize) 
+				//{
+				//	guiManager.AddSpacingSeparated();
+				//	guiManager.Add(bReset, OFX_IM_BUTTON_SMALL);
+				//}
+			}
+		}
+
+
+		guiManager.endWindow();
+	}
+}
+
+//--------------------------------------------------------------
+void ofxSurfingSmooth::draw_ImGuiMain()
+{
+	if (bGui)
+	{
+		IMGUI_SUGAR__WINDOWS_CONSTRAINTSW;
+
+		if (guiManager.beginWindowSpecial(bGui))
+		{
+			guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED);
+			guiManager.AddSpacingSeparated();
+
+			// Main enable
+
+			guiManager.Add(bEnableSmooth, OFX_IM_TOGGLE_BIG_BORDER_BLINK);
+
+			//--
+
+			if (bEnableSmooth)
+			{
+				guiManager.AddSpacingSeparated();
+
+				if (ImGui::CollapsingHeader("ENGINE"))
+				{
+					if (!guiManager.bMinimize)
+						if (guiManager.AddButton("SMOOTH >", OFX_IM_BUTTON))
+						{
+							nextTypeSmooth();
+						}
+
+					ImGui::PushID("##CONVO1");
+					guiManager.AddCombo(typeSmooth, typeSmoothLabels);
+					ImGui::PopID();
+
+					if (typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
+					{
+						guiManager.Add(smoothPower, OFX_IM_HSLIDER_SMALL);
+					}
+
+					if (typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
+					{
+						guiManager.Add(slideMin, OFX_IM_HSLIDER_MINI);
+						guiManager.Add(slideMax, OFX_IM_HSLIDER_MINI);
+					}
+
+					guiManager.AddSpacingSeparated();
+
+					//--
+
+					if (!guiManager.bMinimize)
+						if (guiManager.AddButton("MEAN >", OFX_IM_BUTTON))
+						{
+							nextTypeMean();
+						}
+
+					ImGui::PushID("##CONVO2");
+					guiManager.AddCombo(typeMean, typeMeanLabels);
+					ImGui::PopID();
+
+					if (!guiManager.bMinimize)
+					{
+						guiManager.AddSpacingSeparated();
+						guiManager.Add(bClamp, OFX_IM_TOGGLE_SMALL);
+						if (bClamp) {
+							guiManager.Add(minInput);
+							guiManager.Add(maxInput);
+							guiManager.AddSpacing();
+							guiManager.Add(minOutput);
+							guiManager.Add(maxOutput);
+							guiManager.AddSpacing();
+							guiManager.Add(bNormalized, OFX_IM_TOGGLE_SMALL);
+						}
+					}
+
+					//if (!guiManager.bMinimize) 
+					{
+						guiManager.AddSpacingSeparated();
+
+						guiManager.Add(bReset, OFX_IM_BUTTON_SMALL);
+					}
+				}
+			}
+
+			// Monitor
+			//if (!guiManager.bMinimize)
+			{
+				if (bEnableSmooth)
+				{
+					guiManager.AddSpacingSeparated();
+
+					if (ImGui::CollapsingHeader("MONITOR"))
+					{
+						guiManager.refreshLayout();
+
+						if (index < enablersForParams.size()) {
+							guiManager.AddLabelBig(enablersForParams[index].getName(), false);
+						}
+
+						if (index.getMax() < 5) {
+							ofxImGuiSurfing::AddMatrixClicker(index);
+						}
+						else {
+							if (guiManager.Add(index, OFX_IM_STEPPER))
+							{
+								index = ofClamp(index, index.getMin(), index.getMax());
+							}
+						}
+
+						guiManager.Add(bSolo, OFX_IM_TOGGLE);
+
+						if (!guiManager.bMinimize)
+						{
+							guiManager.Add(input, OFX_IM_HSLIDER_MINI);
+							guiManager.Add(output, OFX_IM_HSLIDER_MINI);
+						}
+						else {
+							guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
+							guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
+						}
+					}
+				}
+			}
+
+			//--
+
+			if (bEnableSmooth)
+			{
+				guiManager.AddSpacingSeparated();
+
+				if (ImGui::CollapsingHeader("DETECTORS"))
+				{
+					guiManager.refreshLayout();
+
+					if (guiManager.bMinimize)
+					{
+						guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
+						guiManager.AddSpacing();
+						guiManager.Add(timeRedirection, OFX_IM_STEPPER);
+						guiManager.Add(onsetGrow);
+						guiManager.Add(onsetDecay);
+					}
+					else
+					{
+						//guiManager.AddLabel("Trigger");
+						guiManager.Add(threshold, OFX_IM_HSLIDER_SMALL);
+						guiManager.Add(threshold, OFX_IM_STEPPER);
+						guiManager.AddSpacing();
+						guiManager.AddLabel("Direction");
+						guiManager.Add(timeRedirection, OFX_IM_STEPPER);
+						guiManager.AddLabel("Bonks");
+						guiManager.Add(onsetGrow);
+						guiManager.Add(onsetDecay);
+					}
+				}
+			}
+
+			if (!guiManager.bMinimize)
+			{
+				guiManager.AddSpacingSeparated();
+				guiManager.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED);
+			}
+		}
+
+		guiManager.endWindowSpecial();
+	}
+}
+
+//--------------------------------------------------------------
+void ofxSurfingSmooth::draw_ImGui()
+{
+	guiManager.begin();
+	{
+		draw_ImGuiUser();
+
+		//--
+
+		if (bGui) draw_ImGuiMain();
 
 		//--
 
@@ -1316,12 +1436,18 @@ void ofxSurfingSmooth::draw_ImGui()
 		{
 			if (guiManager.beginWindowSpecial(bGui_Outputs))
 			{
-				guiManager.AddGroup(mParamsGroup_COPY);
+				guiManager.AddGroup(mParamsGroup_Smoothed);
 
 				guiManager.endWindowSpecial();
 			}
 		}
 
+		//--
+
+		if (bGui_Extra)
+		{
+			draw_ImGuiExtra();
+		}
 	}
 	guiManager.end();
 }
@@ -1332,12 +1458,12 @@ void ofxSurfingSmooth::draw_ImGui()
 void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 
 	string _name = aparam.getName();
-	ofLogNotice() << __FUNCTION__ << " [ ofAbstractParameter ] \t " << _name;
+	ofLogNotice() << ("ofxSurfingSmooth") << " [ ofAbstractParameter ] \t " << _name;
 
 	//--
 
 	//TODO:
-	//nested groups doing recursive
+	// nested groups doing recursive
 
 	// https://forum.openframeworks.cc/t/ofxparametercollection-manage-multiple-ofparameters/34888/3
 	auto type = aparam.type();
@@ -1347,7 +1473,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 	bool isInt = type == typeid(ofParameter<int>).name();
 	bool isBool = type == typeid(ofParameter<bool>).name();
 
-	ofLogNotice() << __FUNCTION__ << " " << _name << " \t [ " << type << " ]";
+	ofLogNotice() << ("ofxSurfingSmooth") << " " << _name << " \t [ " << type << " ]";
 
 	if (isGroup)
 	{
@@ -1358,9 +1484,10 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 		//nested groups
 		//string n = g.getName();
 		//ofParameterGroup gc{ n + suffix };
-		//mParamsGroup_COPY.add(gc);
+		//mParamsGroup_Smoothed.add(gc);
 
-		for (int i = 0; i < g.size(); i++) {
+		for (int i = 0; i < g.size(); i++)
+		{
 			addParam(g.get(i));
 		}
 	}
@@ -1372,40 +1499,62 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 	//--
 
 	// create a copy group
-	// will be the output or target to be use params
+	// will be the output 
+	// or what, once smoothed, we will use target to be use params
 
-	if (isFloat) {
+	if (isFloat)
+	{
 		ofParameter<float> p = aparam.cast<float>();
 		ofParameter<float> _p{ _name + suffix, p.get(), p.getMin(), p.getMax() };
-		mParamsGroup_COPY.add(_p);
+		mParamsGroup_Smoothed.add(_p);
 
 		//-
 
 		ofParameter<bool> b0{ _name, true };
 		enablersForParams.push_back(b0);
 		params_EditorEnablers.add(b0);
+
+		//-
+
+		int i = params_EditorEnablers.size() - 1;
+		smoothChannels.push_back(make_unique<SmoothChannel>());
+		smoothChannels[i]->setup("Ch" + ofToString(i));
 	}
-	else if (isInt) {
+	else if (isInt)
+	{
 		ofParameter<int> p = aparam.cast<int>();
 		ofParameter<int> _p{ _name + suffix, p.get(), p.getMin(), p.getMax() };
-		mParamsGroup_COPY.add(_p);
+		mParamsGroup_Smoothed.add(_p);
 
 		//-
 
 		ofParameter<bool> b0{ _name, true };
 		enablersForParams.push_back(b0);
 		params_EditorEnablers.add(b0);
+
+		//-
+
+		int i = params_EditorEnablers.size() - 1;
+		smoothChannels.push_back(make_unique<SmoothChannel>());
+		smoothChannels[i]->setup("Ch" + ofToString(i));
 	}
-	else if (isBool) {
+	else if (isBool)
+	{
 		ofParameter<bool> p = aparam.cast<bool>();
 		ofParameter<bool> _p{ _name + suffix, p.get() };
-		mParamsGroup_COPY.add(_p);
+		mParamsGroup_Smoothed.add(_p);
 
 		//-
 
 		ofParameter<bool> b0{ _name, true };
 		enablersForParams.push_back(b0);
 		params_EditorEnablers.add(b0);
+
+		//-
+
+		int i = params_EditorEnablers.size() - 1;
+		smoothChannels.push_back(make_unique<SmoothChannel>());
+		smoothChannels[i]->setup("Ch" + ofToString(i));
 	}
 	else {
 	}
@@ -1417,7 +1566,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 
 	//auto mac = make_shared<ofxSurfingSmooth::MidiParamAssoc>();
 	//mac->paramIndex = mParamsGroup.size();
-	////ofLogWarning() << __FUNCTION__ << " ";
+	////ofLogWarning() << ("ofxSurfingSmooth") << " ";
 	//if (aparam.type() == typeid(ofParameter<int>).name()) {
 	//	mac->ptype = PTYPE_INT;
 	//	ofParameter<int> ti = aparam.cast<int>();
@@ -1454,7 +1603,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 
-	ofLogNotice() << __FUNCTION__ << " " << aparams.getName();
+	ofLogNotice() << ("ofxSurfingSmooth") << " " << aparams.getName();
 
 	setup();
 
@@ -1465,38 +1614,42 @@ void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 
 	//TODO:
 	//group COPY
-	mParamsGroup_COPY.setName(n + "_SMOOTH");//name
-	//mParamsGroup_COPY.setName(n + suffix);//name
+	mParamsGroup_Smoothed.setName(n + "_SMOOTH");//name
+	//mParamsGroup_Smoothed.setName(n + suffix);//name
 
-	for (int i = 0; i < aparams.size(); i++) {
+	for (int i = 0; i < aparams.size(); i++)
+	{
 		addParam(aparams.get(i));
 	}
 
 	//--
 
+	// Plots
+
 	// already added all params content
 	// build the smoothers
 	// build the plots
 
-	setupPlots();//NUM_VARS will be counted here..
+	setupPlots();
+	//NUM_VARS will be counted here..
 
 	outputs.resize(NUM_VARS);
 	inputs.resize(NUM_VARS);
 
 	// default init
+
 	for (int i = 0; i < NUM_VARS; i++)
 	{
 		outputs[i].initAccum(100);
 		outputs[i].directionChangeCalculated = true;
-		//outputs[i].setBonk(0.1, 0.0);
 		outputs[i].setBonk(onsetGrow, onsetDecay);
 	}
 
 	////--
 
 	////TODO:
-	//mParamsGroup_COPY.setName(aparams.getName() + "_COPY");//name
-	//mParamsGroup_COPY = mParamsGroup;//this kind of copy links param per param. but we want to clone the "structure" only
+	//mParamsGroup_Smoothed.setName(aparams.getName() + "_COPY");//name
+	//mParamsGroup_Smoothed = mParamsGroup;//this kind of copy links param per param. but we want to clone the "structure" only
 }
 
 //--------------------------------------------------------------
@@ -1528,7 +1681,7 @@ void ofxSurfingSmooth::Changed_Controls_Out(ofAbstractParameter& e)
 
 	std::string name = e.getName();
 
-	ofLogVerbose(__FUNCTION__) << name << " : " << e;
+	ofLogVerbose("ofxSurfingSmooth") << name << " : " << e;
 }
 
 //------------
@@ -1541,28 +1694,28 @@ void ofxSurfingSmooth::Changed_Controls_Out(ofAbstractParameter& e)
 //--------------------------------------------------------------
 float ofxSurfingSmooth::get(ofParameter<float>& e) {
 	string name = e.getName();
-	auto& p = mParamsGroup_COPY.get(name);
+	auto& p = mParamsGroup_Smoothed.get(name);
 	if (p.type() == typeid(ofParameter<float>).name())
 	{
 		return p.cast<float>().get();
 	}
 	else
 	{
-		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		ofLogError("ofxSurfingSmooth") << "Not expected type: " << name;
 		return -1;
 	}
 }
 //--------------------------------------------------------------
 int ofxSurfingSmooth::get(ofParameter<int>& e) {
 	string name = e.getName();
-	auto& p = mParamsGroup_COPY.get(name);
+	auto& p = mParamsGroup_Smoothed.get(name);
 	if (p.type() == typeid(ofParameter<int>).name())
 	{
 		return p.cast<int>().get();
 	}
 	else
 	{
-		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		ofLogError("ofxSurfingSmooth") << "Not expected type: " << name;
 		return -1;
 	}
 }
@@ -1584,7 +1737,7 @@ ofAbstractParameter& ofxSurfingSmooth::getParamAbstract(ofAbstractParameter& e) 
 	//	ofParameter<float> ti = aparam.cast<float>();
 	//	value = ofMap(ti, ti.getMin(), ti.getMax(), 0, 1);
 	//}
-	//ofLogNotice(__FUNCTION__) << aparam.getName() << " : " << e;
+	//ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__) << aparam.getName() << " : " << e;
 
 	return p;
 }
@@ -1600,8 +1753,8 @@ int ofxSurfingSmooth::getIndex(ofAbstractParameter& e) /*const*/
 
 	//TODO: should verify types? e.g to skip bools?
 
-	//auto& p = mParamsGroup_COPY.get(name);
-	//auto i = mParamsGroup_COPY.getPosition(name);
+	//auto& p = mParamsGroup_Smoothed.get(name);
+	//auto i = mParamsGroup_Smoothed.getPosition(name);
 	//if (p.type() == typeid(ofParameter<float>).name()) {
 	//	ofParameter<float> pf = p.cast<float>();
 	//	return pf;
@@ -1609,7 +1762,7 @@ int ofxSurfingSmooth::getIndex(ofAbstractParameter& e) /*const*/
 	//else
 	//{
 	//	ofParameter<float> pf{ "empty", -1 };
-	//	ofLogError(__FUNCTION__) << "Not expected type: " << name;
+	//	ofLogError("ofxSurfingSmooth") << "Not expected type: " << name;
 	//	return pf;
 	//}
 }
@@ -1644,8 +1797,8 @@ ofParameter<float>& ofxSurfingSmooth::getParamFloat(string name) {
 	//	return pf;
 	//}
 
-	auto& p = mParamsGroup_COPY.get(name);
-	auto i = mParamsGroup_COPY.getPosition(name);
+	auto& p = mParamsGroup_Smoothed.get(name);
+	auto i = mParamsGroup_Smoothed.getPosition(name);
 	if (p.type() == typeid(ofParameter<float>).name()) {
 		ofParameter<float> pf = p.cast<float>();
 		return pf;
@@ -1653,7 +1806,7 @@ ofParameter<float>& ofxSurfingSmooth::getParamFloat(string name) {
 	else
 	{
 		ofParameter<float> pf{ "empty", -1 };
-		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		ofLogError("ofxSurfingSmooth") << "Not expected type: " << name;
 		return pf;
 	}
 }
@@ -1673,15 +1826,15 @@ float ofxSurfingSmooth::getParamFloatValue(ofAbstractParameter& e) {
 	//	return -1;
 	//}
 
-	auto& p = mParamsGroup_COPY.get(name);
-	auto i = mParamsGroup_COPY.getPosition(name);
+	auto& p = mParamsGroup_Smoothed.get(name);
+	auto i = mParamsGroup_Smoothed.getPosition(name);
 	if (p.type() == typeid(ofParameter<float>).name()) {
 		ofParameter<float> pf = p.cast<float>();
 		return pf.get();
 	}
 	else
 	{
-		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		ofLogError("ofxSurfingSmooth") << "Not expected type: " << name;
 		return -1;
 	}
 }
@@ -1701,15 +1854,15 @@ int ofxSurfingSmooth::getParamIntValue(ofAbstractParameter& e) {
 	//	return -1;
 	//}
 
-	auto& p = mParamsGroup_COPY.get(name);
-	auto i = mParamsGroup_COPY.getPosition(name);
+	auto& p = mParamsGroup_Smoothed.get(name);
+	auto i = mParamsGroup_Smoothed.getPosition(name);
 	if (p.type() == typeid(ofParameter<int>).name()) {
 		ofParameter<int> pf = p.cast<int>();
 		return pf.get();
 	}
 	else
 	{
-		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		ofLogError("ofxSurfingSmooth") << "Not expected type: " << name;
 		return -1;
 	}
 }
@@ -1731,8 +1884,8 @@ ofParameter<int>& ofxSurfingSmooth::getParamInt(string name) {
 	//	return pi;
 	//}
 
-	auto& p = mParamsGroup_COPY.get(name);
-	auto i = mParamsGroup_COPY.getPosition(name);
+	auto& p = mParamsGroup_Smoothed.get(name);
+	auto i = mParamsGroup_Smoothed.getPosition(name);
 	if (p.type() == typeid(ofParameter<int>).name()) {
 		ofParameter<int> pf = p.cast<int>();
 		return pf;
@@ -1740,7 +1893,7 @@ ofParameter<int>& ofxSurfingSmooth::getParamInt(string name) {
 	else
 	{
 		ofParameter<int> pf{ "empty", -1 };
-		ofLogError(__FUNCTION__) << "Not expected type: " << name;
+		ofLogError("ofxSurfingSmooth") << "Not expected type: " << name;
 		return pf;
 	}
 }
@@ -1789,7 +1942,7 @@ ofParameter<int>& ofxSurfingSmooth::getParamInt(string name) {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::doSetAll(bool b) {
-	ofLogNotice(__FUNCTION__) << b;
+	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__) << b;
 
 	for (int i = 0; i < params_EditorEnablers.size(); i++)
 	{
