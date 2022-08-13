@@ -40,7 +40,7 @@ void ofxSurfingSmooth::setup() {
 
 	setup_ImGui();
 
-	bGui = true;
+	bGui_Main = true;
 
 	//--
 
@@ -156,7 +156,7 @@ void ofxSurfingSmooth::setupPlots() {
 void ofxSurfingSmooth::update(ofEventArgs& args) {
 	if (ofGetFrameNum() == 0) { startup(); }
 
-	// tester
+	// Tester
 	// play timed randoms
 	static const int _secs = 2;
 	if (bPlay) {
@@ -170,18 +170,20 @@ void ofxSurfingSmooth::update(ofEventArgs& args) {
 		}
 	}
 
-	// engine
+	// Generators
 	if (bUseGenerators) updateGenerators();
 
+	// Engine
 	updateEngine();
 
+	// Smooths
 	updateSmooths();
 	//if (!bUseGenerators) updateSmooths();
 }
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::updateSmooths() {
-	//getting from the params not from the generators!
+	// Getting from the params not from the generators!
 
 	for (int i = 0; i < mParamsGroup.size(); i++)
 	{
@@ -255,9 +257,10 @@ void ofxSurfingSmooth::updateEngine() {
 
 	//TODO: crash when added other types than int/float
 	//for (int i = 0; i < NUM_VARS && i < params_EditorEnablers.size(); i++)
+
 	for (int i = 0; i < NUM_VARS; i++)
 	{
-		// toggle
+		// Enabler toggle
 		auto& p = params_EditorEnablers[i];// ofAbstractParameter
 		bool isBool = (p.type() == typeid(ofParameter<bool>).name());
 		if (!isBool) {
@@ -413,8 +416,10 @@ void ofxSurfingSmooth::updateGenerators() {
 }
 
 //--------------------------------------------------------------
-void ofxSurfingSmooth::draw() {
+void ofxSurfingSmooth::draw()
+{
 	if (!bGui_Global) return;
+
 	//if (!bGui) return;
 
 	if (bGui_Plots)
@@ -441,7 +446,8 @@ void ofxSurfingSmooth::draw() {
 		if (boxPlots.isEditing()) boxPlots.drawBorderBlinking(ofColor::yellow);
 	}
 
-	if (bGui) draw_ImGui();
+	//if (bGui) draw_ImGui();
+	draw_ImGui();
 }
 
 //--------------------------------------------------------------
@@ -696,7 +702,7 @@ void ofxSurfingSmooth::keyPressed(int key)
 {
 	if (!guiManager.bKeys) return;
 
-	if (key == 'g') bGui = !bGui;
+	if (key == 'g') bGui_Main = !bGui_Main;
 
 	if (key == OF_KEY_RETURN) bPlay = !bPlay;
 	if (key == ' ') doRandomize();
@@ -753,7 +759,7 @@ void ofxSurfingSmooth::setupParams() {
 	params.add(index.set("index", 0, 0, 0));
 	params.add(bSolo.set("SOLO", false));
 
-	params.add(bGui);
+	params.add(bGui_Main);
 	params.add(bGui_Inputs.set("INPUTS", true));
 	params.add(bGui_Outputs.set("OUTPUTS", true));
 	params.add(bGui_Extra);
@@ -797,11 +803,13 @@ void ofxSurfingSmooth::setupParams() {
 	params.add(input.set("INPUT", 0, _inputMinRange, _inputMaxRange));
 	params.add(output.set("OUTPUT", 0, _outMinRange, _outMaxRange));
 
-	//why recuired?
+	guiManager.bGui_GameMode.setName("SMOOTH GAME");
+
+	//why required?
 	params.add(guiManager.bHelp);
 	params.add(guiManager.bMinimize);
 	params.add(guiManager.bKeys);
-	params.add(guiManager.bGameMode);
+	params.add(guiManager.bGui_GameMode);
 
 	//--
 
@@ -1080,10 +1088,14 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 //--------------------------------------------------------------
 void ofxSurfingSmooth::setup_ImGui()
 {
+	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__);
+
+	guiManager.setName("SmoothSurf");
 	guiManager.setWindowsMode(IM_GUI_MODE_WINDOWS_SPECIAL_ORGANIZER);
 	guiManager.setup();
 
-	guiManager.addWindowSpecial(bGui);
+	guiManager.addWindowSpecial(bGui_Main);
+	guiManager.addWindowSpecial(guiManager.bGui_GameMode);
 	guiManager.addWindowSpecial(bGui_Extra);
 	guiManager.addWindowSpecial(bGui_Inputs);
 	guiManager.addWindowSpecial(bGui_Outputs);
@@ -1092,8 +1104,10 @@ void ofxSurfingSmooth::setup_ImGui()
 
 	//--
 
+	// custom
 	guiManager.setHelpInfoApp(helpInfo);
 	guiManager.bHelpInternal = false;
+	bGui_GameMode.makeReferenceTo(guiManager.bGui_GameMode);
 }
 
 //--------------------------------------------------------------
@@ -1234,34 +1248,48 @@ void ofxSurfingSmooth::draw_ImGuiExtra()
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw_ImGuiGameMode()
 {
-	if (guiManager.beginWindow(guiManager.bGameMode))
+	if (guiManager.beginWindowSpecial(guiManager.bGui_GameMode))
 	{
 		int i = index.get();
+
+		//--
+
+		guiManager.AddLabelHuge(guiManager.bGui_GameMode.getName());
+		guiManager.AddSpacingBigSeparated();
 
 		guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 		guiManager.AddSpacingSeparated();
 
-		//--
-
-		guiManager.AddLabelHuge("SURF SMOOTH");
-		guiManager.AddSpacingBigSeparated();
+		guiManager.Add(bGui_Main, OFX_IM_TOGGLE_ROUNDED_BIG);
+		guiManager.AddSpacingSeparated();
 
 		//--
 
-		guiManager.AddLabelBig("Signal");
+		//guiManager.AddLabelBig("Signal");
+		// Channel name
+		if (i > editorEnablers.size() - 1) {
+			ofLogError("ofxSurfingSmooth") << (__FUNCTION__) << "Index out of range!" << i;
+		}
+		else {
+			string n = editorEnablers[i].getName();
+			guiManager.AddLabelBig(n, false);
+		}
+
 		ofxImGuiSurfing::AddMatrixClicker(index);
 		guiManager.AddSpacing();
 		guiManager.Add(bSolo, OFX_IM_TOGGLE);
 		guiManager.AddSpacing();
 
-		guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_KNOB, 2, true);
-		guiManager.Add(smoothChannels[i]->threshold, OFX_IM_VSLIDER_NO_NUMBER);
+		guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_VSLIDER_NO_NUMBER, 2, true);
+		guiManager.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
+		guiManager.Add(smoothChannels[i]->threshold, OFX_IM_VSLIDER_NO_NUMBER, 2);
+		guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
 		guiManager.AddSpacingBigSeparated();
 
 		// main controls
-		guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
 		guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_NO_NUMBER);
 		guiManager.AddTooltip(ofToString(smoothChannels[i]->smoothPower.get(), 2));
+
 		guiManager.AddSpacingBigSeparated();
 
 		//--
@@ -1271,7 +1299,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 		guiManager.AddCombo(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
 		if (smoothChannels[i]->bangDetectorIndex == 2 ||
 			smoothChannels[i]->bangDetectorIndex == 3 ||
-			smoothChannels[i]->bangDetectorIndex == 4)\
+			smoothChannels[i]->bangDetectorIndex == 4)
 		{
 			guiManager.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_SMALL);
 		}
@@ -1287,7 +1315,6 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 		if (!guiManager.bMinimize)
 		{
-
 			if (guiManager.beginTree("PLOTS", false))
 			{
 				guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED);
@@ -1314,7 +1341,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 		};
 
-		guiManager.endWindow();
+		guiManager.endWindowSpecial();
 	}
 }
 
@@ -1545,19 +1572,21 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw_ImGuiMain()
 {
-	if (bGui)
+	if (bGui_Main)
 	{
 		int i = index.get();
 
 		IMGUI_SUGAR__WINDOWS_CONSTRAINTSW;
 
-		if (guiManager.beginWindowSpecial(bGui))
+		if (guiManager.beginWindowSpecial(bGui_Main))
 		{
 			guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED);
 			guiManager.AddSpacingSeparated();
 
-			guiManager.Add(guiManager.bGameMode, OFX_IM_TOGGLE_ROUNDED_BIG);
-			guiManager.AddSpacing();
+			guiManager.Add(guiManager.bGui_GameMode, OFX_IM_TOGGLE_ROUNDED_BIG);
+			guiManager.AddSpacingSeparated();
+
+			//--
 
 			// Main enable
 			guiManager.Add(bEnableSmooth, OFX_IM_TOGGLE_BIG_BORDER_BLINK);
@@ -1740,13 +1769,16 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw_ImGui()
 {
+	if (!bGui_Global) return;
+
 	guiManager.begin();
 	{
-		if (guiManager.bGameMode) draw_ImGuiGameMode();
+		if (guiManager.bGui_GameMode) draw_ImGuiGameMode();
 
 		//--
 
-		if (bGui) draw_ImGuiMain();
+		if (bGui_Main) draw_ImGuiMain();
+		//else return;
 
 		//--
 
@@ -1884,8 +1916,9 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 		smoothChannels.push_back(make_unique<SmoothChannel>());
 		smoothChannels[i]->setup("Ch" + ofToString(i));
 	}
-	else {
-	}
+
+	//else {
+	//}
 
 	//-
 

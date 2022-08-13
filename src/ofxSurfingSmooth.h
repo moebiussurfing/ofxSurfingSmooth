@@ -64,9 +64,13 @@ private:
 
 	//--
 
+
+//public:
+	
+	ofxSurfing_ImGui_Manager guiManager;
+
 private:
 
-	ofxSurfing_ImGui_Manager guiManager;
 
 	ofParameterGroup params_EditorEnablers;//the enabled params to randomize
 	vector<ofParameter<bool>> editorEnablers;
@@ -430,11 +434,13 @@ public:
 
 	ofParameter<bool> bReset;
 
-	ofParameter<bool> bGui{ "SMOOTHER", true };
-	ofParameter<bool> bGui_Global{ "SMOOTH SURFER", true };// exposed to use in external gui's
+	ofParameter<bool> bGui_Global{ "SMOOTH SURF", true };
+	ofParameter<bool> bGui_Main{ "SMOOTH MAIN", true };
 	ofParameter<bool> bGui_Plots;
 	ofParameter<bool> bGui_Extra{ "Extra", true };
 	
+	ofParameter<bool> bGui_GameMode;
+
 	ofParameter<bool> bPlotFullScreen;
 	ofParameter<bool> bPlotIn;
 	ofParameter<bool> bPlotOut;
