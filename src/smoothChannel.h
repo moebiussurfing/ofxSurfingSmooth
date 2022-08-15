@@ -46,7 +46,44 @@ public:
 
 class SmoothChannel
 {
+
 public:
+
+	SmoothChannel()
+	{
+		path_Global = "ofxSurfingSmooth/";
+		name_Settings = "fileSettings";
+
+		typeSmoothLabels.clear();
+		typeSmoothLabels.push_back("None");
+		typeSmoothLabels.push_back("Accumulator");
+		typeSmoothLabels.push_back("Slide");
+
+		typeMeanLabels.clear();
+		typeMeanLabels.push_back("Arith");
+		typeMeanLabels.push_back("Geom");
+		typeMeanLabels.push_back("Harm");
+
+		//--
+
+		ofAddListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
+	};
+
+	~SmoothChannel()
+	{
+		ofRemoveListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
+
+		exit();
+	};
+
+	void setup(string name);
+	void startup();
+	void doReset();
+
+public:
+
+	ofParameter<int> index{ "index", -1, 0, 0 };
+	// A workaround to help on lambda callback
 
 	//--
 
@@ -77,18 +114,20 @@ public:
 
 	ofParameter<bool> bReset;
 
-	ofParameter<int> bangDetectorIndex;
+	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+	ofParameter<int> bangDetectorIndex;	
+
 
 	//--
 
-	vector<string> bangDetectors = { "Trig","Bonk", "Direction", "Above", "Below" };
+	vector<string> bangDetectors = { "TrigState","Bonk", "Direction", "DirUp", "DirDown" };
 
 private:
 
 	string name = "SmoothChannel";
 
 	string path_Global;
-	string path_Settings;
+	string name_Settings;
 
 	//--
 
@@ -109,63 +148,9 @@ private:
 	std::vector<std::string> typeSmoothLabels;
 	std::vector<std::string> typeMeanLabels;
 
-public:
-
-	SmoothChannel() 
-	{
-		path_Global = "ofxSurfingSmooth/";
-
-		typeSmoothLabels.clear();
-		typeSmoothLabels.push_back("None");
-		typeSmoothLabels.push_back("Accumulator");
-		typeSmoothLabels.push_back("Slide");
-
-		typeMeanLabels.clear();
-		typeMeanLabels.push_back("Arith");
-		typeMeanLabels.push_back("Geom");
-		typeMeanLabels.push_back("Harm");
-
-		//--
-
-		ofAddListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
-	};
-
-	~SmoothChannel() 
-	{
-		ofRemoveListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
-		ofxSurfingHelpers::CheckFolder(path_Global);
-		ofxSurfingHelpers::saveGroup(params, path_Settings);
-	};
-
-	void setup(string name);
-
 private:
 
-	void doReset()
-	{
-		ofLogNotice("SmoothChannel") << (__FUNCTION__) << name;
-
-		ampInput = 0;
-		bangDetectorIndex = 0;
-
-		bClamp = false;
-		minInput = 0;
-		maxInput = 1;
-		minOutput = 0;
-		maxOutput = 1;
-		bNormalized = false;
-
-		typeSmooth = 1;
-		typeMean = 0;
-		smoothPower = 0.2;
-		threshold = 0.5;
-		timeRedirection = 0.5;
-		slideMin = 0.2;
-		slideMax = 0.2;
-		onsetGrow = 0.1;
-		onsetDecay = 0.1;
-	}
-
+	void exit();
 	void Changed(ofAbstractParameter& e);
 
 public:

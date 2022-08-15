@@ -95,16 +95,16 @@ void ofApp::draw() {
 	str += ofToString((data.isTriggered(speed)) ? "x|" : " |");
 
 	// is bonk trigged
-	str += ofToString((data.isBonked(speed)) ? "o|" : " |");
+	str += ofToString((data.isBonked(speed)) ? "x|" : " |");
 
 	// direction changed 
-	if (data.isRedirected(speed)) str += "*|";
+	if (data.isRedirected(speed)) str += "x|";
 	else str += " |";
 
 	// is going down
-	if (data.isRedirectedTo(speed) <= 0) str += "-|";
+	if (data.isRedirectedTo(speed) <= 0) str += "<|";
 	// is going up
-	else if (data.isRedirectedTo(speed) > 0) str += "+|";
+	else if (data.isRedirectedTo(speed) > 0) str += ">|";
 
 	ofDrawBitmapStringHighlight(str, 4, 15);
 }

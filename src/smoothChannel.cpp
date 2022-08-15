@@ -3,11 +3,14 @@
 
 void SmoothChannel::setup(string _name)
 {
-	name = _name;
+	name = _name + "_SmoothChannel";
 
 	params.setName(name);
 
-	params.add(ampInput.set("Amp", 0, -10, 10));
+	params.add(index);//TODO:
+
+	params.add(bEnableSmooth.set("ENABLE", true));
+	params.add(ampInput.set("Amp", 0, -1, 1));
 
 	params.add(typeSmooth.set("Type Smooth", 0, 0, 2));
 	params.add(typeSmooth_Str.set(" ", ""));
@@ -30,11 +33,9 @@ void SmoothChannel::setup(string _name)
 	params.add(maxOutput.set("maxOut", 1, 0, 1));
 	params.add(bNormalized.set("Normalized", false));
 
-	params.add(bangDetectorIndex.set("Detector", 0, 0, 4));
-
 	params.add(bReset.set("Reset", false));
 
-	params.add(bEnableSmooth.set("ENABLE", true));
+	params.add(bangDetectorIndex.set("Detector", 0, 0, 4));
 
 	//--
 
@@ -46,15 +47,51 @@ void SmoothChannel::setup(string _name)
 	typeSmooth_Str.setSerializable(false);
 	bReset.setSerializable(false);
 
-	path_Settings = path_Global + "Ch_" + name + ".xml";
-
-	ofxSurfingHelpers::loadGroup(params, path_Settings);
-
 	//--
 
 	/*
 	soundEngine.setListener(&controller);
 	*/
+}
+
+void SmoothChannel::startup()
+{
+	ofLogNotice("SmoothChannel") << (__FUNCTION__);
+
+	name_Settings = params.getName();
+	ofxSurfingHelpers::loadGroup(params, path_Global + name_Settings);
+}
+
+void SmoothChannel::exit()
+{
+	ofxSurfingHelpers::CheckFolder(path_Global);
+	ofxSurfingHelpers::saveGroup(params, path_Global + name_Settings);
+}
+
+void SmoothChannel::doReset()
+{
+	ofLogNotice("SmoothChannel") << (__FUNCTION__) << name;
+
+	ampInput = 0.f;
+
+	bangDetectorIndex = 0;
+	typeSmooth = 1;
+	typeMean = 0;
+
+	bClamp = false;
+	minInput = 0.f;
+	maxInput = 1.f;
+	minOutput = 0.f;
+	maxOutput = 1.f;
+	bNormalized = false;
+
+	smoothPower = 0.2f;
+	threshold = 0.5f;
+	slideMin = 0.2f;
+	slideMax = 0.2f;
+	onsetGrow = 0.05f;
+	onsetDecay = 0.05f;
+	timeRedirection = 0.1f;
 }
 
 void SmoothChannel::Changed(ofAbstractParameter& e)
@@ -97,11 +134,6 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[1];
-			//int MAX_HISTORY = 30;
-			//float v = ofMap(smoothPower, 0, 1, 1, MAX_HISTORY);
-			//for (int i = 0; i < amountChannels; i++) {
-			//	outputs[i].initAccum(v);
-			//}
 			return;
 		}
 		break;
@@ -110,14 +142,6 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[2];
-			//for (int i = 0; i < amountChannels; i++) {
-			//	const int MIN_SLIDE = 1;
-			//	const int MAX_SLIDE = 50;
-			//	float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
-			//	float _slmax = ofMap(slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
-
-			//	outputs[i].initSlide(_slmin, _slmax);
-			//}
 			return;
 		}
 		break;
@@ -138,9 +162,6 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_ARITH:
 		{
 			typeMean_Str = typeMeanLabels[0];
-			//for (int i = 0; i < amountChannels; i++) {
-			//	outputs[i].setMeanType(MEAN_ARITH);
-			//}
 			return;
 		}
 		break;
@@ -148,9 +169,6 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_GEOM:
 		{
 			typeMean_Str = typeMeanLabels[1];
-			//for (int i = 0; i < amountChannels; i++) {
-			//	outputs[i].setMeanType(MEAN_GEOM);
-			//}
 			return;
 		}
 		break;
@@ -158,10 +176,6 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_HARM:
 		{
 			typeMean_Str = typeMeanLabels[2];
-			//for (int i = 0; i < amountChannels; i++) 
-			//{
-			//	outputs[i].setMeanType(MEAN_HARM);
-			//}
 			return;
 		}
 		break;

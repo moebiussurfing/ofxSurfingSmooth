@@ -1,0 +1,23 @@
+{
+    "Ch_0_SmoothChannel": {
+        "Amp": "0",
+        "Clamp": "0",
+        "Decay": "0.05",
+        "Detector": "4",
+        "ENABLE": "1",
+        "Grow": "0.05",
+        "Normalized": "0",
+        "SlideIn": "0.2",
+        "SlideOut": "0.2",
+        "Smooth_Power": "0.2",
+        "Threshold": "0.784091",
+        "TimeDir": "0.1",
+        "Type_Mean": "0",
+        "Type_Smooth": "1",
+        "index": "0",
+        "maxIn": "1",
+        "maxOut": "1",
+        "minIn": "0",
+        "minOut": "0"
+    }
+}

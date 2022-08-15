@@ -4,12 +4,14 @@
 
 	TODO:
 
+	+ change plot threshold line color to expected detector!
+	+ fix chars to debug plot
+	+ add clamp and normalization modes.
+
 	+ add colors types, vectors, using templates.
 		avoid crash to unsupported types.
-	+ add clamp and normalization modes.
 	+ "real" nested sub-groups tree levels.. ?
 	+ add param to calibrate max history smooth/speed.
-	+ fix broke-continuity/state when tweak smooth power "on playing".
 	+ plotting int type should be stepped/not continuous.
 
 */
@@ -25,6 +27,103 @@
 #include "ofxSurfingBoxInteractive.h"
 
 #define COLORS_MONCHROME // Un comment to draw all plots with the same color.
+#define MAX_AMP_POWER 5
+
+//--
+
+class CircleBeatSimple
+{
+public:
+
+	CircleBeatSimple() {
+		dt = 1.0f / 60.f;
+	};
+
+	~CircleBeatSimple() {
+	};
+
+	void update() {
+		animRunning = (animCounter <= 1.0f);//goes from 0 to 1 (finished)
+
+		if (animRunning)
+		{
+			animCounter += speedRatio * speed * dt;
+		}
+	};
+
+	void bang()
+	{
+		animCounter = 0.0f;//anim from 0.0 to 1.0
+
+		bState = false;
+	}
+
+	float getValue()
+	{
+		float f;
+		if (bState) return 1.f;
+		f = ofClamp(1.0f - animCounter, 0.f, 1.f);
+		return f;
+	}
+
+	void setToggleState() {
+		bState = !bState;
+		setState(bState);
+	}
+
+	void setState(bool state) {
+		bState = state;
+		
+		//stop
+		if(!bState) animCounter = 1.0f;
+	}
+
+	void reset() {
+		setState(false);
+	}
+
+	bool isSate() {
+		return bState;
+	}
+
+	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+	void setMode(int i) {
+		mode = i;
+		switch (mode)
+		{
+		case 0: color = color0; break;
+		case 1: color = color1; break;
+		case 2: color = color2; break;
+		case 3: color = color3; break;
+		case 4: color = color4; break;
+		}
+	}
+
+	ofColor getColor() { 
+		ofColor c = ofColor(color, ofMap(animCounter, 1, 0, 200, 128));
+		return c; 
+	}
+	
+private:
+
+	bool bState = false;
+
+	float dt;
+	float animCounter;
+	bool animRunning;
+	float speedRatio = 6.0f;
+	float speed = 0.5f;
+
+	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+	ofColor color0 = ofColor::red;
+	ofColor color1 = ofColor::blue;
+	ofColor color2 = ofColor::green;
+	ofColor color3 = ofColor::turquoise;
+	ofColor color4 = ofColor::brown;
+
+	int mode = 0;
+	ofColor color = color0;
+};
 
 //--
 
@@ -35,6 +134,11 @@ private:
 
 	vector<unique_ptr<SmoothChannel>> smoothChannels;
 	ofEventListeners listeners;
+
+	const int MAX_HISTORY = 30;
+	const int MIN_SLIDE = 1;
+	const int MAX_SLIDE = 50;
+	const int MAX_ACC_HISTORY = 60; // calibrated to 60fps
 
 public:
 
@@ -106,13 +210,17 @@ private:
 
 	//--------------------------------------------------------------
 	bool isTriggered(int i) {//flag true when triggered this index param
-		if (i > params_EditorEnablers.size() - 1) {
+		if (!bEnableSmooth) return false;
+
+		if (i > params_EditorEnablers.size() - 1)
+		{
 			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
+
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
 		bool _bSmooth = _p.cast<bool>().get();
-		if (!bEnableSmooth || !_bSmooth) return false;
+		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
 		if (outputs[i].getTrigger()) {
 			ofLogVerbose("ofxSurfingSmooth") << "Triggered: " << i;
@@ -123,13 +231,17 @@ private:
 
 	//--------------------------------------------------------------
 	bool isBonked(int i) {//flag true when triggered this index param
-		if (i > params_EditorEnablers.size() - 1) {
+		if (!bEnableSmooth) return false;
+		
+		if (i > params_EditorEnablers.size() - 1)
+		{
 			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
+
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
 		bool _bSmooth = _p.cast<bool>().get();
-		if (!bEnableSmooth || !_bSmooth) return false;
+		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
 		if (outputs[i].getBonk()) {
 			ofLogVerbose("ofxSurfingSmooth") << "Bonked: " << i;
@@ -140,21 +252,26 @@ private:
 
 	//--------------------------------------------------------------
 	bool isRedirected(int i) {//flag true when signal direction changed
-		if (i > params_EditorEnablers.size() - 1) {
+		if (!bEnableSmooth) return false;
+		
+		if (i > params_EditorEnablers.size() - 1)
+		{
 			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
+
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
 		bool _bSmooth = _p.cast<bool>().get();
-		if (!bEnableSmooth || !_bSmooth) return false;
+		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
 		// if the direction has changed and
 		// if the time of change is greater than (0.5) timeRedirection sec
 		// print the time between changes and amount of change
-		if (outputs[i].getDirectionTimeDiff() > timeRedirection &&
+		if (outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
 			outputs[i].directionHasChanged())
 		{
-			ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " <<
+			ofLogVerbose("ofxSurfingSmooth") <<
+				"Redirected: " << i << " " <<
 				outputs[i].getDirectionTimeDiff() << ", " <<
 				outputs[i].getDirectionValDiff();
 
@@ -165,6 +282,8 @@ private:
 
 	//--------------------------------------------------------------
 	int isRedirectedTo(int i) {
+		if (!bEnableSmooth) return 0;
+		
 		// return 0 when no direction changed. -1 or 1 depending direction.
 		// above or below threshold
 
@@ -176,23 +295,27 @@ private:
 		}
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
 		bool _bSmooth = _p.cast<bool>().get();
-		if (!bEnableSmooth || !_bSmooth) return rdTo;
+		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return rdTo;
 
 		// if the direction has changed and
 		// if the time of change is greater than 0.5 sec
 		// print the time between changes and amount of change
-		if (outputs[i].getDirectionTimeDiff() > timeRedirection &&
+		if (outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
 			outputs[i].directionHasChanged())
 		{
 			ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " <<
 				outputs[i].getDirectionTimeDiff() << ", " <<
 				outputs[i].getDirectionValDiff();
 
-			if (outputs[i].getDirectionValDiff() < 0) rdTo = 1;
-			else rdTo = -1;
+			if (outputs[i].getDirectionValDiff() < 0) 
+				rdTo = 1;
+			else 
+				rdTo = -1;
+
 			return rdTo;
 		}
-		return rdTo;//0
+
+		return rdTo; // 0=nothing useful
 	}
 
 public:
@@ -222,6 +345,34 @@ public:
 		int i = getIndex(e);
 		if (i != -1)/*error*/ return isRedirectedTo(i);
 		else return 0;
+	}
+
+	//----
+
+public:
+
+	//--------------------------------------------------------------
+	bool isBang(int i)
+	{
+		// Returns true if selected trigger is selected and happening.
+		// then we can pick easily which detector
+		// to use in out parent scope app!
+		// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+
+		bool bReturn = false;
+
+		switch (smoothChannels[i]->bangDetectorIndex)
+		{
+		case 0: bReturn = isTriggered(0); break;
+		case 1: bReturn = isBonked(0); break;
+		case 2: bReturn = isRedirected(0); break;
+		case 3: bReturn = (isRedirectedTo(0) < 0); break;
+		case 4: bReturn = (isRedirectedTo(0) > 0); break;
+
+		default: ofLogError("ofxSurfingSmooth") << "Unknown selector index: " << i; return false; break;
+		}
+
+		return bReturn;
 	}
 
 	//----
@@ -304,10 +455,13 @@ private:
 
 	ofColor colorBaseLine;
 	ofColor colorTextSelected;
+
 	ofColor colorThreshold;
 	ofColor colorTrig;
 	ofColor colorBonk;
 	ofColor colorDirect;
+	ofColor colorDirectUp;
+	ofColor colorDirectDown;
 
 private:
 
@@ -321,7 +475,7 @@ private:
 	ofParameter<bool> bGui_Outputs;
 	ofParameter<bool> bGenerators;
 
-	ofParameter<bool> bEnableSmooth;
+	ofParameter<bool> bEnableSmooth; // global enable
 
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
@@ -418,6 +572,7 @@ public:
 	ofParameter<bool> bGui_Global{ "SMOOTH SURF", true };
 	ofParameter<bool> bGui_Main{ "SMOOTH MAIN", true };
 	ofParameter<bool> bGui_Plots;
+	ofParameter<bool> bGui_PlotsLink;
 	ofParameter<bool> bGui_Extra{ "Extra", true };
 
 	ofParameter<bool> bGui_GameMode;
@@ -435,31 +590,34 @@ public:
 
 	// Channel independent params
 
-	ofParameter<float> ampInput;
-	ofParameter<float> smoothPower;
-	ofParameter<float> threshold;
+	//ofParameter<float> ampInput;
+	//ofParameter<float> smoothPower;
+	//ofParameter<float> threshold;
 
-	ofParameter<int> typeSmooth;
-	ofParameter<int> typeMean;
-	ofParameter<string> typeSmooth_Str;
-	ofParameter<string> typeMean_Str;
+	//ofParameter<int> typeSmooth;
+	//ofParameter<int> typeMean;
+	//ofParameter<string> typeSmooth_Str;
+	//ofParameter<string> typeMean_Str;
 
-	ofParameter<float> timeRedirection;
-	ofParameter<float> slideMin;
-	ofParameter<float> slideMax;
-	ofParameter<float> onsetGrow;
-	ofParameter<float> onsetDecay;
+	//ofParameter<float> timeRedirection;
+	//ofParameter<float> slideMin;
+	//ofParameter<float> slideMax;
+	//ofParameter<float> onsetGrow;
+	//ofParameter<float> onsetDecay;
 
-	ofParameter<bool> bClamp;
-	ofParameter<float> minInput;
-	ofParameter<float> maxInput;
-	ofParameter<bool> bNormalized;
-	ofParameter<float> minOutput;
-	ofParameter<float> maxOutput;
+	//ofParameter<bool> bClamp;
+	//ofParameter<float> minInput;
+	//ofParameter<float> maxInput;
+	//ofParameter<bool> bNormalized;
+	//ofParameter<float> minOutput;
+	//ofParameter<float> maxOutput;
 
 	ofParameter<bool> bReset;
-};
 
+	void draw_ImGui_CircleBeatWidget();
+
+	CircleBeatSimple circleBeat;
+};
 
 //----
 
