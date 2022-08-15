@@ -4,9 +4,7 @@
 
 #include "ofxSurfingSmooth.h"
 
-#include "ofxWindowApp.h"
-#include "ofxGui.h"
-#include "ofxSurfing_ofxGui.h"
+#include "ofxWindowApp.h" // -> Not required. just to handle window app position/size.
 
 class ofApp : public ofBaseApp
 {
@@ -34,5 +32,5 @@ class ofApp : public ofBaseApp
 		ofParameter<float> speed3;
 		ofParameter<int> shapeType3;
 		
-		ofxWindowApp windowApp;
+		ofxWindowApp w;
 };

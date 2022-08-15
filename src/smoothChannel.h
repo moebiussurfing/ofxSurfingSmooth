@@ -3,8 +3,11 @@
 #include "ofMain.h"
 #include "ofxSurfingHelpers.h"
 
+
 //--
 
+// Learn callbacks
+/*
 class ControllerClass {
 public:
 	/// TheEventType can be an int, void or whatever type but it is important that it is the same you use in the callback function, either if it is a class method or a lambda function
@@ -30,48 +33,28 @@ public:
 	void eventCallback() {
 		// this gets triggered by the event!
 
-		ofLogNotice("SmoothChannel") << (__FUNCTION__) /*<< " " << aparams.getName()*/;
+		ofLogNotice("SmoothChannel") << (__FUNCTION__) << " " << aparams.getName();
 
 	}
 
 	ofEventListener eventListener;
 
 };
+*/
 
 //--
 
 class SmoothChannel
 {
-
 public:
-
-	SoundEngineClass soundEngine;
-	ControllerClass controller;
-
-	//--
-
-public:
-
-	SmoothChannel() {
-		path_Global = "ofxSurfingSmooth/";
-
-		ofAddListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
-	};
-
-	~SmoothChannel() {
-		ofRemoveListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
-		ofxSurfingHelpers::CheckFolder(path_Global);
-		ofxSurfingHelpers::saveGroup(params, path_Settings);
-	};
-
-	void setup(string name);
 
 	//--
 
 	ofParameterGroup params;
 
+	ofParameter<bool> bEnableSmooth;
 	ofParameter<float> ampInput;
-	
+
 	ofParameter<int> typeSmooth;
 	ofParameter<int> typeMean;
 	ofParameter<string> typeSmooth_Str;
@@ -85,17 +68,17 @@ public:
 	ofParameter<float> onsetGrow;
 	ofParameter<float> onsetDecay;
 
+	ofParameter<bool> bNormalized;
 	ofParameter<bool> bClamp;
 	ofParameter<float> minInput;
 	ofParameter<float> maxInput;
-	ofParameter<bool> bNormalized;
 	ofParameter<float> minOutput;
 	ofParameter<float> maxOutput;
 
+	ofParameter<bool> bReset;
+
 	ofParameter<int> bangDetectorIndex;
 
-	ofParameter<bool> bReset;
-	
 	//--
 
 	vector<string> bangDetectors = { "Trig","Bonk", "Direction", "Above", "Below" };
@@ -106,6 +89,57 @@ private:
 
 	string path_Global;
 	string path_Settings;
+
+	//--
+
+private:
+
+	enum Smoothing_t {
+		SMOOTHING_NONE,
+		SMOOTHING_ACCUM,
+		SMOOTHING_SLIDE
+	} smoothingType;
+
+	enum Mean_t {
+		MEAN_ARITH,
+		MEAN_GEOM,
+		MEAN_HARM,
+	} meanType;
+
+	std::vector<std::string> typeSmoothLabels;
+	std::vector<std::string> typeMeanLabels;
+
+public:
+
+	SmoothChannel() 
+	{
+		path_Global = "ofxSurfingSmooth/";
+
+		typeSmoothLabels.clear();
+		typeSmoothLabels.push_back("None");
+		typeSmoothLabels.push_back("Accumulator");
+		typeSmoothLabels.push_back("Slide");
+
+		typeMeanLabels.clear();
+		typeMeanLabels.push_back("Arith");
+		typeMeanLabels.push_back("Geom");
+		typeMeanLabels.push_back("Harm");
+
+		//--
+
+		ofAddListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
+	};
+
+	~SmoothChannel() 
+	{
+		ofRemoveListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
+		ofxSurfingHelpers::CheckFolder(path_Global);
+		ofxSurfingHelpers::saveGroup(params, path_Settings);
+	};
+
+	void setup(string name);
+
+private:
 
 	void doReset()
 	{
@@ -132,27 +166,22 @@ private:
 		onsetDecay = 0.1;
 	}
 
-	void SmoothChannel::Changed(ofAbstractParameter& e)
-	{
-		std::string name = e.getName();
+	void Changed(ofAbstractParameter& e);
 
-		ofLogVerbose("SmoothChannel") << name << " : " << e;
-
-		if (0) {}
-
-		else if (name == bReset.getName())
-		{
-			if (bReset)
-			{
-				bReset = false;
-				doReset();
-			}
-		}
-	}
+public:
 
 	void setPathGlobal(string name) {
 		path_Global = name;
 		ofxSurfingHelpers::CheckFolder(path_Global);
 	};
+
+	//--
+
+	/*
+public:
+
+	SoundEngineClass soundEngine;
+	ControllerClass controller;
+	*/
 };
 

@@ -23,11 +23,11 @@ void ofxSurfingSmooth::setup()
 	path_Settings = path_Global + "ofxSurfingSmooth_Settings.xml";
 	ofxSurfingHelpers::CheckFolder(path_Global);
 
-	//-
+	//--
 
 	setupParams();
 
-	//-
+	//--
 
 	editorEnablers.clear();// an enabler toggler for each param
 	params_EditorEnablers.clear();// an enabler toggler for each param
@@ -61,14 +61,15 @@ void ofxSurfingSmooth::startup() {
 }
 
 //--------------------------------------------------------------
-void ofxSurfingSmooth::setupPlots() {
+void ofxSurfingSmooth::setupPlots()
+{
 	amountChannels = mParamsGroup.size();
 	amountPlots = 2 * amountChannels;
 
 	index.setMax(amountChannels - 1);
 	plots.resize(amountPlots);
 
-	// colors
+	// Plot colors
 
 #ifdef COLORS_MONCHROME
 	//colorPlots = (ofColor::green);
@@ -116,6 +117,7 @@ void ofxSurfingSmooth::setupPlots() {
 	{
 		string _name;
 		string _name2;
+
 		_name2 = ofToString(mParamsGroup[i / 2].getName());//param name
 		//_name2 = ofToString(i / 2);//index as name
 
@@ -154,19 +156,13 @@ void ofxSurfingSmooth::setupPlots() {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::update(ofEventArgs& args)
 {
-	// Engine
-	updateEngine();
-
-	// Smooths
-	updateSmooths();//always
-	//if (!bGenerators) updateSmooths(); // if generator disabled
-
-	//--
+	// Generators
+	if (bGenerators) updateGenerators();
 
 	// Tester
-	// play timed randoms
+	// Play timed randoms for each channel/params
 	{
-		static const int _secs = 2;
+		static const int _secs = 2;//wait max 
 		if (bPlay)
 		{
 			int max = ofMap(playSpeed, 0, 1, 60, 5) * _secs;
@@ -179,8 +175,14 @@ void ofxSurfingSmooth::update(ofEventArgs& args)
 		}
 	}
 
-	// Generators
-	if (bGenerators) updateGenerators();
+	//--
+
+	// Engine
+	updateEngine();
+
+	// Smooths
+	updateSmooths(); // always
+	//if (!bGenerators) updateSmooths(); // if generator disabled
 }
 
 //--------------------------------------------------------------
@@ -194,7 +196,7 @@ void ofxSurfingSmooth::updateSmooths()
 		ofAbstractParameter& p = mParamsGroup[i];
 
 		// Enabler toggle
-		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
+		auto& _p = params_EditorEnablers[i]; // ofAbstractParameter
 		bool isBool = (_p.type() == typeid(ofParameter<bool>).name());
 		string name = _p.getName();
 		ofParameter<bool> _bEnabledSmooth = _p.cast<bool>();
@@ -218,7 +220,9 @@ void ofxSurfingSmooth::updateSmooths()
 
 			if (bEnableSmooth && _bEnabledSmooth)
 			{
-				float v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax(), true);
+				float v = ofMap(outputs[i].getValue(), 0, 1,
+					_p.getMin(), _p.getMax(), true);
+
 				pc.set(v);
 			}
 			else
@@ -241,7 +245,9 @@ void ofxSurfingSmooth::updateSmooths()
 
 			if (bEnableSmooth && _bEnabledSmooth)
 			{
-				int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax() + 1, true); //TODO: round fix..
+				int v = ofMap(outputs[i].getValue(), 0, 1,
+					_p.getMin(), _p.getMax() + 1, true); //TODO: round fix..
+
 				pc.set(v);
 			}
 			else
@@ -276,11 +282,8 @@ void ofxSurfingSmooth::updateSmooths()
 }
 
 //--------------------------------------------------------------
-void ofxSurfingSmooth::updateEngine() {
-
-	//TODO: crash when added other types than int/float
-	//for (int i = 0; i < amountChannels && ; i++)
-
+void ofxSurfingSmooth::updateEngine()
+{
 	for (int i = 0; i < amountChannels; i++)
 	{
 		// Enabler toggle
@@ -288,7 +291,8 @@ void ofxSurfingSmooth::updateEngine() {
 		bool isBool = (p.type() == typeid(ofParameter<bool>).name());
 		if (!isBool || i > params_EditorEnablers.size() - 1)
 		{
-			ofLogError("ofxSurfingSmooth") << (__FUNCTION__) << "Out o range. Skip param #" << i;
+			ofLogError("ofxSurfingSmooth") << (__FUNCTION__) <<
+				"Out o range. Skip param #" << i;
 			continue;
 		}
 		bool _bEnabled = p.cast<bool>().get();
@@ -300,25 +304,35 @@ void ofxSurfingSmooth::updateEngine() {
 		// get input as source raw or clamped
 		float _input;
 
-		if (bClamp) _input = ofClamp(inputs[i], minInput, maxInput);
-		else _input = inputs[i];
+		if (smoothChannels[i]->bClamp)
+			_input = ofClamp(inputs[i],
+				smoothChannels[i]->minInput, smoothChannels[i]->maxInput);
+		else
+			_input = inputs[i];
 
 		//--
 
-		// 2. Feed Plot
+		// 2. Feed Plots
 
-		// Plot
-		if (bGui_Plots) plots[2 * i]->update(_input); // feed the source signal to the input Plot 
+		// Input
+
+		// feed the source signal to the input Plot 
+		if (bGui_Plots) plots[2 * i]->update(_input);
+
+		//-
 
 		// Output
+
 		if (bGui_Plots)
 		{
-			if (bEnableSmooth && _bEnabled) plots[2 * i + 1]->update(outputs[i].getValue()); // use filtered signal
-			else plots[2 * i + 1]->update(_input); // use source signal
-		}
+			// use the filtered signal if enabled
+			if (bEnableSmooth && _bEnabled)
+				plots[2 * i + 1]->update(outputs[i].getValue());
 
-		////TODO: ?
-		//if (i == index) input = _input;
+			// use the raw source signal
+			else
+				plots[2 * i + 1]->update(_input);
+		}
 	}
 
 	//----
@@ -383,7 +397,7 @@ void ofxSurfingSmooth::updateEngine() {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::updateGenerators() {
-	if (!bGenerators) return;
+	//if (!bGenerators) return;
 
 	// Run signal generators
 	// for testing smooth engine 
@@ -403,50 +417,61 @@ void ofxSurfingSmooth::updateGenerators() {
 	{
 		ofAbstractParameter& aparam = mParamsGroup[i];
 
-		//string str = "";
-		//string name = aparam.getName();
+		// Prepare and feed generator into the input,
+		// overwritten the input/source params them self!
 
 		if (i < surfGenerator.size())
 		{
 			float value = 0;
 
 			// Int
+
 			if (aparam.type() == typeid(ofParameter<int>).name())
 			{
 				ofParameter<int> ti = aparam.cast<int>();
 				value = surfGenerator.get(i);
 				//value = ofMap(value, 0, 1, ti.getMin(), ti.getMax());
 				ti.set((int)value);
-				//ti = (int)value;
+				inputs[i] = value; // prepare and feed input
 			}
 
-			// fFloat
+			//--
+
+			// Float
+
 			else if (aparam.type() == typeid(ofParameter<float>).name())
 			{
 				ofParameter<float> ti = aparam.cast<float>();
 				value = surfGenerator.get(i);
 				//value = ofMap(value, 0, 1, ti.getMin(), ti.getMax());
 				ti.set(value);
-				//ti = value;
+				inputs[i] = value; // prepare and feed input
 			}
 
+			//--
+
 			// Bool
+			// 
 			//else if (aparam.type() == typeid(ofParameter<bool>).name()) {
 			//	ofParameter<bool> ti = aparam.cast<bool>();
 			//	value = ofMap(ti, ti.getMin(), ti.getMax(), 0, 1);
 			//	//ofLogNotice("ofxSurfingSmooth") <<(__FUNCTION__) << " " << ti.getName() << " : " << ti.get() << " : " << value;
 			//}
 
-			else {//skip
+			//--
+
+			// skip / by pass the other params bc unkown types
+			else
+			{
+				// i--; // to don't discard the generator..
+				//inputs[i] = value; 
 				continue;
 			}
-
-			inputs[i] = value; // prepare and feed input
 		}
-		//else continue;//by pass the other params
 
-		//inputs[i] = value; // prepare and feed input
-		outputs[i].update(inputs[i]); // raw value, index (optional)
+		//--
+
+		//outputs[i].update(inputs[i]); 
 	}
 }
 
@@ -822,7 +847,7 @@ void ofxSurfingSmooth::setupParams() {
 	params.add(bPlay.set("Play", false));
 	params.add(playSpeed.set("Speed", 0.5, 0, 1));
 
-	params.add(bEnableSmooth.set("SMOOTH", true));
+	params.add(bEnableSmooth.set("ENABLE", true));
 
 	//--
 
@@ -902,6 +927,10 @@ void ofxSurfingSmooth::exit() {
 void ofxSurfingSmooth::doReset() {
 	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__);
 
+	//TODO:
+
+	//reset all
+	/*
 	bClamp = false;
 	minInput = 0;
 	maxInput = 1;
@@ -919,6 +948,7 @@ void ofxSurfingSmooth::doReset() {
 	slideMax = 0.2;
 	onsetGrow = 0.1;
 	onsetDecay = 0.1;
+	*/
 
 	//--
 
@@ -934,10 +964,14 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	string name = e.getName();
 
+	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__) << " : " << name << " : " << e;
+
 	//if (name != input.getName() && name != output.getName() && name != "")
 	//{
 	//	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__) << " : " << name << " : " << e;
 	//}
+
+	//--
 
 	if (0) {}
 
@@ -947,193 +981,199 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 		return;
 	}
 
-	else if (name == bEnableSmooth.getName())
-	{
-		return;
-	}
+	//--
+
+	//// Enable all
+	//else if (name == bEnableSmooth.getName())
+	//{
+	//	return;
+	//}
 
 	//--
 
-	else if (name == bReset.getName())
-	{
-		if (bReset)
-		{
-			bReset = false;
-			doReset();
-		}
-		return;
-	}
+	//// Reset all
+	//else if (name == bReset.getName())
+	//{
+	//	if (bReset)
+	//	{
+	//		bReset = false;
+	//		doReset();
+	//	}
+	//	return;
+	//}
 
-	//--
+	//----
 
-	else if (name == threshold.getName())
-	{
-		for (int i = 0; i < amountChannels; i++) {
-			outputs[i].setThresh(threshold);
-		}
-		return;
-	}
+	// remove below..
 
-	//--
+	//else if (name == threshold.getName())
+	//{
+	//	for (int i = 0; i < amountChannels; i++) {
+	//		outputs[i].setThresh(threshold);
+	//	}
+	//	return;
+	//}
 
-	else if (name == smoothPower.getName())
-	{
-		int MAX_ACC_HISTORY = 60;//calibrated to 60fps
-		float v = ofMap(smoothPower, 0, 1, 1, MAX_ACC_HISTORY);
-		for (int i = 0; i < amountChannels; i++) {
-			outputs[i].initAccum(v);
-		}
-		return;
-	}
+	////--
 
-	//--
+	//else if (name == smoothPower.getName())
+	//{
+	//	int MAX_ACC_HISTORY = 60;//calibrated to 60fps
+	//	float v = ofMap(smoothPower, 0, 1, 1, MAX_ACC_HISTORY);
+	//	for (int i = 0; i < amountChannels; i++) {
+	//		outputs[i].initAccum(v);
+	//	}
+	//	return;
+	//}
 
-	else if (name == slideMin.getName() || name == slideMax.getName())
-	{
-		for (int i = 0; i < amountChannels; i++) {
-			const int MIN_SLIDE = 1;
-			const int MAX_SLIDE = 50;
-			float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
-			float _slmax = ofMap(slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+	////--
 
-			outputs[i].initSlide(_slmin, _slmax);
-		}
-		return;
-	}
+	//else if (name == slideMin.getName() || name == slideMax.getName())
+	//{
+	//	for (int i = 0; i < amountChannels; i++) {
+	//		const int MIN_SLIDE = 1;
+	//		const int MAX_SLIDE = 50;
+	//		float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+	//		float _slmax = ofMap(slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
 
-	//--
+	//		outputs[i].initSlide(_slmin, _slmax);
+	//	}
+	//	return;
+	//}
 
-	else if (name == minOutput.getName() || name == maxOutput.getName())
-	{
-		for (int i = 0; i < amountChannels; i++) {
-			outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
-		}
-		return;
-	}
+	////--
 
-	//--
+	//else if (name == minOutput.getName() || name == maxOutput.getName())
+	//{
+	//	for (int i = 0; i < amountChannels; i++) {
+	//		outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
+	//	}
+	//	return;
+	//}
 
-	else if (name == bNormalized.getName())
-	{
-		for (int i = 0; i < amountChannels; i++)
-		{
-			//outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
+	////--
 
-			if (bNormalized) outputs[i].setNormalized(bNormalized, ofVec2f(0, 1));
-			else outputs[i].setNormalized(bNormalized, ofVec2f(minOutput, maxOutput));
-		}
-		return;
-	}
+	//else if (name == bNormalized.getName())
+	//{
+	//	for (int i = 0; i < amountChannels; i++)
+	//	{
+	//		//outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
 
-	//--
+	//		if (bNormalized) outputs[i].setNormalized(bNormalized, ofVec2f(0, 1));
+	//		else outputs[i].setNormalized(bNormalized, ofVec2f(minOutput, maxOutput));
+	//	}
+	//	return;
+	//}
 
-	//TODO:
-	//detect "bonks" (onsets):
-	//amp.setBonk(0.1, 0.1);  // min growth for onset, min decay
-	//set growth/decay:
-	//amp.setDecayGrow(true, 0.99); // a framerate-dependent steady decay/growth
-	else if (name == onsetGrow.getName() || name == onsetDecay.getName())
-	{
-		for (int i = 0; i < amountChannels; i++) {
-			outputs[i].setBonk(onsetGrow, onsetDecay);
-			//specAmps[i].setDecayGrow(true, 0.99);
+	////--
 
-			outputs[i].directionChangeCalculated = true;
-			//outputs[i].setBonk(0.1, 0.0);
-		}
-		return;
-	}
+	////TODO:
+	////detect "bonks" (onsets):
+	////amp.setBonk(0.1, 0.1);  // min growth for onset, min decay
+	////set growth/decay:
+	////amp.setDecayGrow(true, 0.99); // a framerate-dependent steady decay/growth
+	//else if (name == onsetGrow.getName() || name == onsetDecay.getName())
+	//{
+	//	for (int i = 0; i < amountChannels; i++) {
+	//		outputs[i].setBonk(onsetGrow, onsetDecay);
+	//		//specAmps[i].setDecayGrow(true, 0.99);
 
-	//--
+	//		outputs[i].directionChangeCalculated = true;
+	//		//outputs[i].setBonk(0.1, 0.0);
+	//	}
+	//	return;
+	//}
 
-	else if (name == typeSmooth.getName())
-	{
-		typeSmooth = ofClamp(typeSmooth, typeSmooth.getMin(), typeSmooth.getMax());
+	////--
 
-		switch (typeSmooth)
-		{
-		case ofxDataStream::SMOOTHING_NONE:
-		{
-			if (!bEnableSmooth) bEnableSmooth = false;
-			typeSmooth_Str = typeSmoothLabels[0];
-			return;
-		}
-		break;
+	//else if (name == typeSmooth.getName())
+	//{
+	//	typeSmooth = ofClamp(typeSmooth, typeSmooth.getMin(), typeSmooth.getMax());
 
-		case ofxDataStream::SMOOTHING_ACCUM:
-		{
-			if (!bEnableSmooth) bEnableSmooth = true;
-			typeSmooth_Str = typeSmoothLabels[1];
-			int MAX_HISTORY = 30;
-			float v = ofMap(smoothPower, 0, 1, 1, MAX_HISTORY);
-			for (int i = 0; i < amountChannels; i++) {
-				outputs[i].initAccum(v);
-			}
-			return;
-		}
-		break;
+	//	switch (typeSmooth)
+	//	{
+		//case ofxDataStream::SMOOTHING_NONE:
+	//	{
+	//		if (!bEnableSmooth) bEnableSmooth = false;
+	//		typeSmooth_Str = typeSmoothLabels[0];
+	//		return;
+	//	}
+	//	break;
 
-		case ofxDataStream::SMOOTHING_SLIDE:
-		{
-			if (!bEnableSmooth) bEnableSmooth = true;
-			typeSmooth_Str = typeSmoothLabels[2];
-			for (int i = 0; i < amountChannels; i++) {
-				const int MIN_SLIDE = 1;
-				const int MAX_SLIDE = 50;
-				float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
-				float _slmax = ofMap(slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+	//	case ofxDataStream::SMOOTHING_ACCUM:
+	//	{
+	//		if (!bEnableSmooth) bEnableSmooth = true;
+	//		typeSmooth_Str = typeSmoothLabels[1];
+	//		int MAX_HISTORY = 30;
+	//		float v = ofMap(smoothPower, 0, 1, 1, MAX_HISTORY);
+	//		for (int i = 0; i < amountChannels; i++) {
+	//			outputs[i].initAccum(v);
+	//		}
+	//		return;
+	//	}
+	//	break;
 
-				outputs[i].initSlide(_slmin, _slmax);
-			}
-			return;
-		}
-		break;
-		}
+	//	case ofxDataStream::SMOOTHING_SLIDE:
+	//	{
+	//		if (!bEnableSmooth) bEnableSmooth = true;
+	//		typeSmooth_Str = typeSmoothLabels[2];
+	//		for (int i = 0; i < amountChannels; i++) {
+	//			const int MIN_SLIDE = 1;
+	//			const int MAX_SLIDE = 50;
+	//			float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+	//			float _slmax = ofMap(slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
 
-		return;
-	}
+	//			outputs[i].initSlide(_slmin, _slmax);
+	//		}
+	//		return;
+	//	}
+	//	break;
+	//	}
 
-	//--
+	//	return;
+	//}
 
-	else if (name == typeMean.getName())
-	{
-		typeMean = ofClamp(typeMean, typeMean.getMin(), typeMean.getMax());
+	////--
 
-		switch (typeMean)
-		{
-		case ofxDataStream::MEAN_ARITH:
-		{
-			typeMean_Str = typeMeanLabels[0];
-			for (int i = 0; i < amountChannels; i++) {
-				outputs[i].setMeanType(ofxDataStream::MEAN_ARITH);
-			}
-			return;
-		}
-		break;
+	//else if (name == typeMean.getName())
+	//{
+	//	typeMean = ofClamp(typeMean, typeMean.getMin(), typeMean.getMax());
 
-		case ofxDataStream::MEAN_GEOM:
-		{
-			typeMean_Str = typeMeanLabels[1];
-			for (int i = 0; i < amountChannels; i++) {
-				outputs[i].setMeanType(ofxDataStream::MEAN_GEOM);
-			}
-			return;
-		}
-		break;
+	//	switch (typeMean)
+	//	{
+	//	case ofxDataStream::MEAN_ARITH:
+	//	{
+	//		typeMean_Str = typeMeanLabels[0];
+	//		for (int i = 0; i < amountChannels; i++) {
+	//			outputs[i].setMeanType(ofxDataStream::MEAN_ARITH);
+	//		}
+	//		return;
+	//	}
+	//	break;
 
-		case ofxDataStream::MEAN_HARM:
-		{
-			typeMean_Str = typeMeanLabels[2];
-			for (int i = 0; i < amountChannels; i++) {
-				outputs[i].setMeanType(ofxDataStream::MEAN_HARM);
-			}
-			return;
-		}
-		break;
-		}
+	//	case ofxDataStream::MEAN_GEOM:
+	//	{
+	//		typeMean_Str = typeMeanLabels[1];
+	//		for (int i = 0; i < amountChannels; i++) {
+	//			outputs[i].setMeanType(ofxDataStream::MEAN_GEOM);
+	//		}
+	//		return;
+	//	}
+	//	break;
 
-		return;
-	}
+	//	case ofxDataStream::MEAN_HARM:
+	//	{
+	//		typeMean_Str = typeMeanLabels[2];
+	//		for (int i = 0; i < amountChannels; i++) {
+	//			outputs[i].setMeanType(ofxDataStream::MEAN_HARM);
+	//		}
+	//		return;
+	//	}
+	//	break;
+	//	}
+
+	//	return;
+	//}
 }
 
 //--------------------------------------------------------------
@@ -1311,13 +1351,17 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 		guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 		guiManager.AddSpacingSeparated();
 
-		guiManager.Add(bGui_Main, OFX_IM_TOGGLE_ROUNDED_BIG);
-		guiManager.AddSpacingSeparated();
+		if (!guiManager.bMinimize) {
+			guiManager.Add(bGui_Main, OFX_IM_TOGGLE_ROUNDED_BIG);
+			guiManager.AddSpacingSeparated();
+		}
 
 		//--
 
-		//guiManager.AddLabelBig("Signal");
-		guiManager.AddLabelBig("CHANNEL");
+		if (!guiManager.bMinimize) {
+			guiManager.AddLabelBig("Signal");
+			//guiManager.AddLabelBig("CHANNEL");
+		}
 
 		// Channel name
 		if (i > editorEnablers.size() - 1) {
@@ -1337,8 +1381,9 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 		//fix: no aligned labels
 
-		ImGui::Columns(2, "t1", false);
 		guiManager.AddSpacing();
+
+		ImGui::Columns(2, "t1", false);
 		guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_VSLIDER_NO_NUMBER, 2);
 		guiManager.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
 		ImGui::NextColumn();
@@ -1447,60 +1492,61 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 			guiManager.Add(bEnableSmooth, OFX_IM_TOGGLE_BIG_BORDER_BLINK);
 
 			// Monitor
-			if (bEnableSmooth)
-			{
-				guiManager.AddSpacingSeparated();
-
-				if (ImGui::CollapsingHeader("MONITOR"))
+			if (!bGui_GameMode)
+				if (bEnableSmooth)
 				{
+					guiManager.AddSpacingSeparated();
+
+					if (ImGui::CollapsingHeader("MONITOR"))
+					{
+						guiManager.refreshLayout();
+
+						if (index < editorEnablers.size())
+						{
+							guiManager.AddLabelBig(editorEnablers[index].getName(), false);
+						}
+
+						if (!guiManager.bMinimize)
+						{
+							if (index.getMax() < 5)
+							{
+								ofxImGuiSurfing::AddMatrixClicker(index);
+							}
+							else {
+								if (guiManager.Add(index, OFX_IM_STEPPER))
+								{
+									index = ofClamp(index, index.getMin(), index.getMax());
+								}
+							}
+
+							guiManager.Add(bSolo, OFX_IM_TOGGLE);
+
+							//guiManager.Add(input, OFX_IM_HSLIDER_MINI);
+							//guiManager.Add(output, OFX_IM_HSLIDER_MINI);
+						}
+						else
+						{
+							if (index.getMax() < 5)
+							{
+								ofxImGuiSurfing::AddMatrixClicker(index);
+							}
+							else {
+								if (guiManager.Add(index, OFX_IM_STEPPER))
+								{
+									index = ofClamp(index, index.getMin(), index.getMax());
+								}
+							}
+
+							guiManager.Add(bSolo, OFX_IM_TOGGLE);
+
+							//guiManager.AddSpacingSeparated();
+							//guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
+							//guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
+						}
+					}
+
 					guiManager.refreshLayout();
-
-					if (index < editorEnablers.size())
-					{
-						guiManager.AddLabelBig(editorEnablers[index].getName(), false);
-					}
-
-					if (!guiManager.bMinimize)
-					{
-						if (index.getMax() < 5)
-						{
-							ofxImGuiSurfing::AddMatrixClicker(index);
-						}
-						else {
-							if (guiManager.Add(index, OFX_IM_STEPPER))
-							{
-								index = ofClamp(index, index.getMin(), index.getMax());
-							}
-						}
-
-						guiManager.Add(bSolo, OFX_IM_TOGGLE);
-
-						//guiManager.Add(input, OFX_IM_HSLIDER_MINI);
-						//guiManager.Add(output, OFX_IM_HSLIDER_MINI);
-					}
-					else
-					{
-						if (index.getMax() < 5)
-						{
-							ofxImGuiSurfing::AddMatrixClicker(index);
-						}
-						else {
-							if (guiManager.Add(index, OFX_IM_STEPPER))
-							{
-								index = ofClamp(index, index.getMin(), index.getMax());
-							}
-						}
-
-						guiManager.Add(bSolo, OFX_IM_TOGGLE);
-
-						//guiManager.AddSpacingSeparated();
-						//guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
-						//guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
-					}
 				}
-
-				guiManager.refreshLayout();
-			}
 
 			//--
 
@@ -1706,16 +1752,21 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 		}
 	}
 
-	// add/queue each param
+	// Add / Queue each param
 	// exclude groups to remove from plots
 	if (!isGroup) mParamsGroup.add(aparam);
 
 	//--
 
-	// create a copy group
-	// will be the output 
-	// or what, once smoothed, we will use target to be use params.
-	// we copy the param and queue to our group
+	// Create a copied Group
+	// who will be the container 
+	// for the output params,
+	// or what, once smoothed, 
+	// we will use target to be use params.
+	// We copy each param and queue it there into this group!
+
+	// Filter which param types to handle 
+	// or to discard into the engine:
 
 	if (isFloat)
 	{
@@ -1770,14 +1821,18 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 	smoothChannels.push_back(make_unique<SmoothChannel>());
 	smoothChannels[i]->setup("Ch_" + ofToString(i));
 
-	// Create Lambda Callbacks
+	// Create the lambda callback for each channel
 
 	listeners.push(smoothChannels[i]->params.parameterChangedE().newListener([this](const ofAbstractParameter& e)
 		{
 			string name = e.getName();
-			ofLogNotice("listener") << name << " : " << e;
 
-			if (name == ampInput.getName())
+			ofLogNotice("ofxSurfingSmooth") << "CHANGED " << name << " : " << e;
+			//ofLogNotice("ofxSurfingSmooth") << "Ch " << index;
+
+			ofLogNotice("ofxSurfingSmooth") << "Ch " << i;
+
+			if (name == smoothChannels[i]->ampInput.getName())
 			{
 				//..
 				return;
@@ -1789,11 +1844,204 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				return;
 			}
 
+			else if (name == minOutput.getName())
+			{
+				//..
+				return;
+			}
+
+			//--
+
+			else if (name == typeSmooth.getName())
+			{
+				//typeSmooth = ofClamp(typeSmooth, typeSmooth.getMin(), typeSmooth.getMax());
+
+				switch (typeSmooth)
+				{
+
+					//case ofxDataStream::SMOOTHING_NONE:
+					//{
+					//	//if (!bEnableSmooth) bEnableSmooth = false;
+					//	//typeSmooth_Str = typeSmoothLabels[0];
+					//	return;
+					//}
+					//break;
+
+				case ofxDataStream::SMOOTHING_ACCUM:
+				{
+					//if (!bEnableSmooth) bEnableSmooth = true;
+					//typeSmooth_Str = typeSmoothLabels[1];
+					//int MAX_HISTORY = 30;
+					//float v = ofMap(smoothPower, 0, 1, 1, MAX_HISTORY);
+					//for (int i = 0; i < amountChannels; i++)
+					int MAX_HISTORY = 30;
+					float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_HISTORY);
+					{
+						outputs[i].initAccum(v);
+					}
+					return;
+				}
+				break;
+
+				case ofxDataStream::SMOOTHING_SLIDE:
+				{
+					//if (!bEnableSmooth) bEnableSmooth = true;
+					//typeSmooth_Str = typeSmoothLabels[2];
+					//for (int i = 0; i < amountChannels; i++) 
+					{
+						const int MIN_SLIDE = 1;
+						const int MAX_SLIDE = 50;
+						float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+						float _slmax = ofMap(slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+
+						outputs[i].initSlide(_slmin, _slmax);
+					}
+					return;
+				}
+				break;
+
+				}
+
+				return;
+			}
+
+			//--
+
+			else if (name == typeMean.getName())
+			{
+				//typeMean = ofClamp(typeMean, typeMean.getMin(), typeMean.getMax());
+
+				switch (typeMean)
+				{
+				case ofxDataStream::MEAN_ARITH:
+				{
+					//typeMean_Str = typeMeanLabels[0];
+					//for (int i = 0; i < amountChannels; i++) 
+					{
+						outputs[i].setMeanType(ofxDataStream::MEAN_ARITH);
+					}
+					return;
+				}
+				break;
+
+				case ofxDataStream::MEAN_GEOM:
+				{
+					//typeMean_Str = typeMeanLabels[1];
+					//for (int i = 0; i < amountChannels; i++) 
+					{
+						outputs[i].setMeanType(ofxDataStream::MEAN_GEOM);
+					}
+					return;
+				}
+				break;
+
+				case ofxDataStream::MEAN_HARM:
+				{
+					//typeMean_Str = typeMeanLabels[2];
+					//for (int i = 0; i < amountChannels; i++) 
+					{
+						outputs[i].setMeanType(ofxDataStream::MEAN_HARM);
+					}
+					return;
+				}
+				break;
+				}
+
+				return;
+			}
+
+			//--
+
+			else if (name == threshold.getName())
+			{
+				//for (int i = 0; i < amountChannels; i++) 
+				{
+					outputs[i].setThresh(threshold);
+				}
+				return;
+			}
+
+			//--
+
+			else if (name == smoothPower.getName())
+			{
+				int MAX_ACC_HISTORY = 60;//calibrated to 60fps
+				float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_ACC_HISTORY);
+				//for (int i = 0; i < amountChannels; i++) 
+				{
+					outputs[i].initAccum(v);
+				}
+				return;
+			}
+
+			//--
+
+			else if (name == slideMin.getName() || name == slideMax.getName())
+			{
+				//for (int i = 0; i < amountChannels; i++) 
+				{
+					const int MIN_SLIDE = 1;
+					const int MAX_SLIDE = 50;
+					float _slmin = ofMap(smoothChannels[i]->slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+					float _slmax = ofMap(smoothChannels[i]->slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+
+					outputs[i].initSlide(_slmin, _slmax);
+				}
+				return;
+			}
+
+			//--
+
+			else if (name == minOutput.getName() || name == maxOutput.getName())
+			{
+				//for (int i = 0; i < amountChannels; i++) 
+				{
+					outputs[i].setOutputRange(ofVec2f(smoothChannels[i]->minOutput, smoothChannels[i]->maxOutput));
+				}
+				return;
+			}
+
+			//--
+
+			else if (name == bNormalized.getName())
+			{
+				//for (int i = 0; i < amountChannels; i++)
+				{
+					//outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
+
+					if (bNormalized) outputs[i].setNormalized(
+						smoothChannels[i]->bNormalized, ofVec2f(0, 1));
+					else outputs[i].setNormalized(
+						bNormalized, ofVec2f(smoothChannels[i]->minOutput, smoothChannels[i]->maxOutput));
+				}
+				return;
+			}
+
+			//--
+
+			//TODO:
+			//detect "bonks" (onsets):
+			//amp.setBonk(0.1, 0.1);  // min growth for onset, min decay
+			//set growth/decay:
+			//amp.setDecayGrow(true, 0.99); // a framerate-dependent steady decay/growth
+			else if (name == onsetGrow.getName() || name == onsetDecay.getName())
+			{
+				//for (int i = 0; i < amountChannels; i++)
+				{
+					outputs[i].setBonk(smoothChannels[i]->onsetGrow, smoothChannels[i]->onsetDecay);
+					//specAmps[i].setDecayGrow(true, 0.99);
+
+					outputs[i].directionChangeCalculated = true;
+					//outputs[i].setBonk(0.1, 0.0);
+				}
+				return;
+			}
+
 		}));
 
 	//--
 
-	// the enabler for each param / channel
+	// Store the enabler for each param / channel
 	params.add(params_EditorEnablers);
 }
 

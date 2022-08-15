@@ -4,56 +4,37 @@
 
 	TODO:
 
-	+ plot smoothed only
-
-	+ independent settings for each param.. ?
-		threshold, power, pre amp
-		make new class
-
-	+ folder for panels
-
-	+ move enablers, testers to advanced. rename to extra
-
-	+ add colors types, vectors, using templates..
-		+ avoid crash to unsupported types
-
-	+ add clamp
-
+	+ add colors types, vectors, using templates.
+		avoid crash to unsupported types.
+	+ add clamp and normalization modes.
 	+ "real" nested sub-groups tree levels.. ?
-	+ add thresholds/onSet independent for each variable/channel: make it functional. add callbacks..
-	+ add param to calibrate max history smooth/speed..
-	+ fix broke-continuity/state when tweak smooth power "on playing"..
-	+ plotting int type should be stepped/not continuous..
+	+ add param to calibrate max history smooth/speed.
+	+ fix broke-continuity/state when tweak smooth power "on playing".
+	+ plotting int type should be stepped/not continuous.
 
 */
 
 
 #include "ofMain.h"
 
+#include "smoothChannel.h"
 #include "ofxDataStream.h"
-
 #include "ofxHistoryPlot.h"
 #include "ofxSurfingHelpers.h"
-#include "ofxSurfing_Timers.h"
 #include "ofxSurfingImGui.h"
 #include "ofxSurfingBoxInteractive.h"
-#include "smoothChannel.h"
 
-#define COLORS_MONCHROME // all plots same color. green
+#define COLORS_MONCHROME // Un comment to draw all plots with the same color.
 
 //--
 
-class ofxSurfingSmooth : public ofBaseApp {
+class ofxSurfingSmooth : public ofBaseApp
+{
 
 private:
 
 	vector<unique_ptr<SmoothChannel>> smoothChannels;
 	ofEventListeners listeners;
-
-	//ofEvent<void> event;
-	//void notify() {
-	//	ofNotifyEvent(event, this);
-	//}
 
 public:
 
@@ -70,15 +51,11 @@ private:
 
 	//--
 
-
-//public:
-
 	ofxSurfing_ImGui_Manager guiManager;
 
 private:
 
-
-	ofParameterGroup params_EditorEnablers;//the enabled params to randomize
+	ofParameterGroup params_EditorEnablers; // Contents the enabled params to smooth or to bypass.
 	vector<ofParameter<bool>> editorEnablers;
 	void drawToggles();
 
@@ -87,19 +64,19 @@ private:
 	void doEnableAll();
 
 	//--
-	//
+
 	// API INITIALIZERS
 
 public:
 
-	void setup(ofParameterGroup& aparams);//main setup method. to all pass the params with one line
+	void setup(ofParameterGroup& aparams); // main setup method. to all pass the params with one line.
 
 private:
 
 	void add(ofParameterGroup aparams);
 	void add(ofParameter<float>& aparam);
-	void add(ofParameter<bool>& aparam);
 	void add(ofParameter<int>& aparam);
+	void add(ofParameter<bool>& aparam);
 	//TODO: add more types
 
 private:
@@ -107,7 +84,7 @@ private:
 	void addParam(ofAbstractParameter& aparam);
 
 	//--
-	// 
+
 	// API GETTERS
 
 public:
@@ -118,10 +95,14 @@ public:
 	}
 
 	//--
-	// 
-	// Bang/Bonk/Triggers under threshold detectors
 
-//private:
+	// Bang / Bonk / Triggers under threshold detectors
+
+private:
+
+	// Getting by the index could be probably problematic,
+	// bc some param types could be skipped. 
+	// we disable to better use getting by name as below.
 
 	//--------------------------------------------------------------
 	bool isTriggered(int i) {//flag true when triggered this index param
@@ -214,8 +195,9 @@ public:
 		return rdTo;//0
 	}
 
-
 public:
+
+	// Getting detector flags by using the source param names.
 
 	//--------------------------------------------------------------
 	bool isTriggered(ofAbstractParameter& e) {
@@ -238,13 +220,16 @@ public:
 	//--------------------------------------------------------------
 	int isRedirectedTo(ofAbstractParameter& e) {
 		int i = getIndex(e);
-		if (i != -1) return isRedirectedTo(i);
+		if (i != -1)/*error*/ return isRedirectedTo(i);
 		else return 0;
 	}
 
 	//----
 
 public:
+
+	// Some helpers to get the smoothed params
+	// by different approaches.
 
 	int getIndex(ofAbstractParameter& e) /*const*/;
 
@@ -261,8 +246,8 @@ public:
 
 public:
 
-	void doRandomize();//do and set random in min/max range for all params
-	//void doRandomize(int index, bool bForce);//do random in min/max range for a param. bForce ignores enabler
+	void doRandomize(); // do and set random in min/max range for all params
+	//void doRandomize(int index, bool bForce); // do random in min/max range for a param. bForce ignores enabler
 
 	//---
 
@@ -283,6 +268,7 @@ private:
 	ofParameterGroup mParamsGroup;
 
 	ofParameterGroup mParamsGroup_Smoothed;
+
 	//TODO:
 	string suffix = "";
 	//string suffix = "_COPY";
@@ -315,6 +301,7 @@ private:
 #ifdef COLORS_MONCHROME
 	ofColor colorPlots;
 #endif
+
 	ofColor colorBaseLine;
 	ofColor colorTextSelected;
 	ofColor colorThreshold;
@@ -336,16 +323,10 @@ private:
 
 	ofParameter<bool> bEnableSmooth;
 
-	///// TODO:remove
-	//ofParameter<float> input;//for index selected
-	//ofParameter<float> output;
-
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
 
-	//bool bDirectionLast = false;
-
-	// tester timers
+	// Tester timers
 	int tf;
 	float tn;
 
@@ -366,21 +347,32 @@ private:
 	std::vector<std::string> typeSmoothLabels;
 	std::vector<std::string> typeMeanLabels;
 
+	////--------------------------------------------------------------
+	//void nextTypeSmooth() {
+	//	if (typeSmooth >= typeSmooth.getMax()) typeSmooth = 1;
+	//	else typeSmooth++;
+	//}
+	////--------------------------------------------------------------
+	//void nextTypeMean() {
+	//	if (typeMean >= typeMean.getMax()) typeMean = 0;
+	//	else typeMean++;
+	//}
+
 	//--------------------------------------------------------------
-	void nextTypeSmooth() {
-		if (typeSmooth >= typeSmooth.getMax()) typeSmooth = 1;
-		else typeSmooth++;
+	void nextTypeSmooth(int i) {
+		if (smoothChannels[i]->typeSmooth >= smoothChannels[i]->typeSmooth.getMax()) smoothChannels[i]->typeSmooth = 1;
+		else smoothChannels[i]->typeSmooth++;
 	}
 	//--------------------------------------------------------------
-	void nextTypeMean() {
-		if (typeMean >= typeMean.getMax()) typeMean = 0;
-		else typeMean++;
+	void nextTypeMean(int i) {
+		if (smoothChannels[i]->typeMean >= smoothChannels[i]->typeMean.getMax()) smoothChannels[i]->typeMean = 0;
+		else smoothChannels[i]->typeMean++;
 	}
 
 	string helpInfo;
 
 	//--------------------------------------------------------------
-	void buildHelp() 
+	void buildHelp()
 	{
 		// Help info
 		string s = "";
@@ -395,16 +387,20 @@ private:
 			s += "H           HELP \n";
 			s += "G           GUI \n";
 			s += "\n";
+
 			s += "            Type \n";
 			s += "TAB         SMOOTH \n";
 			s += "SHIFT       MEAN \n";
 			s += "\n";
+
 			s += "+|-         THRESHOLD \n";
 			s += "\n";
+
 			s += "S           Solo PLOT \n";
 			s += "Up|Down     Browse \n";
 			s += "\n";
-			s += "TESTER\n";
+
+			s += "TESTER \n";
 			s += "SPACE       RANDOMIZE \n";
 			s += "RETURN      PLAY \n";
 		}
@@ -419,33 +415,6 @@ private:
 
 public:
 
-	ofParameter<int> index;// index of the selected param!
-	ofParameter<bool> bSolo;// solo selected index
-
-	ofParameter<bool> bClamp;
-	ofParameter<float> minInput;
-	ofParameter<float> maxInput;
-	ofParameter<bool> bNormalized;
-	ofParameter<float> minOutput;
-	ofParameter<float> maxOutput;
-
-	ofParameter<int> typeSmooth;
-	ofParameter<int> typeMean;
-	ofParameter<string> typeSmooth_Str;
-	ofParameter<string> typeMean_Str;
-
-	// channel independent params
-	ofParameter<float> ampInput;
-	ofParameter<float> smoothPower;
-	ofParameter<float> threshold;
-	ofParameter<float> timeRedirection;
-	ofParameter<float> slideMin;
-	ofParameter<float> slideMax;
-	ofParameter<float> onsetGrow;
-	ofParameter<float> onsetDecay;
-
-	ofParameter<bool> bReset;
-
 	ofParameter<bool> bGui_Global{ "SMOOTH SURF", true };
 	ofParameter<bool> bGui_Main{ "SMOOTH MAIN", true };
 	ofParameter<bool> bGui_Plots;
@@ -456,4 +425,121 @@ public:
 	ofParameter<bool> bPlotFullScreen;
 	ofParameter<bool> bPlotIn;
 	ofParameter<bool> bPlotOut;
+
+	//--
+
+	ofParameter<int> index; // index of the GUI selected param!
+	ofParameter<bool> bSolo; // solo selected index
+
+	//--
+
+	// Channel independent params
+
+	ofParameter<float> ampInput;
+	ofParameter<float> smoothPower;
+	ofParameter<float> threshold;
+
+	ofParameter<int> typeSmooth;
+	ofParameter<int> typeMean;
+	ofParameter<string> typeSmooth_Str;
+	ofParameter<string> typeMean_Str;
+
+	ofParameter<float> timeRedirection;
+	ofParameter<float> slideMin;
+	ofParameter<float> slideMax;
+	ofParameter<float> onsetGrow;
+	ofParameter<float> onsetDecay;
+
+	ofParameter<bool> bClamp;
+	ofParameter<float> minInput;
+	ofParameter<float> maxInput;
+	ofParameter<bool> bNormalized;
+	ofParameter<float> minOutput;
+	ofParameter<float> maxOutput;
+
+	ofParameter<bool> bReset;
 };
+
+
+//----
+
+
+/*
+
+	MORE SNIPPETS FOR INSPIRATION
+
+	Learn how to get
+	the processed / smoothed params.
+
+	Somewhere in your ofApp::Update() / Draw()
+
+	//-
+
+	// 1. Just the param values
+
+	int _shapeType = data.getParamIntValue(shapeType);
+	int _amount = data.getParamIntValue(amount);
+	float _speed = data.getParamFloatValue(speed);
+
+	//-
+
+	// 2. The parameter itself
+
+	ofParameter<int> _amount = data.getParamInt(amount.getName());
+	ofParameter<float> _lineWidth = data.getParamFloat(lineWidth.getName());
+	ofParameter<float> _separation = data.getParamFloat(separation.getName());
+
+	//-
+
+	// 3. The ofAbstractParameter
+
+	// to be casted to his correct type after
+	auto &ap = data.getParamAbstract(lineWidth);
+	{
+		auto type = ap.type();
+		bool isGroup = type == typeid(ofParameterGroup).name();
+		bool isFloat = type == typeid(ofParameter<float>).name();
+		bool isInt = type == typeid(ofParameter<int>).name();
+		bool isBool = type == typeid(ofParameter<bool>).name();
+		string str = ap.getName();
+		if (isFloat)
+		{
+			ofParameter<float> fp = ap.cast<float>();
+		}
+		else if (isInt)
+		{
+			ofParameter<int> ip = ap.cast<int>();
+		}
+	}
+
+	//-
+
+	// 4. The whole group
+
+	// requires more work after, like iterate the group content, get a param by name...etc.
+	auto &group = data.getParamsSmoothed();
+	for (int i = 0; i < group.size(); i++)
+	{
+		auto type = group[i].type();
+		bool isGroup = type == typeid(ofParameterGroup).name();
+		bool isFloat = type == typeid(ofParameter<float>).name();
+		bool isInt = type == typeid(ofParameter<int>).name();
+		bool isBool = type == typeid(ofParameter<bool>).name();
+		string str = group[i].getName();
+		if (isFloat)
+		{
+			ofParameter<float> fp = group[i].cast<float>();
+			//do something with this parameter
+			//like push_back to your vector or something
+		}
+		else if (isInt)
+		{
+			ofParameter<int> ip = group[i].cast<int>();
+			//do something with this parameter
+			//like push_back to your vector or something
+		}
+	}
+
+	//-
+
+*/

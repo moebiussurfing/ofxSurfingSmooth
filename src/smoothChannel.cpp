@@ -1,7 +1,5 @@
 
-
 #include "smoothChannel.h"
-
 
 void SmoothChannel::setup(string _name)
 {
@@ -36,6 +34,8 @@ void SmoothChannel::setup(string _name)
 
 	params.add(bReset.set("Reset", false));
 
+	params.add(bEnableSmooth.set("ENABLE", true));
+
 	//--
 
 	doReset();
@@ -52,5 +52,121 @@ void SmoothChannel::setup(string _name)
 
 	//--
 
+	/*
 	soundEngine.setListener(&controller);
+	*/
+}
+
+void SmoothChannel::Changed(ofAbstractParameter& e)
+{
+	std::string name = e.getName();
+
+	ofLogNotice("SmoothChannel") << name << " : " << e;
+
+	if (0) {}
+
+	//--
+
+	else if (name == bReset.getName())
+	{
+		if (bReset)
+		{
+			bReset = false;
+			doReset();
+		}
+	}
+
+	//--
+
+	else if (name == typeSmooth.getName())
+	{
+		typeSmooth = ofClamp(typeSmooth, typeSmooth.getMin(), typeSmooth.getMax());
+
+		switch (typeSmooth)
+		{
+
+		case SMOOTHING_NONE:
+		{
+			if (!bEnableSmooth) bEnableSmooth = false;
+			typeSmooth_Str = typeSmoothLabels[0];
+			return;
+		}
+		break;
+
+		case SMOOTHING_ACCUM:
+		{
+			if (!bEnableSmooth) bEnableSmooth = true;
+			typeSmooth_Str = typeSmoothLabels[1];
+			//int MAX_HISTORY = 30;
+			//float v = ofMap(smoothPower, 0, 1, 1, MAX_HISTORY);
+			//for (int i = 0; i < amountChannels; i++) {
+			//	outputs[i].initAccum(v);
+			//}
+			return;
+		}
+		break;
+
+		case SMOOTHING_SLIDE:
+		{
+			if (!bEnableSmooth) bEnableSmooth = true;
+			typeSmooth_Str = typeSmoothLabels[2];
+			//for (int i = 0; i < amountChannels; i++) {
+			//	const int MIN_SLIDE = 1;
+			//	const int MAX_SLIDE = 50;
+			//	float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+			//	float _slmax = ofMap(slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+
+			//	outputs[i].initSlide(_slmin, _slmax);
+			//}
+			return;
+		}
+		break;
+
+		}
+
+		return;
+	}
+
+	//--
+
+	else if (name == typeMean.getName())
+	{
+		typeMean = ofClamp(typeMean, typeMean.getMin(), typeMean.getMax());
+
+		switch (typeMean)
+		{
+		case MEAN_ARITH:
+		{
+			typeMean_Str = typeMeanLabels[0];
+			//for (int i = 0; i < amountChannels; i++) {
+			//	outputs[i].setMeanType(MEAN_ARITH);
+			//}
+			return;
+		}
+		break;
+
+		case MEAN_GEOM:
+		{
+			typeMean_Str = typeMeanLabels[1];
+			//for (int i = 0; i < amountChannels; i++) {
+			//	outputs[i].setMeanType(MEAN_GEOM);
+			//}
+			return;
+		}
+		break;
+
+		case MEAN_HARM:
+		{
+			typeMean_Str = typeMeanLabels[2];
+			//for (int i = 0; i < amountChannels; i++) 
+			//{
+			//	outputs[i].setMeanType(MEAN_HARM);
+			//}
+			return;
+		}
+		break;
+		}
+
+		return;
+	}
 }

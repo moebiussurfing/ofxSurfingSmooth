@@ -3,8 +3,10 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	// parameters to smooth
-	params.setName("params");// main container
+	// Parameters to smooth 
+	// or to measure with detectors
+
+	params.setName("params"); // Group container
 	params.add(speed.set("speed", 0.5, 0, 1));
 	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
 	params.add(separation.set("separation", 50, 1, 100));
@@ -18,7 +20,7 @@ void ofApp::setup() {
 	//params.add(separation3.set("separation3", 50, 1, 100));
 	//params.add(speed3.set("speed3", 0.5, 0, 1));
 
-	// smoother
+	// Setup
 	data.setup(params);
 }
 
@@ -26,16 +28,20 @@ void ofApp::setup() {
 void ofApp::update() {
 
 	/*
-		NOTE:
-		Learn how to access the smoothed parameters.
-		Notice that we can't overwrite the smoothing on the source parameters!
-		We can get the smoothed params/variables doing these different approaches:
+	
+		Here we learn how to access the smoothed parameters.
+		Notice that we can't overwrite that smoothing 
+		into the source parameters!
+
+		We can get the smoothed params/variables instead,
+		by doing this approach:
+
 	*/
 
-	// 0. Simple Getters
+	// Simple Getters
 
 	if (0)
-		if (ofGetFrameNum() % 20 == 0)// Slowdown the log a bit
+		if (ofGetFrameNum() % 30 == 0) // Slowdown the log a bit
 		{
 			// Get the smoothed params
 			float _lineWidth = data.get(lineWidth);
@@ -45,7 +51,7 @@ void ofApp::update() {
 
 			// Log 
 			string sp = " \t ";
-			string str = "SMOOTHED >" + sp;
+			string str = ">" + sp;
 
 			str += lineWidth.getName()
 				+ ":" + ofToString(_lineWidth, 2) + sp;
@@ -58,69 +64,14 @@ void ofApp::update() {
 
 			ofLogNotice(__FUNCTION__) << str;
 		}
-
-
-	//----
-
-
+	
 	/*
-
-	// More snippets for inspiration:
-
-	// 1. just the param values
-	int _shapeType = data.getParamIntValue(shapeType);
-	int _amount = data.getParamIntValue(amount);
-	float _speed = data.getParamFloatValue(speed);
-
-	// 2. the parameter itself
-	ofParameter<int> _amount = data.getParamInt(amount.getName());
-	ofParameter<float> _lineWidth = data.getParamFloat(lineWidth.getName());
-	ofParameter<float> _separation = data.getParamFloat(separation.getName());
-
-	// 4. the ofAbstractParameter
-	// to be casted to his correct type after
-	auto &ap = data.getParamAbstract(lineWidth);
-	{
-		auto type = ap.type();
-		bool isGroup = type == typeid(ofParameterGroup).name();
-		bool isFloat = type == typeid(ofParameter<float>).name();
-		bool isInt = type == typeid(ofParameter<int>).name();
-		bool isBool = type == typeid(ofParameter<bool>).name();
-		string str = ap.getName();
-		if (isFloat)
-		{
-			ofParameter<float> fp = ap.cast<float>();
-		}
-		else if (isInt)
-		{
-			ofParameter<int> ip = ap.cast<int>();
-		}
-	}
-
-	// 4. the whole group
-	// requires more work after, like iterate the group content, get a param by name...etc.
-	auto &group = data.getParamsSmoothed();
-	for (int i = 0; i < group.size(); i++)
-	{
-		auto type = group[i].type();
-		bool isGroup = type == typeid(ofParameterGroup).name();
-		bool isFloat = type == typeid(ofParameter<float>).name();
-		bool isInt = type == typeid(ofParameter<int>).name();
-		bool isBool = type == typeid(ofParameter<bool>).name();
-		string str = group[i].getName();
-		if (isFloat)
-		{
-			ofParameter<float> fp = group[i].cast<float>();
-			//do something with this parameter
-			//like push_back to your vector or something
-		}
-		else if (isInt)
-		{
-			ofParameter<int> ip = group[i].cast<int>();
-			//do something with this parameter
-			//like push_back to your vector or something
-		}
-	}
+	
+	We can also get the copied Group 
+	and process the content using other approaches...
+	Go to look some snippets included 
+	at the bottom of ofxSurfingSmooth.h
+	
 	*/
 }
 
@@ -135,13 +86,25 @@ void ofApp::draw() {
 	// Detector
 	// Log for a param
 
-	string str = "DEBUG  ";
-	str += speed.getName() + ":" + (data.isTriggered(speed) ? "x" : " "); // is above threshold
-	str += (data.isBonked(speed) ? "o" : " "); // is bonk trigged.
-	if (data.isRedirectedTo(speed) == 0) str += " ";
-	else if (data.isRedirectedTo(speed) < 0) str += "-"; // is going down
-	else if (data.isRedirectedTo(speed) > 0) str += "+"; // is going up
-	//str += (data.isRedirected(speed) ? "o" : " "); // ignoring direction
+	string str = " DEBUG    ";
+
+	// name
+	str += speed.getName() + "   |";
+
+	// is above threshold
+	str += ofToString((data.isTriggered(speed)) ? "x|" : " |");
+
+	// is bonk trigged
+	str += ofToString((data.isBonked(speed)) ? "o|" : " |");
+
+	// direction changed 
+	if (data.isRedirected(speed)) str += "*|";
+	else str += " |";
+
+	// is going down
+	if (data.isRedirectedTo(speed) <= 0) str += "-|";
+	// is going up
+	else if (data.isRedirectedTo(speed) > 0) str += "+|";
 
 	ofDrawBitmapStringHighlight(str, 4, 15);
 }
