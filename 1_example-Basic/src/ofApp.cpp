@@ -34,24 +34,30 @@ void ofApp::update() {
 
 	// 0. Simple Getters
 
-	// slowdown the log a bit
-	if(0)
-	if (ofGetFrameNum() % 20 == 0)
-	{
-		float _lineWidth = data.get(lineWidth);
-		int _shapeType = data.get(shapeType);
-		int _size = data.get(size);
-		int _amount = data.get(amount);
+	if (0)
+		if (ofGetFrameNum() % 20 == 0)// Slowdown the log a bit
+		{
+			// Get the smoothed params
+			float _lineWidth = data.get(lineWidth);
+			int _shapeType = data.get(shapeType);
+			int _size = data.get(size);
+			int _amount = data.get(amount);
 
-		// Log
-		string sp = " \t ";
-		string str = "SMOOTHED >" + sp;
-		str += lineWidth.getName() + ":" + ofToString(_lineWidth, 2); str += sp;
-		str += shapeType.getName() + ":" + ofToString(_shapeType); str += sp;
-		str += size.getName() + ":" + ofToString(_size); str += sp;
-		str += amount.getName() + ":" + ofToString(_amount); str += sp;
-		ofLogNotice(__FUNCTION__) << str;
-	}
+			// Log 
+			string sp = " \t ";
+			string str = "SMOOTHED >" + sp;
+
+			str += lineWidth.getName()
+				+ ":" + ofToString(_lineWidth, 2) + sp;
+			str += shapeType.getName()
+				+ ":" + ofToString(_shapeType) + sp;
+			str += size.getName()
+				+ ":" + ofToString(_size) + sp;
+			str += amount.getName()
+				+ ":" + ofToString(_amount) + sp;
+
+			ofLogNotice(__FUNCTION__) << str;
+		}
 
 
 	//----
@@ -126,25 +132,16 @@ void ofApp::draw() {
 
 	//--
 
-	// Trigs
+	// Detector
+	// Log for a param
 
-	// Log
-	string sp = "   ";//space
-	string str = "  Trig-Bonk-Direct   " + sp;
-
-	str += speed.getName() + ":" + (data.isTriggered(speed) ? "x" : " ");//is above threshold
-	str += (data.isBonked(speed) ? "o" : " ");//is bonk trigged. TODOL WIP. not working yet
+	string str = "DEBUG  ";
+	str += speed.getName() + ":" + (data.isTriggered(speed) ? "x" : " "); // is above threshold
+	str += (data.isBonked(speed) ? "o" : " "); // is bonk trigged.
 	if (data.isRedirectedTo(speed) == 0) str += " ";
-	else if (data.isRedirectedTo(speed) < 0) str += "-";//going down
-	else if (data.isRedirectedTo(speed) > 0) str += "+";//going up
-	//str += (data.isRedirected(speed) ? "o" : " ");//ignoring direction
-
-	//str += sp;
-	//str += lineWidth.getName() + ":" + (data.isTriggered(lineWidth) ? "x" : " ") + sp;
-	//str += separation.getName() + ":" + (data.isTriggered(separation) ? "x" : " ") + sp;
-	//str += shapeType.getName() + ":" + (data.isTriggered(shapeType) ? "x" : " ") + sp;
-	//str += size.getName() + ":" + (data.isTriggered(size) ? "x" : " ") + sp;
-	//str += amount.getName() + ":" + (data.isTriggered(amount) ? "x" : " ") + sp;
+	else if (data.isRedirectedTo(speed) < 0) str += "-"; // is going down
+	else if (data.isRedirectedTo(speed) > 0) str += "+"; // is going up
+	//str += (data.isRedirected(speed) ? "o" : " "); // ignoring direction
 
 	ofDrawBitmapStringHighlight(str, 4, 15);
 }

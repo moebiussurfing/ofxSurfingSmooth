@@ -15,7 +15,7 @@
 	+ move enablers, testers to advanced. rename to extra
 
 	+ add colors types, vectors, using templates..
-		+ avoid crash to unsuported types
+		+ avoid crash to unsupported types
 
 	+ add clamp
 
@@ -39,9 +39,9 @@
 #include "ofxSurfingBoxInteractive.h"
 #include "smoothChannel.h"
 
-#define NUM_GENERATORS 6
-
 #define COLORS_MONCHROME // all plots same color. green
+
+//--
 
 class ofxSurfingSmooth : public ofBaseApp {
 
@@ -72,7 +72,7 @@ private:
 
 
 //public:
-	
+
 	ofxSurfing_ImGui_Manager guiManager;
 
 private:
@@ -122,7 +122,7 @@ public:
 	// Bang/Bonk/Triggers under threshold detectors
 
 //private:
- 
+
 	//--------------------------------------------------------------
 	bool isTriggered(int i) {//flag true when triggered this index param
 		if (i > params_EditorEnablers.size() - 1) {
@@ -170,14 +170,14 @@ public:
 		// if the direction has changed and
 		// if the time of change is greater than (0.5) timeRedirection sec
 		// print the time between changes and amount of change
-		if (outputs[i].getDirectionTimeDiff() > timeRedirection && 
+		if (outputs[i].getDirectionTimeDiff() > timeRedirection &&
 			outputs[i].directionHasChanged())
 		{
-				ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " << 
-					outputs[i].getDirectionTimeDiff() << ", " << 
-					outputs[i].getDirectionValDiff();
+			ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " <<
+				outputs[i].getDirectionTimeDiff() << ", " <<
+				outputs[i].getDirectionValDiff();
 
-				return true;
+			return true;
 		}
 		return false;
 	}
@@ -200,16 +200,16 @@ public:
 		// if the direction has changed and
 		// if the time of change is greater than 0.5 sec
 		// print the time between changes and amount of change
-		if (outputs[i].getDirectionTimeDiff() > timeRedirection && 
+		if (outputs[i].getDirectionTimeDiff() > timeRedirection &&
 			outputs[i].directionHasChanged())
 		{
-				ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " << 
-					outputs[i].getDirectionTimeDiff() << ", " << 
-					outputs[i].getDirectionValDiff();
+			ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " <<
+				outputs[i].getDirectionTimeDiff() << ", " <<
+				outputs[i].getDirectionValDiff();
 
-				if (outputs[i].getDirectionValDiff() < 0) rdTo = 1;
-				else rdTo = -1;
-				return rdTo;
+			if (outputs[i].getDirectionValDiff() < 0) rdTo = 1;
+			else rdTo = -1;
+			return rdTo;
 		}
 		return rdTo;//0
 	}
@@ -270,39 +270,42 @@ private:
 
 	void setup();
 	void startup();
-	void setupPlots();
+
 	void updateGenerators();
 	void updateSmooths();
 	void updateEngine();
+
+	void setupPlots();
 	void drawPlots(ofRectangle r);
 
 private:
 
 	ofParameterGroup mParamsGroup;
 
-	ofParameterGroup mParamsGroup_Smoothed;//TODO:
+	ofParameterGroup mParamsGroup_Smoothed;
+	//TODO:
 	string suffix = "";
 	//string suffix = "_COPY";
-
-	//void Changed_Controls_Out(ofAbstractParameter& e);
 
 private:
 
 	vector<ofxDataStream> outputs; // the smooth class
 	vector<float> inputs; // feed normalized signals here
 
+	// Signal Generator
+	ofxSurfingHelpers::SurfGenerators surfGenerator;
 
-	vector<float> generators;//testing signals
+	//--
 
 	string path_Global;
 	string path_Settings;
 
-	//ofxInteractiveRect boxPlots = { "Rect_Plots", "/ofxSurfingSmooth/" };
+public:
 
-	public:
 	ofxSurfingBoxInteractive boxPlots;
 
-	private:
+private:
+
 	int amountPlots;
 	int amountChannels;
 
@@ -329,10 +332,10 @@ private:
 
 	ofParameter<bool> bGui_Inputs;
 	ofParameter<bool> bGui_Outputs;
-	ofParameter<bool> bUseGenerators;
+	ofParameter<bool> bGenerators;
 
 	ofParameter<bool> bEnableSmooth;
-	
+
 	///// TODO:remove
 	//ofParameter<float> input;//for index selected
 	//ofParameter<float> output;
@@ -349,13 +352,10 @@ private:
 	void doReset();
 	void setupParams();
 
-	bool bTrigManual = false; // flip first
-	bool bModeFast = false; // fast generators
-
 	ofColor colorBg;
 
 	void setup_ImGui();
-	
+
 	void draw_ImGui();
 	void draw_ImGuiMain();
 	void draw_ImGuiGameMode();
@@ -380,7 +380,8 @@ private:
 	string helpInfo;
 
 	//--------------------------------------------------------------
-	void buildHelp() {
+	void buildHelp() 
+	{
 		// Help info
 		string s = "";
 		s += "HELP SMOOTH \n\n";
@@ -394,17 +395,18 @@ private:
 			s += "H           HELP \n";
 			s += "G           GUI \n";
 			s += "\n";
-			s += "TAB         Smooth Type \n";
-			s += "SHIFT       Mean Type \n";
+			s += "            Type \n";
+			s += "TAB         SMOOTH \n";
+			s += "SHIFT       MEAN \n";
 			s += "\n";
-			s += "+|-         OnSet Thresholds \n";
+			s += "+|-         THRESHOLD \n";
 			s += "\n";
-			s += "S           Solo Plot \n";
-			s += "Up|Down     Solo Browse \n";
+			s += "S           Solo PLOT \n";
+			s += "Up|Down     Browse \n";
 			s += "\n";
 			s += "TESTER\n";
-			s += "SPACE       Randomize \n";
-			s += "RETURN      Play \n";
+			s += "SPACE       RANDOMIZE \n";
+			s += "RETURN      PLAY \n";
 		}
 		helpInfo = s;
 
@@ -448,7 +450,7 @@ public:
 	ofParameter<bool> bGui_Main{ "SMOOTH MAIN", true };
 	ofParameter<bool> bGui_Plots;
 	ofParameter<bool> bGui_Extra{ "Extra", true };
-	
+
 	ofParameter<bool> bGui_GameMode;
 
 	ofParameter<bool> bPlotFullScreen;

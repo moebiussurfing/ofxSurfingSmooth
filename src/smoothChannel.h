@@ -53,6 +53,8 @@ public:
 public:
 
 	SmoothChannel() {
+		path_Global = "ofxSurfingSmooth/";
+
 		ofAddListener(params.parameterChangedE(), this, &SmoothChannel::Changed);
 	};
 
@@ -62,15 +64,14 @@ public:
 		ofxSurfingHelpers::saveGroup(params, path_Settings);
 	};
 
-	void setPathGlobal(string name) {
-		path_Global = name;
-		ofxSurfingHelpers::CheckFolder(path_Global);
-	};
-
 	void setup(string name);
 
-	ofParameter<string> nameStr;
+	//--
 
+	ofParameterGroup params;
+
+	ofParameter<float> ampInput;
+	
 	ofParameter<int> typeSmooth;
 	ofParameter<int> typeMean;
 	ofParameter<string> typeSmooth_Str;
@@ -83,7 +84,6 @@ public:
 	ofParameter<float> slideMax;
 	ofParameter<float> onsetGrow;
 	ofParameter<float> onsetDecay;
-	ofParameter<bool> bReset;
 
 	ofParameter<bool> bClamp;
 	ofParameter<float> minInput;
@@ -92,14 +92,17 @@ public:
 	ofParameter<float> minOutput;
 	ofParameter<float> maxOutput;
 
-	ofParameter<float> ampInput;
 	ofParameter<int> bangDetectorIndex;
 
-	ofParameterGroup params;
+	ofParameter<bool> bReset;
+	
+	//--
 
 	vector<string> bangDetectors = { "Trig","Bonk", "Direction", "Above", "Below" };
 
 private:
+
+	string name = "SmoothChannel";
 
 	string path_Global;
 	string path_Settings;
@@ -129,8 +132,6 @@ private:
 		onsetDecay = 0.1;
 	}
 
-	string name = "SmoothChannel";
-
 	void SmoothChannel::Changed(ofAbstractParameter& e)
 	{
 		std::string name = e.getName();
@@ -148,5 +149,10 @@ private:
 			}
 		}
 	}
+
+	void setPathGlobal(string name) {
+		path_Global = name;
+		ofxSurfingHelpers::CheckFolder(path_Global);
+	};
 };
 
