@@ -98,8 +98,8 @@ void ofxSurfingSmooth::setupPlots()
 	colorTrig = ofColor(ofColor::red);
 	colorBonk = ofColor(ofColor::blue);
 	colorDirect = ofColor(ofColor::green);
-	colorDirectUp = ofColor(ofColor::lightGreen);
-	colorDirectDown = ofColor(ofColor::limeGreen);
+	colorDirectUp = ofColor(ofColor::green);
+	colorDirectDown = ofColor(ofColor::green);
 
 	// colors
 	colors.clear();
@@ -676,6 +676,8 @@ void ofxSurfingSmooth::drawToggles() {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 
+	const int dur = 300;//mantain flags blinking
+	
 	ofPushStyle();
 
 	int hh = r.getHeight();
@@ -784,7 +786,6 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		//else if (isRedirectedTo(i) > 0) s += "+" + _spacing; // redirected
 
 		// latched
-		const int dur = 400;
 		uint32_t t = ofGetElapsedTimeMillis();
 
 		static int tlastRedirect = 0;
@@ -839,10 +840,11 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 			float _speedfast = 0.2;
 			float _speedslow = 1.0;
 			int _amax = 225;
-			int _a = (int)ofMap(ofxSurfingHelpers::Bounce(_speedslow), 0, 1, 140, 155); // Standby
-			int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, 150, _amax); // TriggedState
-			int _a1 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, 150, _amax); // Bonked
-			int _a2 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, 150, _amax); // Redirect
+			int _amin = 180;
+			int _a = (int)ofMap(ofxSurfingHelpers::Bounce(_speedslow), 0, 1, _amin, _amax); // Standby
+			int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax); // TriggedState
+			int _a1 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax); // Bonked
+			int _a2 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax); // Redirect
 
 			//line width
 			int lmin = bSolo ? 2 : 1;
@@ -953,7 +955,7 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		if (i == index && !bSolo)
 		{
 			int l = 4;
-			int lh = 0;
+			int lh = 2;
 
 			ofSetLineWidth(l);
 			ofSetColor(colorPlots, ofMap(ofxSurfingHelpers::Bounce(), 0, 1, 64, 150));

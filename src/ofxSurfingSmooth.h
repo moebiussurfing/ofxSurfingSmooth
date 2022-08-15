@@ -4,7 +4,8 @@
 
 	TODO:
 
-	+ change plot threshold line color to expected detector!
+	+ fix circle beat widget
+		check bang behavior!
 	+ fix chars to debug plot
 	+ add clamp and normalization modes.
 
