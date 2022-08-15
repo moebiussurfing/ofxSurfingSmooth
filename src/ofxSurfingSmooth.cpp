@@ -15,7 +15,8 @@ ofxSurfingSmooth::~ofxSurfingSmooth()
 }
 
 //--------------------------------------------------------------
-void ofxSurfingSmooth::setup() {
+void ofxSurfingSmooth::setup()
+{
 	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__);
 
 	path_Global = "ofxSurfingSmooth/";
@@ -45,7 +46,6 @@ void ofxSurfingSmooth::setup() {
 	//--
 
 	mParamsGroup.setName("ofxSurfingSmooth");
-	ofAddListener(mParamsGroup.parameterChangedE(), this, &ofxSurfingSmooth::Changed_Controls_Out);
 }
 
 //--------------------------------------------------------------
@@ -64,11 +64,11 @@ void ofxSurfingSmooth::startup() {
 
 //--------------------------------------------------------------
 void ofxSurfingSmooth::setupPlots() {
-	NUM_VARS = mParamsGroup.size();
-	NUM_PLOTS = 2 * NUM_VARS;
+	amountChannels = mParamsGroup.size();
+	amountPlots = 2 * amountChannels;
 
-	index.setMax(NUM_VARS - 1);
-	plots.resize(NUM_PLOTS);
+	index.setMax(amountChannels - 1);
+	plots.resize(amountPlots);
 
 	// colors
 
@@ -86,7 +86,7 @@ void ofxSurfingSmooth::setupPlots() {
 
 	// colors
 	colors.clear();
-	colors.resize(NUM_PLOTS);
+	colors.resize(amountPlots);
 
 	// alphas
 	int a1 = 128;//input
@@ -94,7 +94,7 @@ void ofxSurfingSmooth::setupPlots() {
 	ofColor c;
 
 #ifdef COLORS_MONCHROME
-	for (int i = 0; i < NUM_VARS; i++)
+	for (int i = 0; i < amountChannels; i++)
 	{
 		c = colorPlots;
 		colors[2 * i] = ofColor(c, a1);
@@ -105,8 +105,8 @@ void ofxSurfingSmooth::setupPlots() {
 #ifndef COLORS_MONCHROME
 	int sat = 255;
 	int brg = 255;
-	int hueStep = 255. / (float)NUM_VARS;
-	for (int i = 0; i < NUM_VARS; i++)
+	int hueStep = 255. / (float)amountChannels;
+	for (int i = 0; i < amountChannels; i++)
 	{
 		c.setHsb(hueStep * i, sat, brg);
 		colors[2 * i] = ofColor(c, a1);
@@ -114,7 +114,7 @@ void ofxSurfingSmooth::setupPlots() {
 	}
 #endif
 
-	for (int i = 0; i < NUM_PLOTS; i++)
+	for (int i = 0; i < amountPlots; i++)
 	{
 		string _name;
 		string _name2;
@@ -147,6 +147,7 @@ void ofxSurfingSmooth::setupPlots() {
 
 	// draggable rectangle
 
+	boxPlots.setBorderColor(ofColor::yellow);
 	boxPlots.setPathGlobal(path_Global);
 	boxPlots.setup();
 	boxPlots.bEdit.setName("Edit Plots");
@@ -156,95 +157,121 @@ void ofxSurfingSmooth::setupPlots() {
 void ofxSurfingSmooth::update(ofEventArgs& args) {
 	if (ofGetFrameNum() == 0) { startup(); }
 
+	// Engine
+	updateEngine();
+
+	// Smooths
+	updateSmooths();//always
+	//if (!bUseGenerators) updateSmooths();//when generator disabled
+
+	//--
+
 	// Tester
-	// play timed randoms
-	static const int _secs = 2;
-	if (bPlay) {
-		//int max = 60 * _secs;
-		int max = ofMap(playSpeed, 0, 1, 60, 5) * _secs;
-		tf = ofGetFrameNum() % max;
-		tn = ofMap(tf, 0, max, 0, 1);
-		if (tf == 0)
+	{
+		// play timed randoms
+		static const int _secs = 2;
+		if (bPlay)
 		{
-			doRandomize();
+			//int max = 60 * _secs;
+			int max = ofMap(playSpeed, 0, 1, 60, 5) * _secs;
+			tf = ofGetFrameNum() % max;
+			tn = ofMap(tf, 0, max, 0, 1);
+			if (tf == 0)
+			{
+				doRandomize();
+			}
 		}
 	}
 
 	// Generators
 	if (bUseGenerators) updateGenerators();
-
-	// Engine
-	updateEngine();
-
-	// Smooths
-	updateSmooths();
-	//if (!bUseGenerators) updateSmooths();
 }
 
 //--------------------------------------------------------------
-void ofxSurfingSmooth::updateSmooths() {
-	// Getting from the params not from the generators!
+void ofxSurfingSmooth::updateSmooths()
+{
+	// Getting from the params 
+	// not from the generators!
 
 	for (int i = 0; i < mParamsGroup.size(); i++)
 	{
 		ofAbstractParameter& p = mParamsGroup[i];
 
-		//toggle
+		// Enabler toggle
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
-		auto type = _p.type();
-		bool isBool = type == typeid(ofParameter<bool>).name();
+		bool isBool = (_p.type() == typeid(ofParameter<bool>).name());
 		string name = _p.getName();
-		ofParameter<bool> _bSmooth = _p.cast<bool>();
+		ofParameter<bool> _bEnabledSmooth = _p.cast<bool>();
 
-		//-
+		//--
 
-		//string str = "";
-		//string name = aparam.getName();
-		float vn = 0;//normalized params
+		float vn = 0; 
+		// normalized params
 
-		if (p.type() == typeid(ofParameter<float>).name()) {
+		//--
+
+		// Float
+
+		if (p.type() == typeid(ofParameter<float>).name())
+		{
 			ofParameter<float> _p = p.cast<float>();
 			vn = ofMap(_p, _p.getMin(), _p.getMax(), 0, 1);
 
-			//smooth group
+			// smooth group
 			auto pc = mParamsGroup_Smoothed.getFloat(_p.getName() + suffix);
 
-			if (bEnableSmooth && _bSmooth) {
+			if (bEnableSmooth && _bEnabledSmooth) 
+			{
 				float v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax(), true);
 				pc.set(v);
 			}
-			else {
+			else
+			{
 				pc.set(_p.get());
 			}
 		}
 
-		else if (p.type() == typeid(ofParameter<int>).name()) {
+		//--
+
+		// Int
+
+		else if (p.type() == typeid(ofParameter<int>).name())
+		{
 			ofParameter<int> _p = p.cast<int>();
 			vn = ofMap(_p, _p.getMin(), _p.getMax(), 0, 1);
 
-			//smooth group
+			// smooth group
 			auto pc = mParamsGroup_Smoothed.getInt(_p.getName() + suffix);
 
-			if (bEnableSmooth && _bSmooth) {
-				int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax() + 1, true);//TODO: round fix..
-				//int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax());
+			if (bEnableSmooth && _bEnabledSmooth) 
+			{
+				int v = ofMap(outputs[i].getValue(), 0, 1, _p.getMin(), _p.getMax() + 1, true); //TODO: round fix..
 				pc.set(v);
 			}
-			else {
+			else
+			{
 				pc.set(_p.get());
 			}
 		}
 
+		//--
+
+		// Bool
+		// ignored
 		//else if (p.type() == typeid(ofParameter<bool>).name()) {
 		//	ofParameter<bool> ti = p.cast<bool>();
 		//}
 
+		//TOOD: could add other types like multidim glm etc
+		// ignored
 		else
 		{
 			continue;
 		}
 
-		//-
+		//--
+
+		// Feed
 
 		inputs[i] = vn; // prepare and feed the input with the normalized parameter
 
@@ -256,50 +283,60 @@ void ofxSurfingSmooth::updateSmooths() {
 void ofxSurfingSmooth::updateEngine() {
 
 	//TODO: crash when added other types than int/float
-	//for (int i = 0; i < NUM_VARS && i < params_EditorEnablers.size(); i++)
+	//for (int i = 0; i < amountChannels && ; i++)
 
-	for (int i = 0; i < NUM_VARS; i++)
+	for (int i = 0; i < amountChannels; i++)
 	{
 		// Enabler toggle
 		auto& p = params_EditorEnablers[i];// ofAbstractParameter
 		bool isBool = (p.type() == typeid(ofParameter<bool>).name());
-		if (!isBool) {
-			ofLogError("ofxSurfingSmooth") << (__FUNCTION__) << "Skip to avoid crash!";
+		if (!isBool || i > params_EditorEnablers.size() - 1)
+		{
+			ofLogError("ofxSurfingSmooth") << (__FUNCTION__) << "Out o range. Skip param #" << i;
 			continue;
 		}
+		bool _bEnabled = p.cast<bool>().get();
 
-		bool _bSmooth = p.cast<bool>().get();
+		//--
 
-		// get input as source or clamped
+		// 1. Feed input
+
+		// get input as source raw or clamped
 		float _input;
+
 		if (bClamp) _input = ofClamp(inputs[i], minInput, maxInput);
 		else _input = inputs[i];
 
+		//--
+
+		// 2. Feed Plot
+		// 
 		// plot
-		if (bGui_Plots) plots[2 * i]->update(_input);//source
+		if (bGui_Plots) plots[2 * i]->update(_input); // feed the source signal to the input Plot 
 
 		// output
 		if (bGui_Plots)
 		{
-			if (bEnableSmooth && _bSmooth) plots[2 * i + 1]->update(outputs[i].getValue());//use filtered
-			else plots[2 * i + 1]->update(_input);//use source
+			if (bEnableSmooth && _bEnabled) plots[2 * i + 1]->update(outputs[i].getValue()); // use filtered signal
+			else plots[2 * i + 1]->update(_input); // use source signal
 		}
 
-		//TODO: ?
-		if (i == index) input = _input;
+		////TODO: ?
+		//if (i == index) input = _input;
 	}
 
 	//----
 
+	/*
 	// index of the selected param!
 
 	// toggle
 	int i = index;
 	auto& _p = params_EditorEnablers[i];// ofAbstractParameter
-	bool _bSmooth = _p.cast<bool>().get();
+	bool _bEnabledSmooth = _p.cast<bool>().get();
 
 	// output. get the output as it is or normalized
-	if (bEnableSmooth && _bSmooth)
+	if (bEnableSmooth && _bEnabledSmooth)
 	{
 		if (bNormalized) output = outputs[index].getValueN();
 		else output = outputs[index].getValue();
@@ -308,14 +345,17 @@ void ofxSurfingSmooth::updateEngine() {
 	{
 		output = input;
 	}
+	*/
 
 	//----
 
+	/*
 	//TODO:
 	// Log bangs / onSets but for only the selected/index channel/param !
 	// add individual thresholds
 	// add callbacks notifiers
-	for (int i = 0; i < NUM_VARS; i++)
+
+	for (int i = 0; i < amountChannels; i++)
 	{
 		if (outputs[i].getTrigger())
 		{
@@ -342,6 +382,7 @@ void ofxSurfingSmooth::updateEngine() {
 
 		if (i == index) break;//already done! bc we are monitoring the selected channel!
 	}
+	*/
 }
 
 //--------------------------------------------------------------
@@ -350,26 +391,30 @@ void ofxSurfingSmooth::updateGenerators() {
 
 	// run generators
 
-	if (ofGetFrameNum() % 20 == 0) {
+	if (ofGetFrameNum() % 30 == 0)
+	{
 		if (ofRandom(0, 1) > 0.5) bTrigManual = !bTrigManual;
 	}
 
-	// NOTICe that fails when ignoring original params ranges!
+	// NOTICE 
+	// that fails when ignoring original params ranges!
+
 	for (int g = 0; g < NUM_GENERATORS; g++) {
 		switch (g) {
-		case 0: generators[g] = (bTrigManual ? 0.7 : 0.1); break;
-		case 1: generators[g] = ofxSurfingHelpers::Tick((bModeFast ? 0.2 : 1)); break;
-		case 2: generators[g] = ofxSurfingHelpers::Noise(ofPoint((!bModeFast ? 1 : 0.001), (!bModeFast ? 1.3 : 2.3))); break;
-		case 3: generators[g] = ofClamp(ofxSurfingHelpers::NextGaussian(0.5, (bModeFast ? 1 : 0.1)), 0.2, 0.8); break;
-		case 4: generators[g] = ofxSurfingHelpers::NextReal(0, (bModeFast ? 1 : 0.1)); break;
-		case 5: generators[g] = ofxSurfingHelpers::Noise(ofPoint((!bModeFast ? 1 : 0.00001), (!bModeFast ? 0.3 : 0.03))); break;
+		case 0: generators[g] = (bTrigManual ? 0.1 : 0.5); break;
+		case 1: generators[g] = ofMap(ofxSurfingHelpers::Tick((bModeFast ? 1 : 2)), 0, 1, 0.1, 0.6); break;
+		case 2: generators[g] = ofMap(ofxSurfingHelpers::Noise(ofPoint((!bModeFast ? 1 : 0.001), 1)), 0, 1, 0, 1);  break;
+		case 3: generators[g] = !bTrigManual ? 0.26 : ofClamp(ofxSurfingHelpers::NextGaussian(0.25, 1), 0, 0.65); break;
+		case 4: generators[g] = bTrigManual ? 0.5 : ofxSurfingHelpers::Noise(ofPoint((!bModeFast ? 1 : 0.00001), (!bModeFast ? 0.3 : 0.03))); break;
+		case 5: generators[g] = ofMap(ofxSurfingHelpers::NextReal(0, (bModeFast ? 1 : 0.1)), 0, 1, 0.1, 0.7); break;
 		}
 	}
+
 	//outputs[i].update(inputs[i]); // raw value, index (optional)
 
 	//----
 
-	// feed generators to parameters
+	// Feed generators to parameters
 
 	for (int i = 0; i < mParamsGroup.size(); i++)
 	{
@@ -384,15 +429,22 @@ void ofxSurfingSmooth::updateGenerators() {
 		{
 			float value = 0;
 
-			if (aparam.type() == typeid(ofParameter<int>).name()) {
+			// int
+			if (aparam.type() == typeid(ofParameter<int>).name())
+			{
 				ofParameter<int> ti = aparam.cast<int>();
-				value = ofMap(generators[i], 0, 1, ti.getMin(), ti.getMax());
+				value = generators[i];
+				//value = ofMap(generators[i], 0, 1, ti.getMin(), ti.getMax());
 				ti.set((int)value);
 				//ti = (int)value;
 			}
-			else if (aparam.type() == typeid(ofParameter<float>).name()) {
+
+			// float
+			else if (aparam.type() == typeid(ofParameter<float>).name())
+			{
 				ofParameter<float> ti = aparam.cast<float>();
-				value = ofMap(generators[i], 0, 1, ti.getMin(), ti.getMax());
+				value = generators[i];
+				//value = ofMap(generators[i], 0, 1, ti.getMin(), ti.getMax());
 				ti.set(value);
 				//ti = value;
 			}
@@ -443,7 +495,7 @@ void ofxSurfingSmooth::draw()
 
 		boxPlots.draw();
 
-		if (boxPlots.isEditing()) boxPlots.drawBorderBlinking(ofColor::yellow);
+		if (boxPlots.isEditing()) boxPlots.drawBorderBlinking();
 	}
 
 	//if (bGui) draw_ImGui();
@@ -547,14 +599,14 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 	int h;
 	if (!bSolo)
 	{
-		h = hh / NUM_VARS; // multiplot height
+		h = hh / amountChannels; // multiplot height
 	}
 	else // bSolo
 	{
 		h = hh; // full height on bSolo
 	}
 
-	for (int i = 0; i < NUM_VARS; i++)
+	for (int i = 0; i < amountChannels; i++)
 	{
 		if (bSolo) if (i != index) continue;
 
@@ -591,7 +643,8 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		s = "#" + ofToString(i);
 
 		// add param name and value
-
+		// usefull when drawing only output
+		/*
 		if (0)
 		{
 			int ip = i;
@@ -613,6 +666,7 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 			}
 			s += " " + _spacing + sp;
 		}
+		*/
 
 		// space
 		s += " " + _spacing;
@@ -633,11 +687,28 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		//else if (isRedirectedTo(i) > 0) s += "+" + _spacing; // redirected
 
 		// latched
+		static int tlast = 0;
+		const int dur = 1000;
+		uint32_t t = ofGetElapsedTimeMillis();
+
 		static bool bDirectionLast = false;
-		if (isRedirectedTo(i) < 0) bDirectionLast = false; // redirected
-		else if (isRedirectedTo(i) > 0) bDirectionLast = true; // redirected
-		if (bDirectionLast) s += ">"; // redirected
-		else s += "<"; // redirected
+		if (isRedirectedTo(i) < 0) {
+			bDirectionLast = false; // redirected
+			tlast = t;
+		}
+		else if (isRedirectedTo(i) > 0) {
+			bDirectionLast = true; // redirected
+			tlast = t;
+		}
+
+		if (t - tlast < dur) {
+			if (bDirectionLast) s += ">"; // redirected
+			else s += "<"; // redirected
+		}
+		else
+		{
+			s += "-";
+		}
 
 		// display text
 		ofDrawBitmapString(s, x + 5, y + 11);
@@ -747,10 +818,10 @@ void ofxSurfingSmooth::setupParams() {
 
 	string name = "SMOOTH SURF";
 
-	float _inputMinRange = 0;
-	float _inputMaxRange = 1;
-	float _outMinRange = 0;
-	float _outMaxRange = 1;
+	//float _inputMinRange = 0;
+	//float _inputMaxRange = 1;
+	//float _outMinRange = 0;
+	//float _outMaxRange = 1;
 
 	//--
 
@@ -777,31 +848,32 @@ void ofxSurfingSmooth::setupParams() {
 
 	//--
 
+	params.add(ampInput.set("Amp", 0, -1, 1));
+	params.add(threshold.set("Thresh", 0.5, 0.0, 1));
+	params.add(smoothPower.set("Power", 0.2, 0.0, 1));
 	params.add(typeSmooth.set("Type Smooth", 0, 0, 2));
 	params.add(typeMean.set("Type Mean", 0, 0, 2));
-	params.add(smoothPower.set("Power", 0.2, 0.0, 1));
-	params.add(threshold.set("Thresh", 0.5, 0.0, 1));
 	params.add(timeRedirection.set("TimeDir", 0.5, 0.0, 1));
 	params.add(slideMin.set("SlideIn", 0.2, 0.0, 1));
 	params.add(slideMax.set("SlideOut", 0.2, 0.0, 1));
 	params.add(onsetGrow.set("Grow", 0.1f, 0.0, 1));
 	params.add(onsetDecay.set("Decay", 0.1, 0.0, 1));
-	params.add(bReset.set("Reset", false));
+	params.add(bClamp.set("Clamp", false));//TODO:
+	params.add(bNormalized.set("Normalized", false));//TODO:
+	params.add(minInput.set("minIn", 0, 0, 1));//TODO:
+	params.add(maxInput.set("maxIn", 1, 0, 1));
+	params.add(minOutput.set("minOut", 0, 0, 1));
+	params.add(maxOutput.set("maxOut", 1, 0, 1));
 
 	params.add(typeMean_Str.set(" ", ""));
 	params.add(typeSmooth_Str.set(" ", ""));
 
-	params.add(bClamp.set("Clamp", false));
-	params.add(minInput.set("minIn", 0, _inputMinRange, _inputMaxRange));
-	params.add(maxInput.set("maxIn", 1, _inputMinRange, _inputMaxRange));
-	params.add(minOutput.set("minOut", 0, _outMinRange, _outMaxRange));
-	params.add(maxOutput.set("maxOut", 1, _outMinRange, _outMaxRange));
-	params.add(bNormalized.set("Normalized", false));
+	params.add(bReset.set("Reset", false));
 
 	//--
 
-	params.add(input.set("INPUT", 0, _inputMinRange, _inputMaxRange));
-	params.add(output.set("OUTPUT", 0, _outMinRange, _outMaxRange));
+	//params.add(input.set("INPUT", 0, _inputMinRange, _inputMaxRange));
+	//params.add(output.set("OUTPUT", 0, _outMinRange, _outMaxRange));
 
 	guiManager.bGui_GameMode.setName("SMOOTH GAME");
 
@@ -829,8 +901,8 @@ void ofxSurfingSmooth::setupParams() {
 	typeSmooth_Str.setSerializable(false);
 	typeMean_Str.setSerializable(false);
 	bReset.setSerializable(false);
-	input.setSerializable(false);
-	output.setSerializable(false);
+	//input.setSerializable(false);
+	//output.setSerializable(false);
 	//bPlay.setSerializable(false);
 
 	ofAddListener(params.parameterChangedE(), this, &ofxSurfingSmooth::Changed_Params); // setup()
@@ -843,7 +915,6 @@ void ofxSurfingSmooth::setupParams() {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::exit() {
 	ofRemoveListener(params.parameterChangedE(), this, &ofxSurfingSmooth::Changed_Params); // exit()
-	ofRemoveListener(mParamsGroup.parameterChangedE(), this, &ofxSurfingSmooth::Changed_Controls_Out);
 
 	ofxSurfingHelpers::CheckFolder(path_Global);
 	ofxSurfingHelpers::saveGroup(params, path_Settings);
@@ -860,6 +931,7 @@ void ofxSurfingSmooth::doReset() {
 	maxOutput = 1;
 	bNormalized = false;
 
+	ampInput = 0;
 	typeSmooth = 1;
 	typeMean = 0;
 	smoothPower = 0.2;
@@ -872,7 +944,8 @@ void ofxSurfingSmooth::doReset() {
 
 	//--
 
-	output = 0;
+	//output = 0;
+
 	playSpeed = 0.5;
 }
 
@@ -883,10 +956,10 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	string name = e.getName();
 
-	if (name != input.getName() && name != output.getName() && name != "")
-	{
-		ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__) << " : " << name << " : " << e;
-	}
+	//if (name != input.getName() && name != output.getName() && name != "")
+	//{
+	//	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__) << " : " << name << " : " << e;
+	//}
 
 	if (0) {}
 
@@ -917,7 +990,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	else if (name == threshold.getName())
 	{
-		for (int i = 0; i < NUM_VARS; i++) {
+		for (int i = 0; i < amountChannels; i++) {
 			outputs[i].setThresh(threshold);
 		}
 		return;
@@ -929,7 +1002,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 	{
 		int MAX_ACC_HISTORY = 60;//calibrated to 60fps
 		float v = ofMap(smoothPower, 0, 1, 1, MAX_ACC_HISTORY);
-		for (int i = 0; i < NUM_VARS; i++) {
+		for (int i = 0; i < amountChannels; i++) {
 			outputs[i].initAccum(v);
 		}
 		return;
@@ -939,7 +1012,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	else if (name == slideMin.getName() || name == slideMax.getName())
 	{
-		for (int i = 0; i < NUM_VARS; i++) {
+		for (int i = 0; i < amountChannels; i++) {
 			const int MIN_SLIDE = 1;
 			const int MAX_SLIDE = 50;
 			float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
@@ -954,7 +1027,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	else if (name == minOutput.getName() || name == maxOutput.getName())
 	{
-		for (int i = 0; i < NUM_VARS; i++) {
+		for (int i = 0; i < amountChannels; i++) {
 			outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
 		}
 		return;
@@ -964,7 +1037,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	else if (name == bNormalized.getName())
 	{
-		for (int i = 0; i < NUM_VARS; i++)
+		for (int i = 0; i < amountChannels; i++)
 		{
 			//outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
 
@@ -983,7 +1056,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 	//amp.setDecayGrow(true, 0.99); // a framerate-dependent steady decay/growth
 	else if (name == onsetGrow.getName() || name == onsetDecay.getName())
 	{
-		for (int i = 0; i < NUM_VARS; i++) {
+		for (int i = 0; i < amountChannels; i++) {
 			outputs[i].setBonk(onsetGrow, onsetDecay);
 			//specAmps[i].setDecayGrow(true, 0.99);
 
@@ -1015,7 +1088,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 			typeSmooth_Str = typeSmoothLabels[1];
 			int MAX_HISTORY = 30;
 			float v = ofMap(smoothPower, 0, 1, 1, MAX_HISTORY);
-			for (int i = 0; i < NUM_VARS; i++) {
+			for (int i = 0; i < amountChannels; i++) {
 				outputs[i].initAccum(v);
 			}
 			return;
@@ -1026,7 +1099,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[2];
-			for (int i = 0; i < NUM_VARS; i++) {
+			for (int i = 0; i < amountChannels; i++) {
 				const int MIN_SLIDE = 1;
 				const int MAX_SLIDE = 50;
 				float _slmin = ofMap(slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
@@ -1053,7 +1126,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 		case ofxDataStream::MEAN_ARITH:
 		{
 			typeMean_Str = typeMeanLabels[0];
-			for (int i = 0; i < NUM_VARS; i++) {
+			for (int i = 0; i < amountChannels; i++) {
 				outputs[i].setMeanType(ofxDataStream::MEAN_ARITH);
 			}
 			return;
@@ -1063,7 +1136,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 		case ofxDataStream::MEAN_GEOM:
 		{
 			typeMean_Str = typeMeanLabels[1];
-			for (int i = 0; i < NUM_VARS; i++) {
+			for (int i = 0; i < amountChannels; i++) {
 				outputs[i].setMeanType(ofxDataStream::MEAN_GEOM);
 			}
 			return;
@@ -1073,7 +1146,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 		case ofxDataStream::MEAN_HARM:
 		{
 			typeMean_Str = typeMeanLabels[2];
-			for (int i = 0; i < NUM_VARS; i++) {
+			for (int i = 0; i < amountChannels; i++) {
 				outputs[i].setMeanType(ofxDataStream::MEAN_HARM);
 			}
 			return;
@@ -1618,8 +1691,9 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 						}
 
 						guiManager.Add(bSolo, OFX_IM_TOGGLE);
-						guiManager.Add(input, OFX_IM_HSLIDER_MINI);
-						guiManager.Add(output, OFX_IM_HSLIDER_MINI);
+
+						//guiManager.Add(input, OFX_IM_HSLIDER_MINI);
+						//guiManager.Add(output, OFX_IM_HSLIDER_MINI);
 					}
 					else
 					{
@@ -1634,10 +1708,10 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 						}
 
 						guiManager.Add(bSolo, OFX_IM_TOGGLE);
-						guiManager.AddSpacingSeparated();
 
-						guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
-						guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
+						//guiManager.AddSpacingSeparated();
+						//guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
+						//guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
 					}
 				}
 
@@ -1858,7 +1932,8 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 
 	// create a copy group
 	// will be the output 
-	// or what, once smoothed, we will use target to be use params
+	// or what, once smoothed, we will use target to be use params.
+	// we copy the param and queue to our group
 
 	if (isFloat)
 	{
@@ -1871,12 +1946,6 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 		ofParameter<bool> _b{ _name, true };
 		editorEnablers.push_back(_b);
 		params_EditorEnablers.add(_b);
-
-		//-
-
-		int i = params_EditorEnablers.size() - 1;
-		smoothChannels.push_back(make_unique<SmoothChannel>());
-		smoothChannels[i]->setup("Ch" + ofToString(i));
 	}
 
 	else if (isInt)
@@ -1890,12 +1959,6 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 		ofParameter<bool> _b{ _name, true };
 		editorEnablers.push_back(_b);
 		params_EditorEnablers.add(_b);
-
-		//-
-
-		int i = params_EditorEnablers.size() - 1;
-		smoothChannels.push_back(make_unique<SmoothChannel>());
-		smoothChannels[i]->setup("Ch" + ofToString(i));
 	}
 
 	else if (isBool)
@@ -1909,19 +1972,46 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 		ofParameter<bool> _b{ _name, true };
 		editorEnablers.push_back(_b);
 		params_EditorEnablers.add(_b);
-
-		//-
-
-		int i = params_EditorEnablers.size() - 1;
-		smoothChannels.push_back(make_unique<SmoothChannel>());
-		smoothChannels[i]->setup("Ch" + ofToString(i));
 	}
 
-	//else {
-	//}
+	//TODO:
+	else
+	{
+		return;//skip other types
+	}
 
 	//-
 
+	// Create the controls for each channel using our class
+
+	int i = params_EditorEnablers.size() - 1;
+	smoothChannels.push_back(make_unique<SmoothChannel>());
+	smoothChannels[i]->setup("Ch_" + ofToString(i));
+
+	// Create Lambda Callbacks
+
+	listeners.push(smoothChannels[i]->params.parameterChangedE().newListener([this](const ofAbstractParameter& e)
+		{
+			string name = e.getName();
+			ofLogNotice("listener") << name << " : " << e;
+
+			if (name == ampInput.getName())
+			{
+				//..
+				return;
+			}
+
+			else if (name == minOutput.getName())
+			{
+				//..
+				return;
+			}
+
+		}));
+
+	//--
+
+	// the enabler for each param / channel
 	params.add(params_EditorEnablers);
 }
 
@@ -1938,9 +2028,9 @@ void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 	mParamsGroup.setName(n);//name
 
 	//TODO:
-	//group COPY
-	mParamsGroup_Smoothed.setName(n + "_SMOOTH");//name
-	//mParamsGroup_Smoothed.setName(n + suffix);//name
+	// copied group
+	mParamsGroup_Smoothed.setName(n + "_SMOOTH");
+	//mParamsGroup_Smoothed.setName(n + suffix);
 
 	for (int i = 0; i < aparams.size(); i++)
 	{
@@ -1956,21 +2046,20 @@ void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 	// build the plots
 
 	setupPlots();
-	//NUM_VARS will be counted here..
+	// amountChannels will be counted here.
 
-	outputs.resize(NUM_VARS);
-	inputs.resize(NUM_VARS);
+	outputs.resize(amountChannels);
+	inputs.resize(amountChannels);
 
 	// default init
-
-	for (int i = 0; i < NUM_VARS; i++)
+	for (int i = 0; i < amountChannels; i++)
 	{
 		outputs[i].initAccum(100);
 		outputs[i].directionChangeCalculated = true;
 		outputs[i].setBonk(onsetGrow, onsetDecay);
 	}
 
-	////--
+	//--
 
 	////TODO:
 	//mParamsGroup_Smoothed.setName(aparams.getName() + "_COPY");//name
@@ -1999,21 +2088,11 @@ void ofxSurfingSmooth::add(ofParameter<int>& aparam) {
 	addParam(aparam);
 }
 
-//--------------------------------------------------------------
-void ofxSurfingSmooth::Changed_Controls_Out(ofAbstractParameter& e)
-{
-	if (bDISABLE_CALLBACKS) return;
-
-	std::string name = e.getName();
-
-	ofLogVerbose("ofxSurfingSmooth") << (__FUNCTION__) << name << " : " << e;
-}
-
 //------------
 
 // API getters
 
-// to get the smoothed parameters indiviauly and externaly
+// to get the smoothed parameters individually and externally
 
 //simplified getters
 //--------------------------------------------------------------

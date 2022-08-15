@@ -9,10 +9,12 @@
 
 ## can exclude some sttings files
 
-#*.XML
-#*.xml
-#*.JSON
-#*.json
+*.XML
+*.xml
+*.JSON
+*.json
+
+*/enc_temp_folder/*
 
 #*/bin/*
 #!*/bin/data/

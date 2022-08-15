@@ -3,8 +3,53 @@
 #include "ofMain.h"
 #include "ofxSurfingHelpers.h"
 
+//--
+
+class ControllerClass {
+public:
+	/// TheEventType can be an int, void or whatever type but it is important that it is the same you use in the callback function, either if it is a class method or a lambda function
+	ofEvent<void> event;
+
+	void notify() {
+		//ofNotifyEvent(event, eventArgs, this);
+		ofNotifyEvent(event, this); // if TheEventType is void you should use this form
+	}
+
+	//TheEventType eventArgs; // whatever data you might want to pass with the event. dont use if you declare ofEvent<void>
+
+};
+
+class SoundEngineClass {
+public:
+	void setListener(ControllerClass* controller) {
+		eventListener = controller->event.newListener(this, &SoundEngineClass::eventCallback);
+	}
+
+	// in case you used a void event just make a funtion without arguments
+	//void eventCallback(TheEventType&) {
+	void eventCallback() {
+		// this gets triggered by the event!
+
+		ofLogNotice("SmoothChannel") << (__FUNCTION__) /*<< " " << aparams.getName()*/;
+
+	}
+
+	ofEventListener eventListener;
+
+};
+
+//--
+
 class SmoothChannel
 {
+
+public:
+
+	SoundEngineClass soundEngine;
+	ControllerClass controller;
+
+	//--
+
 public:
 
 	SmoothChannel() {
@@ -23,6 +68,8 @@ public:
 	};
 
 	void setup(string name);
+
+	ofParameter<string> nameStr;
 
 	ofParameter<int> typeSmooth;
 	ofParameter<int> typeMean;
@@ -57,9 +104,9 @@ private:
 	string path_Global;
 	string path_Settings;
 
-	void doReset() 
+	void doReset()
 	{
-		ofLogNotice("SmoothChannel") << (__FUNCTION__)<< name;
+		ofLogNotice("SmoothChannel") << (__FUNCTION__) << name;
 
 		ampInput = 0;
 		bangDetectorIndex = 0;
@@ -82,16 +129,8 @@ private:
 		onsetDecay = 0.1;
 	}
 
-	float _inputMinRange = 0;
-	float _inputMaxRange = 1;
-	float _outMinRange = 0;
-	float _outMaxRange = 1;
-
 	string name = "SmoothChannel";
 
-
-
-	//--------------------------------------------------------------
 	void SmoothChannel::Changed(ofAbstractParameter& e)
 	{
 		std::string name = e.getName();

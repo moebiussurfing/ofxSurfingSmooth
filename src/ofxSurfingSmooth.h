@@ -48,6 +48,12 @@ class ofxSurfingSmooth : public ofBaseApp {
 private:
 
 	vector<unique_ptr<SmoothChannel>> smoothChannels;
+	ofEventListeners listeners;
+
+	//ofEvent<void> event;
+	//void notify() {
+	//	ofNotifyEvent(event, this);
+	//}
 
 public:
 
@@ -278,12 +284,14 @@ private:
 	string suffix = "";
 	//string suffix = "_COPY";
 
-	void Changed_Controls_Out(ofAbstractParameter& e);
+	//void Changed_Controls_Out(ofAbstractParameter& e);
 
 private:
 
-	vector<ofxDataStream> outputs;//the smooth class
-	vector<float> inputs;//feed normalized signals here
+	vector<ofxDataStream> outputs; // the smooth class
+	vector<float> inputs; // feed normalized signals here
+
+
 	vector<float> generators;//testing signals
 
 	string path_Global;
@@ -295,8 +303,8 @@ private:
 	ofxSurfingBoxInteractive boxPlots;
 
 	private:
-	int NUM_PLOTS;
-	int NUM_VARS;
+	int amountPlots;
+	int amountChannels;
 
 	vector<ofxHistoryPlot*> plots;
 	vector<ofColor> colors;
@@ -325,9 +333,9 @@ private:
 
 	ofParameter<bool> bEnableSmooth;
 	
-	/// TODO:remove
-	ofParameter<float> input;//for index selected
-	ofParameter<float> output;
+	///// TODO:remove
+	//ofParameter<float> input;//for index selected
+	//ofParameter<float> output;
 
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
@@ -424,6 +432,8 @@ public:
 	ofParameter<string> typeSmooth_Str;
 	ofParameter<string> typeMean_Str;
 
+	// channel independent params
+	ofParameter<float> ampInput;
 	ofParameter<float> smoothPower;
 	ofParameter<float> threshold;
 	ofParameter<float> timeRedirection;

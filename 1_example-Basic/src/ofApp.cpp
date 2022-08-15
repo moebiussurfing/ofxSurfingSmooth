@@ -4,19 +4,19 @@
 void ofApp::setup() {
 
 	// parameters to smooth
-	params.setName("paramsGroup");// main container
+	params.setName("params");// main container
 	params.add(speed.set("speed", 0.5, 0, 1));
 	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
 	params.add(separation.set("separation", 50, 1, 100));
 	params.add(shapeType.set("shapeType", 0, -50, 50));
 	params.add(size.set("size", 100, 0, 100));
 	params.add(amount.set("amount", 10, 0, 25));
-	params.add(shapeType2.set("shapeType2", 0, -50, 50));
-	params.add(size2.set("size2", 100, 0, 100));
-	params.add(amount2.set("amount2", 10, 0, 25));
-	params.add(lineWidth3.set("lineWidth3", 0.5, 0, 1));
-	params.add(separation3.set("separation3", 50, 1, 100));
-	params.add(speed3.set("speed3", 0.5, 0, 1));
+	//params.add(shapeType2.set("shapeType2", 0, -50, 50));
+	//params.add(size2.set("size2", 100, 0, 100));
+	//params.add(amount2.set("amount2", 10, 0, 25));
+	//params.add(lineWidth3.set("lineWidth3", 0.5, 0, 1));
+	//params.add(separation3.set("separation3", 50, 1, 100));
+	//params.add(speed3.set("speed3", 0.5, 0, 1));
 
 	// smoother
 	data.setup(params);
