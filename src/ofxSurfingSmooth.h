@@ -26,105 +26,10 @@
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfingImGui.h"
 #include "ofxSurfingBoxInteractive.h"
+#include "circleBeatWidget.h"
 
 #define COLORS_MONCHROME // Un comment to draw all plots with the same color.
-#define MAX_AMP_POWER 5
-
-//--
-
-class CircleBeatSimple
-{
-public:
-
-	CircleBeatSimple() {
-		dt = 1.0f / 60.f;
-	};
-
-	~CircleBeatSimple() {
-	};
-
-	void update() {
-		animRunning = (animCounter <= 1.0f);//goes from 0 to 1 (finished)
-
-		if (animRunning)
-		{
-			animCounter += speedRatio * speed * dt;
-		}
-	};
-
-	void bang()
-	{
-		animCounter = 0.0f;//anim from 0.0 to 1.0
-
-		bState = false;
-	}
-
-	float getValue()
-	{
-		float f;
-		if (bState) return 1.f;
-		f = ofClamp(1.0f - animCounter, 0.f, 1.f);
-		return f;
-	}
-
-	void setToggleState() {
-		bState = !bState;
-		setState(bState);
-	}
-
-	void setState(bool state) {
-		bState = state;
-		
-		//stop
-		if(!bState) animCounter = 1.0f;
-	}
-
-	void reset() {
-		setState(false);
-	}
-
-	bool isSate() {
-		return bState;
-	}
-
-	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
-	void setMode(int i) {
-		mode = i;
-		switch (mode)
-		{
-		case 0: color = color0; break;
-		case 1: color = color1; break;
-		case 2: color = color2; break;
-		case 3: color = color3; break;
-		case 4: color = color4; break;
-		}
-	}
-
-	ofColor getColor() { 
-		ofColor c = ofColor(color, ofMap(animCounter, 1, 0, 200, 128));
-		return c; 
-	}
-	
-private:
-
-	bool bState = false;
-
-	float dt;
-	float animCounter;
-	bool animRunning;
-	float speedRatio = 6.0f;
-	float speed = 0.5f;
-
-	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
-	ofColor color0 = ofColor::red;
-	ofColor color1 = ofColor::blue;
-	ofColor color2 = ofColor::green;
-	ofColor color3 = ofColor::turquoise;
-	ofColor color4 = ofColor::brown;
-
-	int mode = 0;
-	ofColor color = color0;
-};
+#define MAX_AMP_POWER 1
 
 //--
 
@@ -135,6 +40,7 @@ private:
 
 	vector<unique_ptr<SmoothChannel>> smoothChannels;
 	ofEventListeners listeners;
+	//int iIndex = -1;
 
 	const int MAX_HISTORY = 30;
 	const int MIN_SLIDE = 1;
@@ -211,7 +117,7 @@ private:
 
 	//--------------------------------------------------------------
 	bool isTriggered(int i) {//flag true when triggered this index param
-		if (!bEnableSmooth) return false;
+		if (!bEnableSmoothGlobal) return false;
 
 		if (i > params_EditorEnablers.size() - 1)
 		{
@@ -232,7 +138,7 @@ private:
 
 	//--------------------------------------------------------------
 	bool isBonked(int i) {//flag true when triggered this index param
-		if (!bEnableSmooth) return false;
+		if (!bEnableSmoothGlobal) return false;
 		
 		if (i > params_EditorEnablers.size() - 1)
 		{
@@ -253,7 +159,7 @@ private:
 
 	//--------------------------------------------------------------
 	bool isRedirected(int i) {//flag true when signal direction changed
-		if (!bEnableSmooth) return false;
+		if (!bEnableSmoothGlobal) return false;
 		
 		if (i > params_EditorEnablers.size() - 1)
 		{
@@ -283,7 +189,7 @@ private:
 
 	//--------------------------------------------------------------
 	int isRedirectedTo(int i) {
-		if (!bEnableSmooth) return 0;
+		if (!bEnableSmoothGlobal) return 0;
 		
 		// return 0 when no direction changed. -1 or 1 depending direction.
 		// above or below threshold
@@ -413,7 +319,9 @@ private:
 	void updateEngine();
 
 	void setupPlots();
+	void refreshPlots();
 	void drawPlots(ofRectangle r);
+	vector<string> strDetectorsState;
 
 private:
 
@@ -476,7 +384,7 @@ private:
 	ofParameter<bool> bGui_Outputs;
 	ofParameter<bool> bGenerators;
 
-	ofParameter<bool> bEnableSmooth; // global enable
+	ofParameter<bool> bEnableSmoothGlobal; // global enable
 
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
@@ -578,9 +486,9 @@ public:
 
 	ofParameter<bool> bGui_GameMode;
 
-	ofParameter<bool> bPlotFullScreen;
-	ofParameter<bool> bPlotIn;
-	ofParameter<bool> bPlotOut;
+	ofParameter<bool> bGui_PlotFullScreen;
+	ofParameter<bool> bGui_PlotIn;
+	ofParameter<bool> bGui_PlotOut;
 
 	//--
 
@@ -615,9 +523,7 @@ public:
 
 	ofParameter<bool> bReset;
 
-	void draw_ImGui_CircleBeatWidget();
-
-	CircleBeatSimple circleBeat;
+	circleBeatWidget circleBeat;
 };
 
 //----

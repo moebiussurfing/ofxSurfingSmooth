@@ -4,7 +4,7 @@
 
 #include "ofxSurfingSmooth.h"
 
-#include "ofxWindowApp.h" // -> Not required. just to handle window app position/size.
+#include "ofxWindowApp.h" // -> Not required. Just to handle window app position/size.
 
 class ofApp : public ofBaseApp
 {

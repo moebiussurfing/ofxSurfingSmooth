@@ -9,7 +9,7 @@ void ofApp::setup() {
 	params.setName("params"); // Group container
 	params.add(speed.set("speed", 0.5, 0, 1));
 	params.add(lineWidth.set("lineWidth", 0.5, 0, 1));
-	params.add(separation.set("separation", 50, 1, 100));
+	params.add(separation.set("separation", 50.f, 1, 100));
 	params.add(shapeType.set("shapeType", 0, -50, 50));
 	params.add(size.set("size", 100, 0, 100));
 	params.add(amount.set("amount", 10, 0, 25));

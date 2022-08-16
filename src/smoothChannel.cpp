@@ -85,7 +85,7 @@ void SmoothChannel::doReset()
 	maxOutput = 1.f;
 	bNormalized = false;
 
-	smoothPower = 0.2f;
+	smoothPower = 0.1f;
 	threshold = 0.5f;
 	slideMin = 0.2f;
 	slideMax = 0.2f;
