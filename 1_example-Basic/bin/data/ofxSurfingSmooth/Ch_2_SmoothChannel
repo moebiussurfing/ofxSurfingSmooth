@@ -3,7 +3,7 @@
         "Amp": "0",
         "Clamp": "0",
         "Decay": "0.05",
-        "Detector": "0",
+        "Detector": "1",
         "ENABLE": "1",
         "Grow": "0.05",
         "Normalized": "0",
