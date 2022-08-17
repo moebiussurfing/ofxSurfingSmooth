@@ -29,7 +29,7 @@
 #include "circleBeatWidget.h"
 
 #define COLORS_MONCHROME // Un comment to draw all plots with the same color.
-#define MAX_AMP_POWER 2
+#define MAX_AMP_POWER 5
 
 //--
 
