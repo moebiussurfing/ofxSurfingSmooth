@@ -13,7 +13,7 @@
         "Threshold": "0.5",
         "TimeDir": "0.1",
         "Type_Mean": "0",
-        "Type_Smooth": "1",
+        "Type_Smooth": "2",
         "index": "3",
         "maxIn": "1",
         "maxOut": "1",

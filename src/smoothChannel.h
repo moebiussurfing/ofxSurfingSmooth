@@ -121,7 +121,7 @@ public:
 
 	//--
 
-	vector<string> bangDetectors = { "TrigState","Bonk", "Direction", "DirUp", "DirDown" };
+	vector<string> bangDetectors = { "State","Bonk", "Direct", "DirUp", "DirDown" };
 
 private:
 

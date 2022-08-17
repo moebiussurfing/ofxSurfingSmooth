@@ -919,8 +919,8 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 			int _a2 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax); // Redirect
 
 			//line width
-			int lmin = bSolo ? 2 : 1;
-			int lmax = bSolo ? 4 : 2;
+			int lmin = bSolo ? 3 : 2;
+			int lmax = bSolo ? 5 : 3;
 			int l;
 
 			ofColor c;
@@ -1725,11 +1725,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 			ImGui::NextColumn();
 
-			if (smoothChannels[i]->bangDetectorIndex != 1 ||
-				smoothChannels[i]->bangDetectorIndex != 2 ||
-				smoothChannels[i]->bangDetectorIndex != 3 ||
-				smoothChannels[i]->bangDetectorIndex != 4
-				)
+			if (smoothChannels[i]->bangDetectorIndex == 0)
 			{
 				guiManager.Add(smoothChannels[i]->threshold, OFX_IM_VSLIDER_NO_NUMBER, 2);
 				guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
@@ -1756,7 +1752,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 			guiManager.AddTooltip("Type Smooth");
 			if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
 			{
-				guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_NO_NUMBER);
+				guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL_NO_NUMBER);
 				guiManager.AddTooltip(ofToString(smoothChannels[i]->smoothPower.get(), 2));
 			}
 			if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_SLIDE)

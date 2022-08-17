@@ -11,7 +11,7 @@
         "SlideOut": "0.2",
         "Smooth_Power": "0",
         "Threshold": "0.284091",
-        "TimeDir": "0.1",
+        "TimeDir": "0.01",
         "Type_Mean": "0",
         "Type_Smooth": "1",
         "index": "1",

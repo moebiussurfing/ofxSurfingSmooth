@@ -108,7 +108,7 @@ private:
 	float dt;
 	float animCounter;
 	bool animRunning;
-	float speedRatio = 6.0f;
+	float speedRatio = 3.0f;
 	float speed = 0.5f;
 
 	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
@@ -126,12 +126,7 @@ public:
 	void draw_ImGui_CircleBeatWidget()
 	{
 		float radius = 30;
-
-		// Big circle segments outperforms..
-		const int nsegm = 24;
-
 		ofColor colorBg = ofColor(16, 200);
-
 		ofColor colorBeat = this->getColor();
 
 		//---
@@ -142,34 +137,15 @@ public:
 		const char* label = " ";
 
 		float radius_inner = radius * this->getValue() - 2; // 2 px inner
-
 		float radius_outer = radius;
 
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		ImVec2 pos = ImGui::GetCursorScreenPos(); // get top left of current widget
-
 		float xx = pos.x + pad;
-		//float yy = pos.y + pad / 2;
 		float yy = pos.y ;
-
-		//spacing in units
-		const int spcUnits = 3;
-		//ImVec4 widgetRec = ImVec4(xx, yy, radius * 2.0f, radius * 2.0f + spcUnits * pad);
-
 		ImVec4 widgetRec = ImVec4(xx, yy, radius * 2.0f, radius * 2.0f );
-
-		//ImVec2 labelLength = ImGui::CalcTextSize(label);
-
-		//ImVec2 center = ImVec2(
-		//	pos.x + space_width + radius,
-		//	pos.y + space_height * 2 + line_height + radius);
-
-		//ImVec2 center = ImVec2(
-		//	xx + radius,
-		//	yy + radius);
-
 		ImVec2 center = ImVec2(xx + __w100 / 2, yy + radius /*+ pad*/);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -178,31 +154,15 @@ public:
 
 		//-
 
-		// Draw label
-
-		//float texPos = pos.x + ((widgetRec.z - labelLength.x) * 0.5f);
-		//draw_list->AddText(ImVec2(texPos, pos.y + space_height), ImGui::GetColorU32(ImGuiCol_Text), label);
-
-		//-
-
 		// Outer Circle / Bg
 
+		// Big circle segments outperforms..
+		const int nsegm = 24;
+		ofColor c = colorBeat;
+		
 		draw_list->AddCircleFilled(center, radius_outer, ImGui::GetColorU32(ImVec4(colorBg)), nsegm);
 
-		//-
-
-		// Inner Circle
-
-		/*
-		// highlight 1st beat
-		ofColor c;
-		if (Beat_current == 1) c = colorBeat;
-		else c = colorTick;
-		*/
-
-		ofColor c = colorBeat;
-
-		if (mode == 0) // blink
+		if (mode == 0) // blink on that mode
 		{
 			int a = ofMap(ofxSurfingHelpers::getFadeBlink(0.05), 0, 1, 110, 200);
 			c = ofColor(colorBeat, a);

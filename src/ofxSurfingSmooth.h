@@ -256,7 +256,14 @@ public:
 
 	//----
 
-public:
+public:	
+	
+	//--------------------------------------------------------------
+	bool isBang(ofAbstractParameter& e) {
+		int i = getIndex(e);
+		if (i != -1) return isBang(i);
+		else return false;
+	}
 
 	//--------------------------------------------------------------
 	bool isBang(int i)
@@ -267,18 +274,15 @@ public:
 		// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
 
 		bool bReturn = false;
-
 		switch (smoothChannels[i]->bangDetectorIndex)
 		{
 		case 0: bReturn = isTriggered(0); break;
 		case 1: bReturn = isBonked(0); break;
 		case 2: bReturn = isRedirected(0); break;
-		case 3: bReturn = (isRedirectedTo(0) < 0); break;
-		case 4: bReturn = (isRedirectedTo(0) > 0); break;
-
+		case 3: bReturn = (isRedirectedTo(0) > 0); break;
+		case 4: bReturn = (isRedirectedTo(0) < 0); break;
 		default: ofLogError("ofxSurfingSmooth") << "Unknown selector index: " << i; return false; break;
 		}
-
 		return bReturn;
 	}
 

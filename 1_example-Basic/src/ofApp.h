@@ -3,6 +3,7 @@
 #include "ofMain.h"
 
 #include "ofxSurfingSmooth.h"
+#include "CircleBeat.h"
 
 #include "ofxWindowApp.h" // -> Not required. Just to handle window app position/size.
 
@@ -33,4 +34,6 @@ class ofApp : public ofBaseApp
 		ofParameter<int> shapeType3;
 		
 		ofxWindowApp w;
+
+		CircleBeat circleBeat;
 };

@@ -22,15 +22,22 @@ void ofApp::setup() {
 
 	// Setup
 	data.setup(params);
+
+	//-
+
+	// Receiver for the bang detector
+	float r = 50;
+	circleBeat.setRadius(r);
+	circleBeat.setPosition(ofGetWidth() - 2 * r - 5, 5 + r);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	/*
-	
+
 		Here we learn how to access the smoothed parameters.
-		Notice that we can't overwrite that smoothing 
+		Notice that we can't overwrite that smoothing
 		into the source parameters!
 
 		We can get the smoothed params/variables instead,
@@ -64,14 +71,14 @@ void ofApp::update() {
 
 			ofLogNotice(__FUNCTION__) << str;
 		}
-	
+
 	/*
-	
-	We can also get the copied Group 
+
+	We can also get the copied Group
 	and process the content using other approaches...
-	Go to look some snippets included 
+	Go to look some snippets included
 	at the bottom of ofxSurfingSmooth.h
-	
+
 	*/
 }
 
@@ -83,30 +90,18 @@ void ofApp::draw() {
 
 	//--
 
-	// Detector
-	// Log for a param
-
+	// Log Detector for a param
 	string str = " DEBUG    ";
-
-	// name
-	str += speed.getName() + "   |";
-
-	// is above threshold
-	str += ofToString((data.isTriggered(speed)) ? "x|" : " |");
-
-	// is bonk trigged
-	str += ofToString((data.isBonked(speed)) ? "x|" : " |");
-
-	// direction changed 
-	if (data.isRedirected(speed)) str += "x|";
-	else str += " |";
-
-	// is going down
-	if (data.isRedirectedTo(speed) <= 0) str += "<|";
-	// is going up
-	else if (data.isRedirectedTo(speed) > 0) str += ">|";
+	str += speed.getName() + "   ";
+	str += ofToString((data.isBang(speed)) ? "+" : "-");
 
 	ofDrawBitmapStringHighlight(str, 4, 15);
+
+	//--
+	
+	// Display detector for a param
+	if (data.isBang(speed)) circleBeat.bang();
+	circleBeat.draw();
 }
 
 //--------------------------------------------------------------
