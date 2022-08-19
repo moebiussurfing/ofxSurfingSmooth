@@ -105,21 +105,29 @@ void ofxSurfingSmooth::setupPlots()
 	//colorPlots = (ofColor::green);
 #endif
 
-	colorBaseLine = ofColor(255, 48);
+	colorBaseLine = ofColor(255, 100);
 	colorTextSelected = ofColor(255, 150);
 
 	colorThreshold = ofColor(150);
 
-	colorTrig = ofColor(ofColor::red);
-	colorBonk = ofColor(ofColor::blue);
-	colorDirect = ofColor(ofColor::green);
-	colorDirectUp = ofColor(ofColor::green);
-	colorDirectDown = ofColor(ofColor::green);
+	//// style 1
+	//colorTrig = ofColor(ofColor::red);
+	//colorBonk = ofColor(ofColor::blue);
+	//colorDirect = ofColor(ofColor::green);
+	//colorDirectUp = ofColor(ofColor::green);
+	//colorDirectDown = ofColor(ofColor::green);
 
-	//--
+	// style 2. all the same colors 
+	colorTrig = colorPlots;
+	colorBonk = colorPlots;
+	colorDirect = colorPlots;
+	colorDirectUp = colorPlots;
+	colorDirectDown = colorPlots; \
 
-	// circle beat widget
-	circleBeat.setColor(0, colorTrig);
+		//--
+
+		// circle beat widget
+		circleBeat.setColor(0, colorTrig);
 	circleBeat.setColor(1, colorBonk);
 	circleBeat.setColor(2, colorDirect);
 	circleBeat.setColor(3, colorDirectUp);
@@ -307,7 +315,9 @@ void ofxSurfingSmooth::updateSmooths()
 			ofParameter<float> _p = p.cast<float>();
 
 			//float g = 1;
-			float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+			//float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+			float g = ofMap(smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+			g *= (float)MAX_AMP_POWER;
 
 			_valueToInput = ofMap(
 				_p * g,
@@ -348,7 +358,9 @@ void ofxSurfingSmooth::updateSmooths()
 			ofParameter<int> _p = p.cast<int>();
 
 			//float g = 1;
-			float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+			//float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+			float g = ofMap(smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+			g *= (float)MAX_AMP_POWER;
 
 			_valueToInput = ofMap(
 				_p * g,
@@ -566,7 +578,9 @@ void ofxSurfingSmooth::updateGenerators() {
 				value = surfGenerator.get(i);
 
 				//float g = 1;
-				float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+				//float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+				float g = ofMap(smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+				g *= (float)MAX_AMP_POWER;
 
 				value = ofClamp(g * value, 0, 1);
 
@@ -585,7 +599,9 @@ void ofxSurfingSmooth::updateGenerators() {
 				value = surfGenerator.get(i);
 
 				//float g = 1;
-				float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+				//float g = ofMap((float)MAX_AMP_POWER * smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+				float g = ofMap(smoothChannels[i]->ampInput, -1, 1, 0, 2, true);
+				g *= (float)MAX_AMP_POWER;
 
 				value = ofClamp(g * value, 0, 1);
 
@@ -736,7 +752,7 @@ void ofxSurfingSmooth::drawToggles() {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 
-	const int dur = 300;//maintain flags blinking
+	const int dur = 300; // maintain flags blinking in ms
 
 	ofPushStyle();
 
@@ -769,17 +785,11 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		if (bGui_PlotIn) plots[ii]->draw(x, y, ww, h); // in
 		if (bGui_PlotOut) plots[ii + 1]->draw(x, y, ww, h); //out
 
-		// baseline
-		ofSetColor(colorBaseLine);
-		ofSetLineWidth(1);
-		ofLine(x, y + h, x + ww, y + h);
-
 		// add labels
 		string s;
 		string sp;
-
-		//string _spacing = "\t";
 		string _spacing = "  ";
+		//string _spacing = "\t";
 
 		// # number
 		if (!bSolo)
@@ -854,10 +864,11 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		// Time to retain / latched
 		uint32_t t = ofGetElapsedTimeMillis();
 
+		static int tlastBonk = 0;
+
 		static int tlastRedirect = 0;
 		static int tlastRedirectUp = 0;
 		static int tlastRedirectDown = 0;
-		static int tlastBonk = 0;
 
 		static bool bDirectionLastUp = false; // true=up false=down
 
@@ -910,103 +921,130 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 
 			// alpha blink
 			float _speedfast = 0.2;
-			float _speedslow = 1.0;
+			float _speedslow = 0.4;
 			int _amax = 225;
 			int _amin = 180;
-			int _a = (int)ofMap(ofxSurfingHelpers::Bounce(_speedslow), 0, 1, _amin, _amax); // Standby
-			int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax); // TriggedState
-			int _a1 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax); // Bonked
-			int _a2 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax); // Redirect
+			int _a = (int)ofMap(ofxSurfingHelpers::Bounce(_speedslow), 0, 1, _amin - 60, _amax - 60, true); // Standby
+			int _a0 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax, true); // TriggedState
+			int _a1 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax, true); // Bonked
+			int _a2 = (int)ofMap(ofxSurfingHelpers::Bounce(_speedfast), 0, 1, _amin, _amax, true); // Redirect
 
 			//line width
 			int lmin = bSolo ? 3 : 2;
 			int lmax = bSolo ? 5 : 3;
 			int l;
 
+
+			static int tlastRedirect2 = 0;
+			static int tlastRedirectUp2 = 0;
+			static int tlastRedirectDown2 = 0;
+
 			ofColor c;
 
-			switch (smoothChannels[i]->bangDetectorIndex)
+			if (!smoothChannels[i]->bEnableSmooth) // disabled
 			{
-			case 0://trigger
-			{
-				if (outputs[i].getTrigger())
-				{
-					c.set(ofColor(_c0, _a0));
-					l = lmax;
-				}
-				else
-				{
-					c.set(ofColor(_c, _a));
-					l = lmin;
-				}
+				c.set(ofColor(_c, _a));
+				l = lmin;
 			}
-			break;
-
-			case 1://bonk
-			{
-				if (outputs[i].getBonk())
+			else { // enabled
+				switch (smoothChannels[i]->bangDetectorIndex)
 				{
-					tlastBonk = t;
+				case 0: // trigger
+				{
+					if (outputs[i].getTrigger())
+					{
+						c.set(ofColor(_c0, _a0));
+						l = lmax;
+					}
+					else
+					{
+						c.set(ofColor(_c, _a));
+						l = lmin;
+					}
 				}
+				break;
 
-				if ((t - tlastBonk) < dur)
+				case 1: // bonk
 				{
-					c.set(ofColor(_c1, _a1));
-					l = lmax;
-				}
-				else
-				{
-					c.set(ofColor(_c, _a));
-					l = lmin;
-				}
-			}
-			break;
+					if (outputs[i].getBonk())
+					{
+						tlastBonk = t;
+					}
 
-			case 2://redirect
-			{
-				if (outputs[i].directionHasChanged() || (t - tlastRedirect < dur))
+					if ((t - tlastBonk) < dur)
+					{
+						c.set(ofColor(_c1, _a1));
+						l = lmax;
+					}
+					else
+					{
+						c.set(ofColor(_c, _a));
+						l = lmin;
+					}
+				}
+				break;
+
+				case 2: // redirect
 				{
+					//if (outputs[i].directionHasChanged() || (t - tlastRedirect < dur))
+					if (isRedirected(i) || (t - tlastRedirect2) < dur)
+					{
+					if (isRedirected(i)) tlastRedirect2 = t;
+					//tlastRedirectUp = t;
+					//tlastRedirectDown = t;
+
 					c.set(ofColor(_c2, _a2));
 					l = lmax;
+					}
+					else
+					{
+						c.set(ofColor(_c, _a));
+						l = lmin;
+					}
 				}
-				else
-				{
-					c.set(ofColor(_c, _a));
-					l = lmin;
-				}
-			}
-			break;
+				break;
 
-			case 3://up
-			{
-				if ((outputs[i].directionHasChanged() && bDirectionLastUp) || (t - tlastRedirectUp < dur))
+				case 3: // up
 				{
+					//if ((outputs[i].directionHasChanged() && bDirectionLastUp) || (t - tlastRedirectUp < dur))
+					if ((isRedirectedTo(i) > 0) || (t - tlastRedirectUp2) < dur)
+					{
+					if (isRedirectedTo(i) > 0) tlastRedirectUp2 = t;
+					//tlastRedirect = t;
+					//tlastRedirectDown = t;
+
 					c.set(ofColor(_c2up, _a2));
 					l = lmax;
+					}
+					else
+					{
+						c.set(ofColor(_c, _a));
+						l = lmin;
+					}
 				}
-				else
-				{
-					c.set(ofColor(_c, _a));
-					l = lmin;
-				}
-			}
-			break;
+				break;
 
-			case 4://down
-			{
-				if ((outputs[i].directionHasChanged() && !bDirectionLastUp) || (t - tlastRedirectDown < dur))
+				case 4: // down
 				{
+					//if ((outputs[i].directionHasChanged() && !bDirectionLastUp) || (t - tlastRedirectDown < dur))
+					if ((isRedirectedTo(i) < 0) || (t - tlastRedirectDown2) < dur)
+					{
+					if (isRedirectedTo(i) < 0) tlastRedirectDown2 = t;
+					//tlastRedirect = t;
+					//tlastRedirectUp = t;
+
 					c.set(ofColor(_c2down, _a2));
 					l = lmax;
+					}
+					else
+					{
+						c.set(ofColor(_c, _a));
+						l = lmin;
+					}
 				}
-				else
-				{
-					c.set(ofColor(_c, _a));
-					l = lmin;
-				}
-			}
-			break;
+				break;
 
+				}
 			}
 
 			//--
@@ -1030,6 +1068,8 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 				y_Th = y + (1 - smoothChannels[i]->threshold) * h;
 			}
 
+			//--
+
 			ofSetLineWidth(l);
 			ofSetColor(c);
 
@@ -1049,6 +1089,11 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 
 			ofLine(x + lh, y, x + lh, y + h);
 		}
+
+		// Baseline bottom horizontal
+		ofSetColor(colorBaseLine);
+		ofSetLineWidth(1);
+		ofLine(x, y + h, x + ww, y + h);
 
 		if (!bSolo) y += h;
 	}
@@ -1653,17 +1698,18 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 		guiManager.AddSpacingBigSeparated();
 
 		guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
-		guiManager.AddSpacingSeparated();
 
 		if (!guiManager.bMinimize) {
-			guiManager.Add(bGui_Main, OFX_IM_TOGGLE_ROUNDED_BIG);
+			//guiManager.AddSpacingSeparated();
+			guiManager.Add(bGui_Main, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 			//guiManager.Add(bGui_Main);
-			guiManager.AddSpacingSeparated();
 		}
+
+		guiManager.AddSpacingSeparated();
 
 		//--
 
-		if (guiManager.beginTree("SIGNAL", true, true))
+		if (guiManager.beginTree("CHANNEL", true, true))
 		{
 			//if (!guiManager.bMinimize)
 			//{
@@ -1694,111 +1740,17 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 				guiManager.AddComboArrows(index);
 			}
 
-			if (!guiManager.bMinimize)
-			{
-				guiManager.AddSpacing();
-				guiManager.Add(smoothChannels[i]->bEnableSmooth, OFX_IM_TOGGLE_SMALL, 2);
-				guiManager.SameLine();
-				guiManager.Add(bSolo, OFX_IM_TOGGLE_SMALL, 2);
-			}
-
-			guiManager.endTree();
-		}
-
-		guiManager.AddSpacingSeparated();
-
-		//--
-
-		if (guiManager.beginTree("SMOOTH", true, true))
-		{
-			//guiManager.AddSpacing();
-
-			ImGui::Columns(2, "t1", false);
-
-			guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_VSLIDER_NO_NUMBER, 2);
-			guiManager.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
-			ImGui::PushID("##RESET1");
-			if (guiManager.AddButton("Reset", OFX_IM_BUTTON_SMALL, 2)) {
-				smoothChannels[i]->ampInput = 0;
-			}
-			ImGui::PopID();
-
-			ImGui::NextColumn();
-
-			if (smoothChannels[i]->bangDetectorIndex == 0)
-			{
-				guiManager.Add(smoothChannels[i]->threshold, OFX_IM_VSLIDER_NO_NUMBER, 2);
-				guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
-				ImGui::PushID("##RESET2");
-				if (guiManager.AddButton("Reset", OFX_IM_BUTTON_SMALL, 2)) {
-					smoothChannels[i]->threshold = 0.5f;
-				}
-				ImGui::PopID();
-			}
-
-			ImGui::Columns(1);
-
-			/*
-			guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_VSLIDER_NO_NUMBER, 2, true);
-			guiManager.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
-			guiManager.Add(smoothChannels[i]->threshold, OFX_IM_VSLIDER_NO_NUMBER, 2);
-			guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
-			*/
-
-			//--
-
-			guiManager.AddSpacingSeparated();
-			guiManager.AddCombo(smoothChannels[i]->typeSmooth, typeSmoothLabels);
-			guiManager.AddTooltip("Type Smooth");
-			if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
-			{
-				guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL_NO_NUMBER);
-				guiManager.AddTooltip(ofToString(smoothChannels[i]->smoothPower.get(), 2));
-			}
-			if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
-			{
-				guiManager.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
-				guiManager.AddTooltip(ofToString(smoothChannels[i]->slideMin.get(), 2));
-				guiManager.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
-				guiManager.AddTooltip(ofToString(smoothChannels[i]->slideMax.get(), 2));
-			}
-
-			guiManager.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
-			guiManager.AddTooltip("Type Mean");
-
-			guiManager.endTree();
-		}
-
-		guiManager.AddSpacingSeparated();
-
-		//--
-
-		if (guiManager.beginTree("DETECTOR", true, true))
-		{
-			// Bang Detector / Trigger selector
-
-			guiManager.AddComboButtonDual(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
-
-			// Circle Widget
-			circleBeat.draw();
-
-			//guiManager.AddLabelBig("BANG!", true, true);
-
-			//--
-
 			//if (!guiManager.bMinimize)
 			{
-				if (smoothChannels[i]->bangDetectorIndex == 2 ||
-					smoothChannels[i]->bangDetectorIndex == 3 ||
-					smoothChannels[i]->bangDetectorIndex == 4)
-				{
-					guiManager.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_MINI);
-				}
-				if (smoothChannels[i]->bangDetectorIndex == 1)
-				{
-					guiManager.Add(smoothChannels[i]->onsetGrow, OFX_IM_STEPPER);
-					guiManager.Add(smoothChannels[i]->onsetDecay, OFX_IM_STEPPER);
-				}
+				//guiManager.AddSpacing();
+				guiManager.Add(smoothChannels[i]->bEnableSmooth, OFX_IM_TOGGLE_SMALL, 2);
+				//guiManager.AddTooltip("Activate Smoother or bypass");
+				guiManager.SameLine();
+				guiManager.Add(bSolo, OFX_IM_TOGGLE_SMALL, 2);
+
+				//guiManager.Add(smoothChannels[i]->ampInput);
+				guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_HSLIDER_MINI);
+				guiManager.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
 			}
 
 			guiManager.endTree();
@@ -1808,9 +1760,125 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 		//--
 
-		if (!guiManager.bMinimize)
+		if (smoothChannels[i]->bEnableSmooth) {
+
+			if (guiManager.beginTree("SMOOTH", true, true))
+			{
+				guiManager.AddSpacing();
+
+				//ImGui::Columns(2, "t1", false);
+				//guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_VSLIDER_NO_NUMBER, 2);
+				//guiManager.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
+				//ImGui::PushID("##RESET1");
+				//if (guiManager.AddButton("Reset", OFX_IM_BUTTON_SMALL, 2)) {
+				//	smoothChannels[i]->ampInput = 0;
+				//}
+				//ImGui::PopID();
+				//ImGui::NextColumn();
+
+				//// trigState
+				//if (smoothChannels[i]->bangDetectorIndex == 0)
+				//{
+				//	guiManager.Add(smoothChannels[i]->threshold, OFX_IM_VSLIDER_NO_NUMBER, 2);
+				//	guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
+				//	ImGui::PushID("##RESET2");
+				//	if (guiManager.AddButton("Reset", OFX_IM_BUTTON_SMALL, 2)) {
+				//		smoothChannels[i]->threshold = 0.5f;
+				//	}
+				//	ImGui::PopID();
+				//}
+				//else if (smoothChannels[i]->bangDetectorIndex == 1)
+				//{
+				//	ImGui::Columns(2, "t2", false);
+				//	guiManager.Add(smoothChannels[i]->onsetGrow, OFX_IM_VSLIDER_NO_LABELS);
+				//	ImGui::NextColumn();
+				//	guiManager.Add(smoothChannels[i]->onsetDecay, OFX_IM_VSLIDER_NO_LABELS);
+				//	ImGui::Columns(1);
+				//}
+
+				//ImGui::Columns(1);
+
+				//--
+
+				guiManager.AddCombo(smoothChannels[i]->typeSmooth, typeSmoothLabels);
+				guiManager.AddTooltip("Type Smooth");
+
+				if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
+				{
+					guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL_NO_NUMBER);
+					guiManager.AddTooltip(ofToString(smoothChannels[i]->smoothPower.get(), 2));
+				}
+				if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
+				{
+					guiManager.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
+					guiManager.AddTooltip(ofToString(smoothChannels[i]->slideMin.get(), 2));
+					guiManager.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
+					guiManager.AddTooltip(ofToString(smoothChannels[i]->slideMax.get(), 2));
+				}
+
+				guiManager.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
+				guiManager.AddTooltip("Type Mean");
+
+				guiManager.endTree();
+			}
+
+			guiManager.AddSpacingSeparated();
+
+			//--
+
+				// Bang Detector / Trigger selector
+
+			if (guiManager.beginTree("DETECTOR", true, true))
+			{
+			guiManager.AddSpacing();
+
+				guiManager.AddLabel("Mode");
+
+				guiManager.AddComboButtonDual(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
+
+				//--
+
+				//if (!guiManager.bMinimize)
+				{
+					if (smoothChannels[i]->bangDetectorIndex == 0) // state
+					{
+						guiManager.Add(smoothChannels[i]->threshold, OFX_IM_HSLIDER_SMALL);
+						//guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
+					}
+					else if (smoothChannels[i]->bangDetectorIndex == 1) // bonk
+					{
+						guiManager.Add(smoothChannels[i]->onsetGrow, OFX_IM_HSLIDER_SMALL);
+						//guiManager.AddTooltip(ofToString(smoothChannels[i]->onsetGrow.get(), 2));
+						guiManager.Add(smoothChannels[i]->onsetDecay, OFX_IM_HSLIDER_SMALL);
+						//guiManager.AddTooltip(ofToString(smoothChannels[i]->onsetDecay.get(), 2));
+					}
+					else if (smoothChannels[i]->bangDetectorIndex == 2 || // direction
+						smoothChannels[i]->bangDetectorIndex == 3 || // up
+						smoothChannels[i]->bangDetectorIndex == 4) // down
+					{
+						guiManager.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_SMALL);
+						//guiManager.AddTooltip(ofToString(smoothChannels[i]->timeRedirection.get(), 2));
+					}
+				}
+
+				guiManager.AddSpacing();
+				
+				// Circle Widget
+				
+				guiManager.AddLabelBig("BANG!", true, true);
+				circleBeat.draw();
+
+				guiManager.endTree();
+			}
+
+			guiManager.AddSpacingSeparated();
+		}
+
+		//--
+
+		if (guiManager.beginTree("EXTRA"))
 		{
-			if (guiManager.beginTree("EXTRA"))
+			if (!guiManager.bMinimize)
 			{
 				if (guiManager.beginTree("PLOTS", false))
 				{
@@ -1839,24 +1907,34 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 				//guiManager.Add(bEnableSmoothGlobal, OFX_IM_TOGGLE_ROUNDED_MINI);
 				guiManager.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED_MINI);
 				guiManager.Add(bGenerators, OFX_IM_TOGGLE_ROUNDED_MINI);
-
-				guiManager.endTree();
 			}
-		}
-		else
-		{
-			if (guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED)) {
+			else
+			{
+				guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED);
+				if (bGui_Plots)
+				{
+					guiManager.Indent();
+					guiManager.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED_MINI);
+					guiManager.Unindent();
+				}
 				////workflow
 				//if (bGui_Plots)
 				//	if (!bGui_PlotIn && !!bGui_PlotOut) {
 				//		bGui_PlotIn = bGui_PlotOut = true;
 				//	}
-			};
-			//guiManager.Indent();
-			//guiManager.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
-			//if (guiManager.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI)) {
-			//};
-			//guiManager.Unindent();
+
+				guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_ROUNDED);
+				guiManager.Add(guiManager.bHelp, OFX_IM_TOGGLE_ROUNDED);
+
+				//guiManager.Indent();
+				//guiManager.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
+				//if (guiManager.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI)) {
+				//};
+				//guiManager.Unindent();
+
+			}
+
+			guiManager.endTree();
 		}
 
 		//--
@@ -1995,7 +2073,7 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 					guiManager.AddSpacing();
 
 					if (!guiManager.bMinimize)
-						if (guiManager.AddButton("SMOOTH >", OFX_IM_BUTTON))
+						if (guiManager.AddButton("SMOOTH +", OFX_IM_BUTTON))
 						{
 							nextTypeSmooth(index.get());
 						}
@@ -2018,15 +2096,15 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 					//--
 
 					if (!guiManager.bMinimize)
-						if (guiManager.AddButton("MEAN >", OFX_IM_BUTTON))
+						if (guiManager.AddButton("MEAN +", OFX_IM_BUTTON))
 						{
 							nextTypeMean(index.get());
 						}
 
 					guiManager.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
 
-					guiManager.AddSpacingSeparated();
-					guiManager.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL);
+					//guiManager.AddSpacingSeparated();
+					//guiManager.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL);
 				}
 			}
 

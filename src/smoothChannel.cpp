@@ -23,8 +23,8 @@ void SmoothChannel::setup(string _name)
 	params.add(timeRedirection.set("TimeDir", 0.5, 0.01, 1));
 	params.add(slideMin.set("SlideIn", 0.2, 0.0, 1));
 	params.add(slideMax.set("SlideOut", 0.2, 0.0, 1));
-	params.add(onsetGrow.set("Grow", 0.1f, 0.0, 1));
-	params.add(onsetDecay.set("Decay", 0.1, 0.0, 1));
+	params.add(onsetGrow.set("Grow", 0.1f, 0.01, 1));
+	params.add(onsetDecay.set("Decay", 0.1, 0.01, 1));
 
 	params.add(bClamp.set("Clamp", false));
 	params.add(minInput.set("minIn", 0, 0, 1));

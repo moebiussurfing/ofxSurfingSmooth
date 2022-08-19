@@ -90,7 +90,7 @@ public:
 
 	ofParameterGroup params;
 
-	ofParameter<bool> bEnableSmooth;
+	ofParameter<bool> bEnableSmooth;//TODO: enables all the engine(smoother + detector), not only the smooth
 	ofParameter<float> ampInput;
 
 	ofParameter<int> typeSmooth;
