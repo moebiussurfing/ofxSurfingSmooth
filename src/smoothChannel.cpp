@@ -65,6 +65,8 @@ void SmoothChannel::startup()
 	name_Settings = params.getName();
 	ofLogNotice("SmoothChannel") << "Load Settings for channel / param: "<< name_Settings;
 	ofxSurfingHelpers::loadGroup(params, path_Global + name_Settings);
+
+	doRefresh();
 }
 
 void SmoothChannel::exit()
@@ -75,31 +77,6 @@ void SmoothChannel::exit()
 	ofxSurfingHelpers::saveGroup(params, path_Global + name_Settings);
 }
 
-//fix workaround
-void SmoothChannel::doRefresh()
-{
-	ofLogWarning("SmoothChannel") << (__FUNCTION__);
-	// to trig callbacks
-
-	threshold = threshold;
-	slideMin = slideMin;
-	slideMax = slideMax;
-	onsetGrow = onsetGrow;
-	onsetDecay = onsetDecay;
-	timeRedirection = timeRedirection;
-
-	int typeSmooth_ = typeSmooth;
-	if (typeSmooth == 0) typeSmooth = 1;
-	else if (typeSmooth == 1) typeSmooth = 2;
-	else if (typeSmooth == 2) typeSmooth = 1;
-	typeSmooth = typeSmooth_;
-
-	float smoothPower_ = smoothPower;
-	smoothPower = smoothPower.getMax();
-	smoothPower = smoothPower_;
-
-}
-
 void SmoothChannel::doReset()
 {
 	ofLogNotice("SmoothChannel") << (__FUNCTION__) << name;
@@ -107,9 +84,6 @@ void SmoothChannel::doReset()
 	ampInput = 0.f;
 
 	bangDetectorIndex = 0;
-
-	typeSmooth = 1;
-	typeMean = 0;
 
 	bClamp = false;
 	minInput = 0.f;
@@ -130,6 +104,11 @@ void SmoothChannel::doReset()
 	bGateMode = false;
 	bGateSlow = true;
 	bpmDiv = 1;
+
+	typeSmooth = 1;
+	typeMean = 0;
+
+	doRefresh();
 }
 
 void SmoothChannel::Changed(ofAbstractParameter& e)
@@ -164,6 +143,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = false;
 			typeSmooth_Str = typeSmoothLabels[0];
+			doRefresh();
 			return;
 		}
 		break;
@@ -172,6 +152,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[1];
+			doRefresh();
 			return;
 		}
 		break;
@@ -180,6 +161,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[2];
+			doRefresh();
 			return;
 		}
 		break;
@@ -200,6 +182,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_ARITH:
 		{
 			typeMean_Str = typeMeanLabels[0];
+			doRefresh();
 			return;
 		}
 		break;
@@ -207,6 +190,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_GEOM:
 		{
 			typeMean_Str = typeMeanLabels[1];
+			doRefresh();
 			return;
 		}
 		break;
@@ -214,6 +198,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_HARM:
 		{
 			typeMean_Str = typeMeanLabels[2];
+			doRefresh();
 			return;
 		}
 		break;
@@ -221,4 +206,60 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 
 		return;
 	}
+}
+
+// fix workaround, for different related params and modes
+// reduce by calling once per frame or make some bAttendintCalls flag..
+
+void SmoothChannel::doRefresh()
+{
+	ofLogWarning("SmoothChannel") << (__FUNCTION__);
+
+	// to trig callbacks
+
+	//--
+
+	if (typeMean == 0) {
+	}
+	else if (typeMean == 1) {
+	}
+	else if (typeMean == 2) {
+	}
+
+	//--
+
+	if (bangDetectorIndex == 0) {//state
+		threshold = threshold;
+	}
+	else if (bangDetectorIndex == 1) {//bonk
+		onsetGrow = onsetGrow;
+		onsetDecay = onsetDecay;
+	}
+	else if (bangDetectorIndex == 2||bangDetectorIndex == 3||bangDetectorIndex == 4) {//re direct
+		timeRedirection = timeRedirection;
+	}
+
+	//--
+
+	if (typeSmooth == 0) {
+	}
+	else if (typeSmooth == 1) {
+		smoothPower = smoothPower;
+	}
+	else if (typeSmooth == 2) {
+		slideMin = slideMin;
+		slideMax = slideMax;
+	}
+
+	//--
+
+	//int typeSmooth_ = typeSmooth;
+	//if (typeSmooth == 0) typeSmooth = 1;
+	//else if (typeSmooth == 1) typeSmooth = 2;
+	//else if (typeSmooth == 2) typeSmooth = 1;
+	//typeSmooth = typeSmooth_;
+
+	//float smoothPower_ = smoothPower;
+	//smoothPower = smoothPower.getMax();
+	//smoothPower = smoothPower_;
 }

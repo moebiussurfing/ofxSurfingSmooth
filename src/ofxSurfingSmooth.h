@@ -4,9 +4,22 @@
 
 	TODO:
 
-	+ BUG: on startup smooth params, and maybe others are not loaded propertly...
-	+ add hysteresis gate. tempo based. 1 bar i.e.
+	+ fix hysteresis gate. tempo based. 1 bar i.e.
+	do the filtering in another "parent" method!
+	isBangFiltered(i);
 
+	+ filer type befor apply setBonks, etc
+
+	+ BUG: on startup smooth params, and maybe others are not loaded properly...
+	the problem is that when loading settings,
+	some of theme trigs dataStream configurations
+	that not correlate with the selected types.
+	probably we should set setSerializable
+	when picking each type with his related params?
+
+	+ add mini float window with basic controls, vertical and knobs
+
+	+ add alpha for input plot
 	+ add clamp and normalization modes.
 	+ fix circle beat widget
 		check bang behavior!
@@ -76,7 +89,7 @@ private:
 
 	ofParameterGroup params_EditorEnablers; // Contents the enabled params to smooth or to bypass.
 	vector<ofParameter<bool>> editorEnablers;
-	void drawToggles();
+	void drawTogglesWidgets();
 
 	void doSetAll(bool b);
 	void doDisableAll();
@@ -175,6 +188,8 @@ private:
 		return bTrig;
 	}
 
+	//void doRefresh();
+
 	//--
 
 	// Bang / Bonk / Triggers under threshold detectors
@@ -199,9 +214,9 @@ private:
 		bool _bSmooth = _p.cast<bool>().get();
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
-
+		// Gate
 		bool b = outputs[i].getTrigger();
-		b = doGateControl(i, b);
+		//b = doGateControl(i, b);
 		return b;
 
 
@@ -229,8 +244,9 @@ private:
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
 
+		// Gate
 		bool b = outputs[i].getBonk();
-		b = doGateControl(i, b);
+		//b = doGateControl(i, b);
 		return b;
 
 
@@ -265,9 +281,10 @@ private:
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
 
+		// Gate
 		bool b = outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
 			outputs[i].directionHasChanged();
-		b = doGateControl(i, b);
+		//b = doGateControl(i, b);
 		return b;
 
 
@@ -306,9 +323,10 @@ private:
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return rdTo;
 
 
+		// Gate
 		bool b = outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
 			outputs[i].directionHasChanged();
-		b = doGateControl(i, b);
+		//b = doGateControl(i, b);
 		if (b) {
 			if (outputs[i].getDirectionValDiff() < 0)
 				rdTo = 1;
@@ -328,15 +346,12 @@ private:
 		//	ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " <<
 		//		outputs[i].getDirectionTimeDiff() << ", " <<
 		//		outputs[i].getDirectionValDiff();
-
 		//	if (outputs[i].getDirectionValDiff() < 0)
 		//		rdTo = 1;
 		//	else
 		//		rdTo = -1;
-
 		//	return rdTo;
 		//}
-
 		//return rdTo; // 0=nothing useful
 	}
 
@@ -390,7 +405,7 @@ public:
 		// then we can pick easily which detector to use 
 		// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
 
-		if (i > smoothChannels.size() - 1) 
+		if (i > smoothChannels.size() - 1)
 		{
 			ofLogError("ofxSurfingSmooth") << "Out of range. Unknown channel/param index: " << i;
 			return false;
@@ -412,13 +427,11 @@ public:
 		bool bReturn = false;
 		switch (smoothChannels[i]->bangDetectorIndex)
 		{
-
 		case 0: bReturn = isTriggered(i); break; // trigState
 		case 1: bReturn = isBonked(i); break; // bonked
 		case 2: bReturn = isRedirected(i); break; // redirect
 		case 3: bReturn = isRedirectedUp(i); break; // up
 		case 4: bReturn = isRedirectedDown(i); break; // down 
-
 		default: {
 			ofLogError("ofxSurfingSmooth") << "Out of range. Unknown detector index: " << i;
 			return false;
@@ -440,6 +453,8 @@ public:
 		//}
 
 		//doGateControl(i, bReturn);
+
+		//--
 
 		return bReturn;
 	}
@@ -514,6 +529,7 @@ private:
 public:
 
 	ofxSurfingBoxInteractive boxPlots;
+	ofParameter<float> alphaPlotInput;
 
 private:
 
