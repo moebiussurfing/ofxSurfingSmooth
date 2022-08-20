@@ -17,12 +17,12 @@ void SmoothChannel::setup(string _name)
 	params.add(typeMean.set("Type Mean", 0, 0, 2));
 	params.add(typeMean_Str.set(" ", ""));
 
-	params.add(smoothPower.set("Smooth Power", 0.2, 0.0, 1));
-	params.add(threshold.set("Threshold", 0.5, 0.0, 1));
+	params.add(smoothPower.set("Smooth Power", 0.2f, 0.0f, 1.f));
+	params.add(threshold.set("Threshold", 0.5f, 0.0, 1));
 
-	params.add(timeRedirection.set("TimeDir", 0.5, 0.01, 1));
-	params.add(slideMin.set("SlideIn", 0.2, 0.0, 1));
-	params.add(slideMax.set("SlideOut", 0.2, 0.0, 1));
+	params.add(timeRedirection.set("TimeDir", 0.5f, 0.01, 1));
+	params.add(slideMin.set("SlideIn", 0.2f, 0.0, 1));
+	params.add(slideMax.set("SlideOut", 0.2f, 0.0, 1));
 	params.add(onsetGrow.set("Grow", 0.1f, 0.01, 1));
 	params.add(onsetDecay.set("Decay", 0.1, 0.01, 1));
 
@@ -32,6 +32,10 @@ void SmoothChannel::setup(string _name)
 	params.add(minOutput.set("minOut", 0, 0, 1));
 	params.add(maxOutput.set("maxOut", 1, 0, 1));
 	params.add(bNormalized.set("Normalized", false));
+
+	params.add(bGateMode);
+	params.add(bGateSlow);
+	params.add(bpmDiv);
 
 	params.add(bReset.set("Reset", false));
 
@@ -59,13 +63,41 @@ void SmoothChannel::startup()
 	ofLogNotice("SmoothChannel") << (__FUNCTION__);
 
 	name_Settings = params.getName();
+	ofLogNotice("SmoothChannel") << "Load Settings for channel / param: "<< name_Settings;
 	ofxSurfingHelpers::loadGroup(params, path_Global + name_Settings);
 }
 
 void SmoothChannel::exit()
 {
+	ofLogNotice("SmoothChannel") << (__FUNCTION__);
+
 	ofxSurfingHelpers::CheckFolder(path_Global);
 	ofxSurfingHelpers::saveGroup(params, path_Global + name_Settings);
+}
+
+//fix workaround
+void SmoothChannel::doRefresh()
+{
+	ofLogWarning("SmoothChannel") << (__FUNCTION__);
+	// to trig callbacks
+
+	threshold = threshold;
+	slideMin = slideMin;
+	slideMax = slideMax;
+	onsetGrow = onsetGrow;
+	onsetDecay = onsetDecay;
+	timeRedirection = timeRedirection;
+
+	int typeSmooth_ = typeSmooth;
+	if (typeSmooth == 0) typeSmooth = 1;
+	else if (typeSmooth == 1) typeSmooth = 2;
+	else if (typeSmooth == 2) typeSmooth = 1;
+	typeSmooth = typeSmooth_;
+
+	float smoothPower_ = smoothPower;
+	smoothPower = smoothPower.getMax();
+	smoothPower = smoothPower_;
+
 }
 
 void SmoothChannel::doReset()
@@ -75,6 +107,7 @@ void SmoothChannel::doReset()
 	ampInput = 0.f;
 
 	bangDetectorIndex = 0;
+
 	typeSmooth = 1;
 	typeMean = 0;
 
@@ -85,13 +118,18 @@ void SmoothChannel::doReset()
 	maxOutput = 1.f;
 	bNormalized = false;
 
-	smoothPower = 0.1f;
-	threshold = 0.5f;
+	threshold = 0.75f;
 	slideMin = 0.2f;
 	slideMax = 0.2f;
 	onsetGrow = 0.05f;
 	onsetDecay = 0.05f;
 	timeRedirection = 0.1f;
+
+	smoothPower = 0.f;
+
+	bGateMode = false;
+	bGateSlow = true;
+	bpmDiv = 1;
 }
 
 void SmoothChannel::Changed(ofAbstractParameter& e)

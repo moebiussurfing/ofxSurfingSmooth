@@ -4,7 +4,9 @@
 
 	TODO:
 
+	+ BUG: on startup smooth params, and maybe others are not loaded propertly...
 	+ add hysteresis gate. tempo based. 1 bar i.e.
+
 	+ add clamp and normalization modes.
 	+ fix circle beat widget
 		check bang behavior!
@@ -31,23 +33,12 @@
 
 #define COLORS_MONCHROME // Un comment to draw all plots with the same color.
 
-#define MAX_AMP_POWER 2
+#define MAX_AMP_POWER 1
 
 //--
 
 class ofxSurfingSmooth : public ofBaseApp
 {
-
-private:
-
-	vector<unique_ptr<SmoothChannel>> smoothChannels;
-	ofEventListeners listeners;
-	//int iIndex = -1;
-
-	const int MAX_HISTORY = 30;
-	const int MIN_SLIDE = 1;
-	const int MAX_SLIDE = 50;
-	const int MAX_ACC_HISTORY = 60; // calibrated to 60fps
 
 public:
 
@@ -63,6 +54,19 @@ private:
 	void exit();
 
 	//--
+
+private:
+
+	// channels processors
+	vector<unique_ptr<SmoothChannel>> smoothChannels;
+	ofEventListeners listeners;
+	//int iIndex = -1;
+
+	// constants
+	const int MIN_SLIDE = 1;
+	const int MAX_SLIDE = 50;
+	const int MAX_HISTORY = 60;
+	//const int MAX_ACC_HISTORY = 60; // calibrated to 60fps ?
 
 public:
 
@@ -122,6 +126,57 @@ public:
 
 	//--
 
+	// Hysteresis Gate
+	ofParameter<float> bpm{ "BPM", 120, 40, 240 };//we will use that bpm to filter / gate the bangs
+	// as an intended to reduce the trigs, 
+	// and probably to help the detectors fine tweaking a bit.
+
+private:
+
+
+	struct GateStruct
+	{
+		//ofParameter<int> bpmDiv{ "Div", 1, 1, 4 };//divide the bar duration in quarter
+		//ofParameter<bool> bGateMode{ "Gate", false };
+		ofParameter<bool> bGateState{ "State", false };
+		int tDurationGate;//duration in ms
+		int timerGate = 0;//measure in ms
+		int lastTimerGate = 0;//last happened in ms
+	};
+	vector<GateStruct> gates;
+
+	//--
+
+	//--------------------------------------------------------------
+	bool doGateControl(int i, bool bTrig) {
+
+		// gate
+		// skip and bypass any bang when gate is enabled
+		// bGateState true = locked = gate is active
+		if (smoothChannels[i]->bGateMode && gates[i].bGateState)
+		{
+			ofLogNotice("ofxSurfingSmooth") << "Bang Ignored bc gate active for index " << i;
+			return false;
+		}
+
+		// gates
+		// set timer
+		if (bTrig)//a bang happened, but check gate mode / state before accept it!
+		{
+			// bGateState = false, gate opened / passing
+			// must be opened to listen to it!
+			if (smoothChannels[i]->bGateMode && !gates[i].bGateState)
+			{
+				gates[i].bGateState = true; // close. gate activated
+				gates[i].lastTimerGate = ofGetElapsedTimeMillis(); // store when happened.
+			}
+		}
+
+		return bTrig;
+	}
+
+	//--
+
 	// Bang / Bonk / Triggers under threshold detectors
 
 private:
@@ -134,72 +189,103 @@ private:
 	bool isTriggered(int i) {//flag true when triggered this index param
 		if (!bEnableSmoothGlobal) return false;
 
+		// check enabler
 		if (i > params_EditorEnablers.size() - 1)
 		{
 			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
-
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
 		bool _bSmooth = _p.cast<bool>().get();
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
-		if (outputs[i].getTrigger()) {
-			ofLogVerbose("ofxSurfingSmooth") << "Triggered: " << i;
-			return true;
-		}
-		return false;
+
+		bool b = outputs[i].getTrigger();
+		b = doGateControl(i, b);
+		return b;
+
+
+
+		//if (outputs[i].getTrigger()) 
+		//{
+		//	ofLogVerbose("ofxSurfingSmooth") << "Triggered: " << i;
+		//	return true;
+		//}
+		//return false;
 	}
 
 	//--------------------------------------------------------------
 	bool isBonked(int i) {//flag true when triggered this index param
 		if (!bEnableSmoothGlobal) return false;
 
+		// check enabler
 		if (i > params_EditorEnablers.size() - 1)
 		{
 			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
-
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
 		bool _bSmooth = _p.cast<bool>().get();
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
-		if (outputs[i].getBonk()) {
-			ofLogVerbose("ofxSurfingSmooth") << "Bonked: " << i;
-			return true;
-		}
-		return false;
+
+		bool b = outputs[i].getBonk();
+		b = doGateControl(i, b);
+		return b;
+
+
+
+		//if (outputs[i].getBonk()) {
+		//	ofLogVerbose("ofxSurfingSmooth") << "Bonked: " << i;
+		//	return true;
+		//}
+		//return false;
 	}
 
+	//--------------------------------------------------------------
+	bool isRedirectedUp(int i) {
+		return (isRedirectedTo(i) > 0);
+	}
+	//--------------------------------------------------------------
+	bool isRedirectedDown(int i) {
+		return (isRedirectedTo(i) < 0);
+	}
 	//--------------------------------------------------------------
 	bool isRedirected(int i) {//flag true when signal direction changed
 		if (!bEnableSmoothGlobal) return false;
 
+		// check enabler
 		if (i > params_EditorEnablers.size() - 1)
 		{
 			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return false;
 		}
-
 		auto& _p = params_EditorEnablers[i];// ofAbstractParameter
 		bool _bSmooth = _p.cast<bool>().get();
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
-		// if the direction has changed and
-		// if the time of change is greater than (0.5) timeRedirection sec
-		// print the time between changes and amount of change
-		if (outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
-			outputs[i].directionHasChanged())
-		{
-			ofLogVerbose("ofxSurfingSmooth") <<
-				"Redirected: " << i << " " <<
-				outputs[i].getDirectionTimeDiff() << ", " <<
-				outputs[i].getDirectionValDiff();
 
-			return true;
-		}
-		return false;
+		bool b = outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
+			outputs[i].directionHasChanged();
+		b = doGateControl(i, b);
+		return b;
+
+
+
+		//// if the direction has changed and
+		//// if the time of change is greater than (0.5) timeRedirection sec
+		//// print the time between changes and amount of change
+		//if (outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
+		//	outputs[i].directionHasChanged())
+		//{
+		//	ofLogVerbose("ofxSurfingSmooth") <<
+		//		"Redirected: " << i << " " <<
+		//		outputs[i].getDirectionTimeDiff() << ", " <<
+		//		outputs[i].getDirectionValDiff();
+
+		//	return true;
+		//}
+		//return false;
 	}
 
 	//--------------------------------------------------------------
@@ -208,9 +294,9 @@ private:
 
 		// return 0 when no direction changed. -1 or 1 depending direction.
 		// above or below threshold
-
 		int rdTo = 0;
 
+		// check enabler
 		if (i > params_EditorEnablers.size() - 1) {
 			ofLogError("ofxSurfingSmooth") << "Index Out of Range: " << i;
 			return rdTo;
@@ -219,28 +305,45 @@ private:
 		bool _bSmooth = _p.cast<bool>().get();
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return rdTo;
 
-		// if the direction has changed and
-		// if the time of change is greater than 0.5 sec
-		// print the time between changes and amount of change
-		if (outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
-			outputs[i].directionHasChanged())
-		{
-			ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " <<
-				outputs[i].getDirectionTimeDiff() << ", " <<
-				outputs[i].getDirectionValDiff();
 
+		bool b = outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
+			outputs[i].directionHasChanged();
+		b = doGateControl(i, b);
+		if (b) {
 			if (outputs[i].getDirectionValDiff() < 0)
 				rdTo = 1;
 			else
 				rdTo = -1;
-
-			return rdTo;
 		}
+		return rdTo;
 
-		return rdTo; // 0=nothing useful
+
+
+		//// if the direction has changed and
+		//// if the time of change is greater than 0.5 sec
+		//// print the time between changes and amount of change
+		//if (outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
+		//	outputs[i].directionHasChanged())
+		//{
+		//	ofLogVerbose("ofxSurfingSmooth") << "Redirected: " << i << " " <<
+		//		outputs[i].getDirectionTimeDiff() << ", " <<
+		//		outputs[i].getDirectionValDiff();
+
+		//	if (outputs[i].getDirectionValDiff() < 0)
+		//		rdTo = 1;
+		//	else
+		//		rdTo = -1;
+
+		//	return rdTo;
+		//}
+
+		//return rdTo; // 0=nothing useful
 	}
 
+	//--
+
 public:
+
 
 	// Getting detector flags by using the source param names.
 
@@ -283,30 +386,61 @@ public:
 	//--------------------------------------------------------------
 	bool isBang(int i)
 	{
-		// Returns true if selected trigger is selected and happening.
-		// then we can pick easily which detector
-		// to use in out parent scope app!
+		// Returns true if i / passed trigger is happening.
+		// then we can pick easily which detector to use 
 		// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
 
-		if (i > smoothChannels.size() - 1) {
-			ofLogError("ofxSurfingSmooth") << "Out of range. Unknown index: " << i;
+		if (i > smoothChannels.size() - 1) 
+		{
+			ofLogError("ofxSurfingSmooth") << "Out of range. Unknown channel/param index: " << i;
 			return false;
 		}
 
+		//--
+
+		//// gate
+		//// skip and bypass any bang when gate is enabled
+		//if (smoothChannels[i]->bGateMode && gates[i].bGateState)
+		//{
+		//	ofLogNotice("ofxSurfingSmooth") << "Bang Ignored bc gate active for index " << i;
+		//	return false;
+		//}
+
+		//--
+
+		// get bangs
 		bool bReturn = false;
 		switch (smoothChannels[i]->bangDetectorIndex)
 		{
+
 		case 0: bReturn = isTriggered(i); break; // trigState
 		case 1: bReturn = isBonked(i); break; // bonked
 		case 2: bReturn = isRedirected(i); break; // redirect
-		case 3: bReturn = (isRedirectedTo(i) > 0); break; // up
-		case 4: bReturn = (isRedirectedTo(i) < 0); break; // down 
+		case 3: bReturn = isRedirectedUp(i); break; // up
+		case 4: bReturn = isRedirectedDown(i); break; // down 
+
 		default: {
-			ofLogError("ofxSurfingSmooth") << "Out of range. Unknown index: " << i;
+			ofLogError("ofxSurfingSmooth") << "Out of range. Unknown detector index: " << i;
 			return false;
 			break;
 		}
 		}
+
+		//--
+
+		//// gates
+		//// set timer
+		//if (bReturn)//a bang happened, but check gate mode / state before accept it!
+		//{
+		//	if (smoothChannels[i]->bGateMode && !gates[i].bGateState) // must be opened to liste to it!
+		//	{
+		//		gates[i].bGateState = true;
+		//		gates[i].lastTimerGate = ofGetElapsedTimeMillis();
+		//	}
+		//}
+
+		//doGateControl(i, bReturn);
+
 		return bReturn;
 	}
 
@@ -337,12 +471,15 @@ public:
 
 	//---
 
+	void startup();
+
 private:
 
 	void setup();
-	void startup();
 
 	void updateGenerators();
+	void updatePlayer();
+	void updateDetectors();
 	void updateSmooths();
 	void updateEngine();
 
@@ -479,7 +616,7 @@ private:
 			s += "G           GUI \n";
 			s += "\n";
 
-			s += "            Type \n";
+			s += "            TYPE \n";
 			s += "TAB         SMOOTH \n";
 			s += "SHIFT       MEAN \n";
 			s += "\n";
@@ -487,12 +624,12 @@ private:
 			s += "+|-         THRESHOLD \n";
 			s += "\n";
 
-			s += "S           Solo PLOT \n";
-			s += "Up|Down     Browse \n";
+			s += "S           SOLO PLOT \n";
+			s += "Up|Down     BROWSE \n";
 			s += "\n";
 
 			s += "TESTER \n";
-			s += "SPACE       RANDOMIZE \n";
+			s += "SPACE       RANDO \n";
 			s += "RETURN      PLAY \n";
 		}
 		helpInfo = s;
@@ -551,7 +688,7 @@ public:
 
 	ofParameter<bool> bReset;
 
-	circleBeatWidget circleBeat;
+	CircleBeatWidget circleBeatWidget;
 };
 
 //----

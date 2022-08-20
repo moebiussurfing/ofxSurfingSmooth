@@ -2,40 +2,70 @@
 
 #include "ofMain.h"
 #include "ofxImGui.h"
+#include "surfingTimers.h"
 
-class circleBeatWidget
+class CircleBeatWidget
 {
 public:
 
-
-public:
-
-	circleBeatWidget() {
+	CircleBeatWidget() {
 		dt = 1.0f / 60.f;
-	};
+	}
 
-	~circleBeatWidget() {
-	};
+	~CircleBeatWidget() {
+	}
 
 	void draw() {
 		update();
 		draw_ImGui_CircleBeatWidget();
 	}
 
+private:
+	
+	float dt_Bpm = 0.f;
+	bool bBpmMode = false;
+
 	void update() {
 		animRunning = (animCounter <= 1.0f);//goes from 0 to 1 (finished)
 
 		if (animRunning)
 		{
-			animCounter += speedRatio * speed * dt;
+			if (!bBpmMode) animCounter += (dt * speedRatio * speed);
+			else animCounter += dt_Bpm;
 		}
-	};
+	}
+	
+public:
+
+	ofParameter<float> bpm{ "Bpm", -1, 40.f, 240.f };
+	ofParameter<int> div{ "Bpm Div", 2, 1, 4 };
+
+	void setBpm(float _bpm, float _fps = 60)
+	{
+		bBpmMode = true;
+		dt = 1.0f / _fps;
+
+		if (bpm != _bpm)
+			bpm = _bpm;
+
+		int barDur = 60000 / bpm;// one bar duration in ms
+		dt_Bpm = ((barDur * div) / 1000.f) * dt;
+
+		//animCounter goes from 0 to 1
+		//if (animRunning) animCounter += speedRatio * speed * dt;
+	}
 
 	void bang()
 	{
 		animCounter = 0.0f;//anim from 0.0 to 1.0
 
 		bState = false;
+	}
+
+	void bang(int mode)
+	{
+		setMode(mode);
+		bang();
 	}
 
 	float getValue()
@@ -54,7 +84,7 @@ public:
 	void setState(bool state) {
 		bState = state;
 
-		//stop
+		// stop
 		if (!bState) animCounter = 1.0f;
 	}
 
@@ -66,7 +96,9 @@ public:
 		return bState;
 	}
 
+	// i.e.
 	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+	// different modes can handle different colors, speeds or release modes.
 	void setMode(int i) {
 		mode = i;
 		switch (mode)
@@ -82,6 +114,11 @@ public:
 			mode = 0;
 			break;
 		}
+	}
+
+	void setColor(ofColor color) {
+		setColor(0, color);
+		setMode(0);
 	}
 
 	void setColor(int i, ofColor color) {
@@ -121,13 +158,11 @@ private:
 	int mode = 0;
 	ofColor color = color0;
 
-public:
-
 	void draw_ImGui_CircleBeatWidget()
 	{
 		float radius = 30;
 		ofColor colorBg = ofColor(16, 200);
-		ofColor colorBeat = this->getColor();
+		ofColor colorCircle = this->getColor();
 
 		//---
 
@@ -144,8 +179,8 @@ public:
 
 		ImVec2 pos = ImGui::GetCursorScreenPos(); // get top left of current widget
 		float xx = pos.x + pad;
-		float yy = pos.y ;
-		ImVec4 widgetRec = ImVec4(xx, yy, radius * 2.0f, radius * 2.0f );
+		float yy = pos.y;
+		ImVec4 widgetRec = ImVec4(xx, yy, radius * 2.0f, radius * 2.0f);
 		ImVec2 center = ImVec2(xx + __w100 / 2, yy + radius /*+ pad*/);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -158,14 +193,14 @@ public:
 
 		// Big circle segments outperforms..
 		const int nsegm = 24;
-		ofColor c = colorBeat;
-		
+		ofColor c = colorCircle;
+
 		draw_list->AddCircleFilled(center, radius_outer, ImGui::GetColorU32(ImVec4(colorBg)), nsegm);
 
 		if (mode == 0) // blink on that mode
 		{
-			int a = ofMap(ofxSurfingHelpers::getFadeBlink(0.05), 0, 1, 110, 200);
-			c = ofColor(colorBeat, a);
+			int a = ofMap(ofxSurfingHelpers::getFadeBlink(0.05), 0, 1, 160, 190);
+			c = ofColor(colorCircle, a);
 		}
 
 		draw_list->AddCircleFilled(center, radius_inner, ImGui::GetColorU32(ImVec4(c)), nsegm);

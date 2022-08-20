@@ -79,6 +79,7 @@ public:
 	void setup(string name);
 	void startup();
 	void doReset();
+	void doRefresh();
 
 public:
 
@@ -106,12 +107,17 @@ public:
 	ofParameter<float> onsetGrow;
 	ofParameter<float> onsetDecay;
 
+	//TODO: WIP:
 	ofParameter<bool> bNormalized;
 	ofParameter<bool> bClamp;
 	ofParameter<float> minInput;
 	ofParameter<float> maxInput;
 	ofParameter<float> minOutput;
 	ofParameter<float> maxOutput;
+	
+	ofParameter<bool> bGateMode{ "GATE", false };
+	ofParameter<bool> bGateSlow{ "Slow", false };
+	ofParameter<int> bpmDiv{ "Div", 1, 1, 4 };//divide the bar duration in quarter
 
 	ofParameter<bool> bReset;
 
