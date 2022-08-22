@@ -44,8 +44,8 @@ void ofxSurfingSmooth::setup()
 	bGui_Main = false;
 	bGui_GameMode = true;
 	bGenerators = true;
-	guiManager.bHelp = true;
-	guiManager.bKeys = true;
+	ui.bHelp = true;
+	ui.bKeys = true;
 
 	//--
 
@@ -66,8 +66,8 @@ void ofxSurfingSmooth::startup() {
 	//bGui_Main = false;
 	//bGui_GameMode = true;
 	//bGenerators = true;
-	//guiManager.bHelp = true;
-	//guiManager.bKeys = true;
+	//ui.bHelp = true;
+	//ui.bKeys = true;
 
 	//--
 
@@ -1176,7 +1176,7 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::keyPressed(int key)
 {
-	if (!guiManager.bKeys) return;
+	if (!ui.bKeys) return;
 
 	if (0) {}
 
@@ -1290,13 +1290,13 @@ void ofxSurfingSmooth::setupParams() {
 	//params.add(input.set("INPUT", 0, _inputMinRange, _inputMaxRange));
 	//params.add(output.set("OUTPUT", 0, _outMinRange, _outMaxRange));
 
-	guiManager.bGui_GameMode.setName("SMOOTH");
+	ui.bGui_GameMode.setName("SMOOTH");
 
 	//why required?
-	params.add(guiManager.bHelp);
-	params.add(guiManager.bMinimize);
-	params.add(guiManager.bKeys);
-	params.add(guiManager.bGui_GameMode);
+	params.add(ui.bHelp);
+	params.add(ui.bMinimize);
+	params.add(ui.bKeys);
+	params.add(ui.bGui_GameMode);
 
 	//--
 
@@ -1366,7 +1366,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 
 	if (0) {}
 
-	else if (name == guiManager.bKeys.getName())
+	else if (name == ui.bKeys.getName())
 	{
 		buildHelp();
 		return;
@@ -1612,24 +1612,24 @@ void ofxSurfingSmooth::setup_ImGui()
 {
 	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__);
 
-	guiManager.setName("SmoothSurf");
-	guiManager.setWindowsMode(IM_GUI_MODE_WINDOWS_SPECIAL_ORGANIZER);
-	guiManager.setup();
+	ui.setName("SmoothSurf");
+	ui.setWindowsMode(IM_GUI_MODE_WINDOWS_SPECIAL_ORGANIZER);
+	ui.setup();
 
-	guiManager.addWindowSpecial(bGui_Main);
-	guiManager.addWindowSpecial(guiManager.bGui_GameMode);
-	guiManager.addWindowSpecial(bGui_Extra);
-	guiManager.addWindowSpecial(bGui_Inputs);
-	guiManager.addWindowSpecial(bGui_Outputs);
+	ui.addWindowSpecial(bGui_Main);
+	ui.addWindowSpecial(ui.bGui_GameMode);
+	ui.addWindowSpecial(bGui_Extra);
+	ui.addWindowSpecial(bGui_Inputs);
+	ui.addWindowSpecial(bGui_Outputs);
 
-	guiManager.startup();
+	ui.startup();
 
 	//--
 
 	// custom
-	guiManager.setHelpInfoApp(helpInfo);
-	guiManager.bHelpInternal = false;
-	bGui_GameMode.makeReferenceTo(guiManager.bGui_GameMode);
+	ui.setHelpInfoApp(helpInfo);
+	ui.bHelpInternal = false;
+	bGui_GameMode.makeReferenceTo(ui.bGui_GameMode);
 }
 
 //--------------------------------------------------------------
@@ -1639,65 +1639,65 @@ void ofxSurfingSmooth::draw_ImGuiExtra()
 	{
 		IMGUI_SUGAR__WINDOWS_CONSTRAINTSW;
 
-		if (guiManager.beginWindowSpecial(bGui_Extra))
+		if (ui.BeginWindowSpecial(bGui_Extra))
 		{
 			// In / Out
 
-			if (!guiManager.bMinimize)
+			if (!ui.bMinimize)
 			{
-				if (guiManager.beginTree("IN / OUT"))
+				if (ui.BeginTree("IN / OUT"))
 				{
-					guiManager.Add(bGui_Inputs, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
-					guiManager.Add(bGui_Outputs, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
-					guiManager.endTree();
+					ui.Add(bGui_Inputs, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+					ui.Add(bGui_Outputs, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+					ui.EndTree();
 				}
-				guiManager.AddSpacingSeparated();
+				ui.AddSpacingSeparated();
 			}
 
 			// Plots
 			if (!bGui_GameMode)
-				if (!guiManager.bMinimize)
+				if (!ui.bMinimize)
 				{
-					if (guiManager.beginTree("PLOTS"))
+					if (ui.BeginTree("PLOTS"))
 					{
-						guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+						ui.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 						if (bGui_Plots)
 						{
-							guiManager.Indent();
-							guiManager.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
-							guiManager.Add(bGui_PlotOut, OFX_IM_TOGGLE_ROUNDED);
-							guiManager.Indent();
-							guiManager.Add(bGui_PlotFullScreen, OFX_IM_TOGGLE_ROUNDED_MINI);
-							guiManager.Add(boxPlots.bEdit, OFX_IM_TOGGLE_ROUNDED_MINI);
-							if (guiManager.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI)) {
+							ui.Indent();
+							ui.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
+							ui.Add(bGui_PlotOut, OFX_IM_TOGGLE_ROUNDED);
+							ui.Indent();
+							ui.Add(bGui_PlotFullScreen, OFX_IM_TOGGLE_ROUNDED_MINI);
+							ui.Add(boxPlots.bEdit, OFX_IM_TOGGLE_ROUNDED_MINI);
+							if (ui.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI)) {
 							};
-							guiManager.Unindent();
-							guiManager.Unindent();
+							ui.Unindent();
+							ui.Unindent();
 						}
-						guiManager.endTree();
+						ui.EndTree();
 					}
-					guiManager.AddSpacingSeparated();
+					ui.AddSpacingSeparated();
 				}
 
 			//----
 
 			// Enable Toggles
 
-			if (!guiManager.bMinimize)
+			if (!ui.bMinimize)
 			{
-				if (guiManager.beginTree("ENABLERS"))
+				if (ui.BeginTree("ENABLERS"))
 				{
-					if (guiManager.AddButton("NONE", OFX_IM_BUTTON_SMALL, 2))
+					if (ui.AddButton("NONE", OFX_IM_BUTTON_SMALL, 2))
 					{
 						doDisableAll();
 					}
-					guiManager.SameLine();
-					if (guiManager.AddButton("ALL", OFX_IM_BUTTON_SMALL, 2))
+					ui.SameLine();
+					if (ui.AddButton("ALL", OFX_IM_BUTTON_SMALL, 2))
 					{
 						doEnableAll();
 					}
 
-					guiManager.AddSpacing();
+					ui.AddSpacing();
 
 					for (int i = 0; i < params_EditorEnablers.size(); i++)
 					{
@@ -1709,23 +1709,23 @@ void ofxSurfingSmooth::draw_ImGuiExtra()
 						if (isBool) // just in case... 
 						{
 							ofParameter<bool> pb = p.cast<bool>();
-							guiManager.Add(pb, OFX_IM_CHECKBOX);
+							ui.Add(pb, OFX_IM_CHECKBOX);
 						}
 					}
 
-					guiManager.endTree();
+					ui.EndTree();
 				}
 
-				guiManager.AddSpacingSeparated();
+				ui.AddSpacingSeparated();
 			}
 
-			if (!guiManager.bMinimize)
+			if (!ui.bMinimize)
 			{
-				if (guiManager.beginTree("TESTER"))
+				if (ui.BeginTree("TESTER"))
 				{
-					guiManager.Add(bGenerators, OFX_IM_TOGGLE);
+					ui.Add(bGenerators, OFX_IM_TOGGLE);
 
-					if (guiManager.AddButton("Randomizer", OFX_IM_BUTTON))
+					if (ui.AddButton("Randomizer", OFX_IM_BUTTON))
 					{
 						doRandomize();
 					}
@@ -1737,35 +1737,35 @@ void ofxSurfingSmooth::draw_ImGuiExtra()
 						if (b) a = 1 - tn;
 						if (b) ImGui::PushStyleColor(ImGuiCol_Border,
 							(ImVec4)ImColor::HSV(0.5f, 0.0f, 1.0f, 0.5 * a));
-						guiManager.Add(bPlay, OFX_IM_TOGGLE);
+						ui.Add(bPlay, OFX_IM_TOGGLE);
 						if (b) ImGui::PopStyleColor();
 					}
 					if (bPlay)
 					{
-						guiManager.Add(playSpeed);
+						ui.Add(playSpeed);
 					}
 
-					guiManager.endTree();
+					ui.EndTree();
 				}
 			}
 
 			//--
 
-			if (!guiManager.bMinimize)
+			if (!ui.bMinimize)
 			{
-				guiManager.AddSpacingSeparated();
+				ui.AddSpacingSeparated();
 
 				if (ImGui::CollapsingHeader("Advanced"))
 				{
-					guiManager.refreshLayout();
+					ui.refreshLayout();
 
-					guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_BUTTON_ROUNDED_MEDIUM);
-					guiManager.Add(guiManager.bHelp, OFX_IM_TOGGLE_BUTTON_ROUNDED_SMALL);
-					guiManager.Add(boxPlots.bEdit);
+					ui.Add(ui.bKeys, OFX_IM_TOGGLE_BUTTON_ROUNDED_MEDIUM);
+					ui.Add(ui.bHelp, OFX_IM_TOGGLE_BUTTON_ROUNDED_SMALL);
+					ui.Add(boxPlots.bEdit);
 				}
 			}
 
-			guiManager.endWindowSpecial();
+			ui.EndWindowSpecial();
 		}
 	}
 }
@@ -1773,45 +1773,45 @@ void ofxSurfingSmooth::draw_ImGuiExtra()
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw_ImGuiGameMode()
 {
-	if (guiManager.bGui_GameMode) ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
+	if (ui.bGui_GameMode) ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_FirstUseEver);
 
-	if (guiManager.beginWindowSpecial(guiManager.bGui_GameMode))
+	if (ui.BeginWindowSpecial(ui.bGui_GameMode))
 	{
 		int i = index.get();
 
 		//--
 
-		guiManager.AddLabelHuge("SMOOTH & BANG");
-		//guiManager.AddLabelHuge(guiManager.bGui_GameMode.getName());
-		guiManager.AddSpacingBigSeparated();
+		ui.AddLabelHuge("SMOOTH & BANG");
+		//ui.AddLabelHuge(ui.bGui_GameMode.getName());
+		ui.AddSpacingBigSeparated();
 
 		////TODO:
 		//ImGui::Columns(2, "arrows", true);
 		//ImVec2 sz(20, 40);
-		//guiManager.AddButton("»", sz);
-		//guiManager.SameLine();
+		//ui.AddButton("»", sz);
+		//ui.SameLine();
 		//ImGui::NextColumn();
-		//guiManager.AddButton("»", sz);
+		//ui.AddButton("»", sz);
 		//ImGui::Columns(1);
 
-		guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+		ui.Add(ui.bMinimize, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 
-		if (!guiManager.bMinimize) {
-			//guiManager.AddSpacingSeparated();
-			guiManager.Add(bGui_Main, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
-			//guiManager.Add(bGui_Main);
+		if (!ui.bMinimize) {
+			//ui.AddSpacingSeparated();
+			ui.Add(bGui_Main, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+			//ui.Add(bGui_Main);
 		}
 
-		guiManager.AddSpacingSeparated();
+		ui.AddSpacingSeparated();
 
 		//--
 
-		if (guiManager.beginTree("CHANNEL", true, true))
+		if (ui.BeginTree("CHANNEL", true, true))
 		{
-			//if (!guiManager.bMinimize)
+			//if (!ui.bMinimize)
 			//{
-			//	guiManager.AddLabelBig("Signal");
-			//	//guiManager.AddLabelBig("CHANNEL");
+			//	ui.AddLabelBig("Signal");
+			//	//ui.AddLabelBig("CHANNEL");
 			//}
 
 			// Channel name
@@ -1823,16 +1823,16 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 			{
 				//ImGui::Columns(2, "t1", false);
 				string n = "#" + ofToString(i);
-				guiManager.AddLabel(n, false, true);
+				ui.AddLabel(n, false, true);
 				//ImGui::NextColumn();
-				guiManager.SameLine();
+				ui.SameLine();
 				n = editorEnablers[i].getName();
-				guiManager.AddLabelBig(n, false, true);
+				ui.AddLabelBig(n, false, true);
 				//ImGui::Columns(1);
 			}
 
 			// Selector
-			if (!guiManager.bMinimize) {
+			if (!ui.bMinimize) {
 				bool bResponsive = true;
 				int amountBtRow = 3;
 				const bool bDrawBorder = true;
@@ -1842,183 +1842,183 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 			}
 			else
 			{
-				guiManager.AddComboArrows(index);
+				ui.AddComboArrows(index);
 			}
 
 			// Enable, Solo, Amp
-			if (!guiManager.bMinimize)
+			if (!ui.bMinimize)
 			{
-				//guiManager.AddSpacing();
-				guiManager.Add(smoothChannels[i]->bEnableSmooth, OFX_IM_TOGGLE_SMALL, 2);
-				//guiManager.AddTooltip("Activate Smoother or bypass");
-				guiManager.SameLine();
-				guiManager.Add(bSolo, OFX_IM_TOGGLE_SMALL_BORDER_BLINK, 2);
+				//ui.AddSpacing();
+				ui.Add(smoothChannels[i]->bEnableSmooth, OFX_IM_TOGGLE_SMALL, 2);
+				//ui.AddTooltip("Activate Smoother or bypass");
+				ui.SameLine();
+				ui.Add(bSolo, OFX_IM_TOGGLE_SMALL_BORDER_BLINK, 2);
 
-				//guiManager.Add(smoothChannels[i]->ampInput);
-				guiManager.Add(smoothChannels[i]->ampInput, OFX_IM_HSLIDER_MINI);
-				guiManager.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
+				//ui.Add(smoothChannels[i]->ampInput);
+				ui.Add(smoothChannels[i]->ampInput, OFX_IM_HSLIDER_MINI);
+				ui.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
 			}
 
-			guiManager.endTree();
+			ui.EndTree();
 		}
 
-		guiManager.AddSpacingSeparated();
+		ui.AddSpacingSeparated();
 
 		//--
 
 		if (smoothChannels[i]->bEnableSmooth) {
 
-			if (guiManager.beginTree("SMOOTH", true, true))
+			if (ui.BeginTree("SMOOTH", true, true))
 			{
-				guiManager.AddSpacing();
+				ui.AddSpacing();
 
 				//--
 
-				guiManager.AddCombo(smoothChannels[i]->typeSmooth, typeSmoothLabels);
-				guiManager.AddTooltip("Type Smooth");
+				ui.AddCombo(smoothChannels[i]->typeSmooth, typeSmoothLabels);
+				ui.AddTooltip("Type Smooth");
 
 				if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
 				{
-					guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL_NO_NUMBER);
-					guiManager.AddTooltip(ofToString(smoothChannels[i]->smoothPower.get(), 2));
+					ui.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL_NO_NUMBER);
+					ui.AddTooltip(ofToString(smoothChannels[i]->smoothPower.get(), 2));
 				}
 				if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
 				{
-					guiManager.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
-					guiManager.AddTooltip(ofToString(smoothChannels[i]->slideMin.get(), 2));
-					guiManager.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
-					guiManager.AddTooltip(ofToString(smoothChannels[i]->slideMax.get(), 2));
+					ui.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
+					ui.AddTooltip(ofToString(smoothChannels[i]->slideMin.get(), 2));
+					ui.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
+					ui.AddTooltip(ofToString(smoothChannels[i]->slideMax.get(), 2));
 				}
 
-				guiManager.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
-				guiManager.AddTooltip("Type Mean");
+				ui.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
+				ui.AddTooltip("Type Mean");
 
-				guiManager.endTree();
+				ui.EndTree();
 			}
 
-			guiManager.AddSpacingSeparated();
+			ui.AddSpacingSeparated();
 
 			//--
 
 				// Bang Detector / Trigger selector
 
-			if (guiManager.beginTree("DETECTOR", true, true))
+			if (ui.BeginTree("DETECTOR", true, true))
 			{
-				guiManager.AddSpacing();
+				ui.AddSpacing();
 
-				guiManager.AddLabel("Mode");
+				ui.AddLabel("Mode");
 
-				guiManager.AddComboButtonDualLefted(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
+				ui.AddComboButtonDualLefted(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
 
 				//--
 
-				//if (!guiManager.bMinimize)
+				//if (!ui.bMinimize)
 				{
 					if (smoothChannels[i]->bangDetectorIndex == 0) // state
 					{
-						guiManager.Add(smoothChannels[i]->threshold, OFX_IM_HSLIDER_SMALL);
-						//guiManager.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
+						ui.Add(smoothChannels[i]->threshold, OFX_IM_HSLIDER_SMALL);
+						//ui.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
 					}
 					else if (smoothChannels[i]->bangDetectorIndex == 1) // bonk
 					{
-						guiManager.Add(smoothChannels[i]->onsetGrow, OFX_IM_HSLIDER_SMALL);
-						//guiManager.AddTooltip(ofToString(smoothChannels[i]->onsetGrow.get(), 2));
-						guiManager.Add(smoothChannels[i]->onsetDecay, OFX_IM_HSLIDER_SMALL);
-						//guiManager.AddTooltip(ofToString(smoothChannels[i]->onsetDecay.get(), 2));
+						ui.Add(smoothChannels[i]->onsetGrow, OFX_IM_HSLIDER_SMALL);
+						//ui.AddTooltip(ofToString(smoothChannels[i]->onsetGrow.get(), 2));
+						ui.Add(smoothChannels[i]->onsetDecay, OFX_IM_HSLIDER_SMALL);
+						//ui.AddTooltip(ofToString(smoothChannels[i]->onsetDecay.get(), 2));
 					}
 					else if (smoothChannels[i]->bangDetectorIndex == 2 || // direction
 						smoothChannels[i]->bangDetectorIndex == 3 || // up
 						smoothChannels[i]->bangDetectorIndex == 4) // down
 					{
-						guiManager.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_SMALL);
-						//guiManager.AddTooltip(ofToString(smoothChannels[i]->timeRedirection.get(), 2));
+						ui.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_SMALL);
+						//ui.AddTooltip(ofToString(smoothChannels[i]->timeRedirection.get(), 2));
 					}
 				}
 
-				guiManager.AddSpacing();
+				ui.AddSpacing();
 
 				// Circle Widget
 
 				string n = editorEnablers[i].getName();
-				guiManager.AddLabel(n, false, true);
-				guiManager.AddLabelBig("BANG!", true, true);
-				guiManager.AddSpacing();
+				ui.AddLabel(n, false, true);
+				ui.AddLabelBig("BANG!", true, true);
+				ui.AddSpacing();
 
 				circleBeatWidget.draw();
 
 				//--
 
-				//guiManager.AddSpacingSeparated();
-				guiManager.AddSpacing();
+				//ui.AddSpacingSeparated();
+				ui.AddSpacing();
 
-				guiManager.Add(smoothChannels[i]->bGateMode, OFX_IM_TOGGLE_SMALL);
+				ui.Add(smoothChannels[i]->bGateMode, OFX_IM_TOGGLE_SMALL);
 				if (smoothChannels[i]->bGateMode)
 				{
 					// Timer progress
 					float v = ofMap(gates[i].timerGate, 0, gates[i].tDurationGate, 0, 1, true);
 					ofxImGuiSurfing::ProgressBar2(v, 1.f, true);
 					ofxImGuiSurfing::AddToggleNamed(smoothChannels[i]->bGateSlow, "Slow", "Fast");
-					guiManager.Add(smoothChannels[i]->bpmDiv, OFX_IM_STEPPER);
+					ui.Add(smoothChannels[i]->bpmDiv, OFX_IM_STEPPER);
 				}
 
 				//--
 
-				guiManager.endTree();
+				ui.EndTree();
 			}
 
-			guiManager.AddSpacingSeparated();
+			ui.AddSpacingSeparated();
 		}
 
 		//--
 
-		if (guiManager.bMinimize)
+		if (ui.bMinimize)
 		{
-			guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_ROUNDED);
+			ui.Add(ui.bKeys, OFX_IM_TOGGLE_ROUNDED);
 		}
 
 		//--
 
-		if (!guiManager.bMinimize)
-			if (guiManager.beginTree("EXTRA"))
+		if (!ui.bMinimize)
+			if (ui.BeginTree("EXTRA"))
 			{
-				//if (!guiManager.bMinimize)
+				//if (!ui.bMinimize)
 				{
-					if (guiManager.beginTree("PLOTS", false))
+					if (ui.BeginTree("PLOTS", false))
 					{
-						guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+						ui.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 						if (bGui_Plots)
 						{
-							guiManager.Indent();
-							guiManager.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
-							guiManager.Add(bGui_PlotOut, OFX_IM_TOGGLE_ROUNDED);
-							guiManager.Indent();
-							guiManager.Add(bGui_PlotFullScreen, OFX_IM_TOGGLE_ROUNDED_MINI);
-							//guiManager.Add(boxPlots.bEdit, OFX_IM_TOGGLE_ROUNDED_MINI);
-							//guiManager.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI);
-							guiManager.Unindent();
-							guiManager.Unindent();
+							ui.Indent();
+							ui.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
+							ui.Add(bGui_PlotOut, OFX_IM_TOGGLE_ROUNDED);
+							ui.Indent();
+							ui.Add(bGui_PlotFullScreen, OFX_IM_TOGGLE_ROUNDED_MINI);
+							//ui.Add(boxPlots.bEdit, OFX_IM_TOGGLE_ROUNDED_MINI);
+							//ui.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI);
+							ui.Unindent();
+							ui.Unindent();
 						}
 
-						guiManager.endTree();
+						ui.EndTree();
 					}
 
-					//guiManager.AddSpacing();
-					guiManager.AddSpacingSeparated();
+					//ui.AddSpacing();
+					ui.AddSpacingSeparated();
 
-					guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_ROUNDED);
-					guiManager.Add(guiManager.bHelp, OFX_IM_TOGGLE_ROUNDED);
-					//guiManager.Add(bEnableSmoothGlobal, OFX_IM_TOGGLE_ROUNDED_MINI);
-					guiManager.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED_MINI);
-					guiManager.Add(bGenerators, OFX_IM_TOGGLE_SMALL);
+					ui.Add(ui.bKeys, OFX_IM_TOGGLE_ROUNDED);
+					ui.Add(ui.bHelp, OFX_IM_TOGGLE_ROUNDED);
+					//ui.Add(bEnableSmoothGlobal, OFX_IM_TOGGLE_ROUNDED_MINI);
+					ui.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED_MINI);
+					ui.Add(bGenerators, OFX_IM_TOGGLE_SMALL);
 				}
 				//else
 				//{
-				//	guiManager.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED);
+				//	ui.Add(bGui_Plots, OFX_IM_TOGGLE_ROUNDED);
 				//	if (bGui_Plots)
 				//	{
-				//		guiManager.Indent();
-				//		guiManager.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED_MINI);
-				//		guiManager.Unindent();
+				//		ui.Indent();
+				//		ui.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED_MINI);
+				//		ui.Unindent();
 				//	}
 				//	////workflow
 				//	//if (bGui_Plots)
@@ -2026,39 +2026,39 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 				//	//		bGui_PlotIn = bGui_PlotOut = true;
 				//	//	}
 
-				//	guiManager.Add(guiManager.bKeys, OFX_IM_TOGGLE_ROUNDED);
-				//	guiManager.Add(guiManager.bHelp, OFX_IM_TOGGLE_ROUNDED);
+				//	ui.Add(ui.bKeys, OFX_IM_TOGGLE_ROUNDED);
+				//	ui.Add(ui.bHelp, OFX_IM_TOGGLE_ROUNDED);
 
-				//	//guiManager.Indent();
-				//	//guiManager.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
-				//	//if (guiManager.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI)) {
+				//	//ui.Indent();
+				//	//ui.Add(bGui_PlotIn, OFX_IM_TOGGLE_ROUNDED);
+				//	//if (ui.Add(bGui_PlotsLink, OFX_IM_TOGGLE_ROUNDED_MINI)) {
 				//	//};
-				//	//guiManager.Unindent();
+				//	//ui.Unindent();
 
 				//}
 
-				guiManager.endTree();
+				ui.EndTree();
 			}
 
 		//--
 
-		guiManager.AddSpacingSeparated();
+		ui.AddSpacingSeparated();
 
-		if (!guiManager.bMinimize)
+		if (!ui.bMinimize)
 		{
-			if (guiManager.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL, 2)) {
+			if (ui.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL, 2)) {
 
 			};
-			guiManager.SameLine();
-			if (guiManager.Add(bReset, OFX_IM_BUTTON_SMALL, 2)) {
+			ui.SameLine();
+			if (ui.Add(bReset, OFX_IM_BUTTON_SMALL, 2)) {
 				doReset();
 			};
 		}
 		else {
-			guiManager.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL);
+			ui.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL);
 		}
 
-		guiManager.endWindowSpecial();
+		ui.EndWindowSpecial();
 	}
 }
 
@@ -2071,74 +2071,74 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 
 		IMGUI_SUGAR__WINDOWS_CONSTRAINTSW;
 
-		if (guiManager.beginWindowSpecial(bGui_Main))
+		if (ui.BeginWindowSpecial(bGui_Main))
 		{
-			guiManager.Add(guiManager.bMinimize, OFX_IM_TOGGLE_ROUNDED);
-			guiManager.AddSpacingSeparated();
+			ui.Add(ui.bMinimize, OFX_IM_TOGGLE_ROUNDED);
+			ui.AddSpacingSeparated();
 
-			guiManager.Add(guiManager.bGui_GameMode, OFX_IM_TOGGLE_ROUNDED_BIG);
-			guiManager.AddSpacingSeparated();
+			ui.Add(ui.bGui_GameMode, OFX_IM_TOGGLE_ROUNDED_BIG);
+			ui.AddSpacingSeparated();
 
 			//--
 
 			// Enable Global
-			guiManager.Add(bEnableSmoothGlobal, OFX_IM_TOGGLE_BIG_BORDER_BLINK);
+			ui.Add(bEnableSmoothGlobal, OFX_IM_TOGGLE_BIG_BORDER_BLINK);
 
-			if (!guiManager.bMinimize)
+			if (!ui.bMinimize)
 			{
-				guiManager.AddSpacingSeparated();
+				ui.AddSpacingSeparated();
 
-				guiManager.Add(smoothChannels[i]->bClamp, OFX_IM_TOGGLE_SMALL, 2, true);
-				guiManager.Add(smoothChannels[i]->bNormalized, OFX_IM_TOGGLE_SMALL, 2);
+				ui.Add(smoothChannels[i]->bClamp, OFX_IM_TOGGLE_SMALL, 2, true);
+				ui.Add(smoothChannels[i]->bNormalized, OFX_IM_TOGGLE_SMALL, 2);
 
 				if (smoothChannels[i]->bClamp)
 				{
-					guiManager.AddSpacing();
-					guiManager.Add(smoothChannels[i]->minInput);
-					guiManager.Add(smoothChannels[i]->maxInput);
-					guiManager.AddSpacing();
-					guiManager.Add(smoothChannels[i]->minOutput);
-					guiManager.Add(smoothChannels[i]->maxOutput);
-					//guiManager.AddSpacing();
+					ui.AddSpacing();
+					ui.Add(smoothChannels[i]->minInput);
+					ui.Add(smoothChannels[i]->maxInput);
+					ui.AddSpacing();
+					ui.Add(smoothChannels[i]->minOutput);
+					ui.Add(smoothChannels[i]->maxOutput);
+					//ui.AddSpacing();
 				}
 			}
 
-			//guiManager.AddSpacingSeparated();
+			//ui.AddSpacingSeparated();
 
 			// Monitor
 			if (!bGui_GameMode) {
 
 				if (bEnableSmoothGlobal)
 				{
-					guiManager.AddSpacingSeparated();
+					ui.AddSpacingSeparated();
 
 					if (ImGui::CollapsingHeader("MONITOR"))
 					{
-						guiManager.refreshLayout();
+						ui.refreshLayout();
 
 						if (index < editorEnablers.size())
 						{
-							guiManager.AddLabelBig(editorEnablers[index].getName(), false);
+							ui.AddLabelBig(editorEnablers[index].getName(), false);
 						}
 
-						if (!guiManager.bMinimize)
+						if (!ui.bMinimize)
 						{
 							if (index.getMax() < 5)
 							{
 								ofxImGuiSurfing::AddMatrixClicker(index);
 							}
 							else {
-								if (guiManager.Add(index, OFX_IM_STEPPER))
+								if (ui.Add(index, OFX_IM_STEPPER))
 								{
 									index = ofClamp(index, index.getMin(), index.getMax());
 								}
 							}
-							guiManager.AddSpacingSeparated();
-							guiManager.Add(smoothChannels[i]->bEnableSmooth, OFX_IM_TOGGLE);
-							guiManager.Add(bSolo, OFX_IM_TOGGLE);
+							ui.AddSpacingSeparated();
+							ui.Add(smoothChannels[i]->bEnableSmooth, OFX_IM_TOGGLE);
+							ui.Add(bSolo, OFX_IM_TOGGLE);
 
-							//guiManager.Add(input, OFX_IM_HSLIDER_MINI);
-							//guiManager.Add(output, OFX_IM_HSLIDER_MINI);
+							//ui.Add(input, OFX_IM_HSLIDER_MINI);
+							//ui.Add(output, OFX_IM_HSLIDER_MINI);
 						}
 						else
 						{
@@ -2147,21 +2147,21 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 								ofxImGuiSurfing::AddMatrixClicker(index);
 							}
 							else {
-								if (guiManager.Add(index, OFX_IM_STEPPER))
+								if (ui.Add(index, OFX_IM_STEPPER))
 								{
 									index = ofClamp(index, index.getMin(), index.getMax());
 								}
 							}
 
-							guiManager.Add(bSolo, OFX_IM_TOGGLE);
+							ui.Add(bSolo, OFX_IM_TOGGLE);
 
-							//guiManager.AddSpacingSeparated();
-							//guiManager.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
-							//guiManager.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
+							//ui.AddSpacingSeparated();
+							//ui.Add(input, OFX_IM_HSLIDER_MINI_NO_LABELS);
+							//ui.Add(output, OFX_IM_HSLIDER_MINI_NO_LABELS);
 						}
 					}
 
-					guiManager.refreshLayout();
+					ui.refreshLayout();
 				}
 			}
 
@@ -2169,45 +2169,45 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 
 			if (bEnableSmoothGlobal)
 			{
-				guiManager.AddSpacingSeparated();
+				ui.AddSpacingSeparated();
 
 				if (ImGui::CollapsingHeader("ENGINE"))
 				{
-					guiManager.AddSpacing();
+					ui.AddSpacing();
 
-					if (!guiManager.bMinimize)
-						if (guiManager.AddButton("SMOOTH +", OFX_IM_BUTTON))
+					if (!ui.bMinimize)
+						if (ui.AddButton("SMOOTH +", OFX_IM_BUTTON))
 						{
 							nextTypeSmooth(index.get());
 						}
 
-					guiManager.AddCombo(smoothChannels[i]->typeSmooth, typeSmoothLabels);
+					ui.AddCombo(smoothChannels[i]->typeSmooth, typeSmoothLabels);
 
 					if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
 					{
-						guiManager.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL);
+						ui.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL);
 					}
 
 					if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
 					{
-						guiManager.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
-						guiManager.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
+						ui.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
+						ui.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
 					}
 
-					guiManager.AddSpacingSeparated();
+					ui.AddSpacingSeparated();
 
 					//--
 
-					if (!guiManager.bMinimize)
-						if (guiManager.AddButton("MEAN +", OFX_IM_BUTTON))
+					if (!ui.bMinimize)
+						if (ui.AddButton("MEAN +", OFX_IM_BUTTON))
 						{
 							nextTypeMean(index.get());
 						}
 
-					guiManager.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
+					ui.AddCombo(smoothChannels[i]->typeMean, typeMeanLabels);
 
-					//guiManager.AddSpacingSeparated();
-					//guiManager.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL);
+					//ui.AddSpacingSeparated();
+					//ui.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL);
 				}
 			}
 
@@ -2215,26 +2215,26 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 
 			if (bEnableSmoothGlobal)
 			{
-				guiManager.AddSpacingSeparated();
+				ui.AddSpacingSeparated();
 
 				if (ImGui::CollapsingHeader("DETECTOR"))
 				{
-					guiManager.refreshLayout();
+					ui.refreshLayout();
 
-					guiManager.AddCombo(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
+					ui.AddCombo(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
 
-					if (!guiManager.bMinimize)
+					if (!ui.bMinimize)
 					{
-						guiManager.Add(smoothChannels[i]->threshold, OFX_IM_HSLIDER_SMALL);
-						guiManager.Add(smoothChannels[i]->threshold, OFX_IM_STEPPER);
-						guiManager.AddSpacing();
+						ui.Add(smoothChannels[i]->threshold, OFX_IM_HSLIDER_SMALL);
+						ui.Add(smoothChannels[i]->threshold, OFX_IM_STEPPER);
+						ui.AddSpacing();
 
-						guiManager.AddLabel("Direction");
-						guiManager.Add(smoothChannels[i]->timeRedirection, OFX_IM_STEPPER);
+						ui.AddLabel("Direction");
+						ui.Add(smoothChannels[i]->timeRedirection, OFX_IM_STEPPER);
 
-						guiManager.AddLabel("Bonks");
-						guiManager.Add(smoothChannels[i]->onsetGrow, OFX_IM_STEPPER);
-						guiManager.Add(smoothChannels[i]->onsetDecay, OFX_IM_STEPPER);
+						ui.AddLabel("Bonks");
+						ui.Add(smoothChannels[i]->onsetGrow, OFX_IM_STEPPER);
+						ui.Add(smoothChannels[i]->onsetDecay, OFX_IM_STEPPER);
 					}
 					else
 					{
@@ -2242,35 +2242,35 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 							smoothChannels[i]->bangDetectorIndex == 3 ||
 							smoothChannels[i]->bangDetectorIndex == 4)
 						{
-							guiManager.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_SMALL);
+							ui.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_SMALL);
 						}
 
 						//if (bangDetectorIndex == 1)
 						{
-							guiManager.Add(smoothChannels[i]->onsetGrow, OFX_IM_STEPPER);
-							guiManager.Add(smoothChannels[i]->onsetDecay, OFX_IM_STEPPER);
+							ui.Add(smoothChannels[i]->onsetGrow, OFX_IM_STEPPER);
+							ui.Add(smoothChannels[i]->onsetDecay, OFX_IM_STEPPER);
 						}
 					}
 
-					guiManager.AddSpacingBigSeparated();
+					ui.AddSpacingBigSeparated();
 
-					if (guiManager.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL))
+					if (ui.Add(smoothChannels[i]->bReset, OFX_IM_BUTTON_SMALL))
 					{
 					};
 				}
-				guiManager.refreshLayout();
+				ui.refreshLayout();
 			}
 
 			//--
 
-			if (!guiManager.bMinimize)
+			if (!ui.bMinimize)
 			{
-				guiManager.AddSpacingSeparated();
-				guiManager.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+				ui.AddSpacingSeparated();
+				ui.Add(bGui_Extra, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
 			}
 		}
 
-		guiManager.endWindowSpecial();
+		ui.EndWindowSpecial();
 	}
 }
 //--------------------------------------------------------------
@@ -2278,21 +2278,21 @@ void ofxSurfingSmooth::draw_ImGui()
 {
 	if (!bGui_Global) return;
 
-	guiManager.begin();
+	ui.Begin();
 	{
 		//TODO:
 		if (bGui_PlotsLink)
 		{
 			// Get last window
-			//int pad = guiManager.getWindowSpecialPadSize();
+			//int pad = ui.getWindowSpecialPadSize();
 			int padmin = 8;
-			int pad = MAX(guiManager.getWindowSpecialPadSize(), padmin);//add a bit more space
-			glm::vec2 p = guiManager.getWindowSpecialLastTopRight();
+			int pad = MAX(ui.getWindowSpecialPadSize(), padmin);//add a bit more space
+			glm::vec2 p = ui.getWindowSpecialLastTopRight();
 			p = p + glm::vec2(pad, 0);
 
 			// Current window
-			//ofRectangle r = guiManager.getWindowShape();
-			//int pad = MAX(guiManager.getWindowSpecialPadSize(), 2);
+			//ofRectangle r = ui.getWindowShape();
+			//int pad = MAX(ui.getWindowSpecialPadSize(), 2);
 
 			//// A. scale
 			//float xw = r.getWidth() + pad;
@@ -2310,7 +2310,7 @@ void ofxSurfingSmooth::draw_ImGui()
 
 		//----
 
-		if (guiManager.bGui_GameMode) draw_ImGuiGameMode();
+		if (ui.bGui_GameMode) draw_ImGuiGameMode();
 
 		//--
 
@@ -2321,10 +2321,10 @@ void ofxSurfingSmooth::draw_ImGui()
 
 		if (bGui_Inputs)
 		{
-			if (guiManager.beginWindowSpecial(bGui_Inputs))
+			if (ui.BeginWindowSpecial(bGui_Inputs))
 			{
-				guiManager.AddGroup(mParamsGroup);
-				guiManager.endWindowSpecial();
+				ui.AddGroup(mParamsGroup);
+				ui.EndWindowSpecial();
 			}
 		}
 
@@ -2332,10 +2332,10 @@ void ofxSurfingSmooth::draw_ImGui()
 
 		if (bGui_Outputs)
 		{
-			if (guiManager.beginWindowSpecial(bGui_Outputs))
+			if (ui.BeginWindowSpecial(bGui_Outputs))
 			{
-				guiManager.AddGroup(mParamsGroup_Smoothed);
-				guiManager.endWindowSpecial();
+				ui.AddGroup(mParamsGroup_Smoothed);
+				ui.EndWindowSpecial();
 			}
 		}
 
@@ -2346,7 +2346,7 @@ void ofxSurfingSmooth::draw_ImGui()
 			draw_ImGuiExtra();
 		}
 	}
-	guiManager.end();
+	ui.End();
 }
 
 //----

@@ -83,7 +83,7 @@ private:
 
 public:
 
-	ofxSurfing_ImGui_Manager guiManager;
+	ofxSurfingGui ui;
 
 private:
 
@@ -622,7 +622,7 @@ private:
 		string s = "";
 		s += "HELP SMOOTH \n\n";
 
-		if (!guiManager.bKeys)
+		if (!ui.bKeys)
 		{
 			s += "Keys toggle is disabled! \n";
 			s += "Enable Keys toggle \non Advanced sub menu. \n";
@@ -645,12 +645,12 @@ private:
 			s += "\n";
 
 			s += "TESTER \n";
-			s += "SPACE       RANDO \n";
+			s += "SPACE       RANDOM \n";
 			s += "RETURN      PLAY \n";
 		}
 		helpInfo = s;
 
-		guiManager.setHelpInfoApp(helpInfo);
+		ui.setHelpInfoApp(helpInfo);
 	}
 
 	//----
