@@ -26,9 +26,11 @@ void ofApp::setup() {
 	//-
 
 	// Receiver for the bang detector
-	float r = 50;
+	float r = 150;
+	circleBeat.setColor(ofColor::yellow);
 	circleBeat.setRadius(r);
 	circleBeat.setPosition(ofGetWidth() - 2 * r - 5, 5 + r);
+	circleBeat.setName(speed.getName());
 }
 
 //--------------------------------------------------------------
