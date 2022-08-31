@@ -1873,11 +1873,11 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 				//ui.AddTooltip("Activate Smoother or bypass");
 				ui.SameLine();
 				ui.Add(bSolo, OFX_IM_TOGGLE_SMALL_BORDER_BLINK, 2);
-
-				//ui.Add(smoothChannels[i]->ampInput);
-				ui.Add(smoothChannels[i]->ampInput, OFX_IM_HSLIDER_MINI);
-				ui.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
 			}
+
+			SurfingGuiTypes st = (!ui.bMinimize) ? OFX_IM_HSLIDER_MINI : OFX_IM_HSLIDER_MINI_NO_NAME;
+			ui.Add(smoothChannels[i]->ampInput, st);
+			ui.AddTooltip(ofToString(smoothChannels[i]->ampInput.get(), 2));
 
 			ui.EndTree();
 		}
@@ -1899,14 +1899,18 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 				if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_ACCUM)
 				{
-					ui.Add(smoothChannels[i]->smoothPower, OFX_IM_HSLIDER_SMALL_NO_NUMBER);
+					SurfingGuiTypes st = (!ui.bMinimize) ? OFX_IM_HSLIDER_SMALL_NO_NUMBER : OFX_IM_HSLIDER_MINI_NO_LABELS;
+
+					ui.Add(smoothChannels[i]->smoothPower, st);
 					ui.AddTooltip(ofToString(smoothChannels[i]->smoothPower.get(), 2));
 				}
 				if (smoothChannels[i]->typeSmooth == ofxDataStream::SMOOTHING_SLIDE)
 				{
-					ui.Add(smoothChannels[i]->slideMin, OFX_IM_HSLIDER_MINI);
+					SurfingGuiTypes st = (!ui.bMinimize) ? OFX_IM_HSLIDER_SMALL : OFX_IM_HSLIDER_MINI_NO_LABELS;
+
+					ui.Add(smoothChannels[i]->slideMin, st);
 					ui.AddTooltip(ofToString(smoothChannels[i]->slideMin.get(), 2));
-					ui.Add(smoothChannels[i]->slideMax, OFX_IM_HSLIDER_MINI);
+					ui.Add(smoothChannels[i]->slideMax, st);
 					ui.AddTooltip(ofToString(smoothChannels[i]->slideMax.get(), 2));
 				}
 
@@ -1932,26 +1936,29 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 				//--
 
+				bool bx = (!ui.bMinimize);
+				SurfingGuiTypes st = bx ? OFX_IM_HSLIDER_SMALL : OFX_IM_HSLIDER_MINI_NO_LABELS;
+
 				//if (!ui.bMinimize)
 				{
 					if (smoothChannels[i]->bangDetectorIndex == 0) // state
 					{
-						ui.Add(smoothChannels[i]->threshold, OFX_IM_HSLIDER_SMALL);
+						ui.Add(smoothChannels[i]->threshold, st);
 						//ui.AddTooltip(ofToString(smoothChannels[i]->threshold.get(), 2));
 					}
 					else if (smoothChannels[i]->bangDetectorIndex == 1) // bonk
 					{
-						ui.Add(smoothChannels[i]->onsetGrow, OFX_IM_HSLIDER_SMALL);
-						//ui.AddTooltip(ofToString(smoothChannels[i]->onsetGrow.get(), 2));
-						ui.Add(smoothChannels[i]->onsetDecay, OFX_IM_HSLIDER_SMALL);
-						//ui.AddTooltip(ofToString(smoothChannels[i]->onsetDecay.get(), 2));
+						ui.Add(smoothChannels[i]->onsetGrow, st);
+						if(!bx) ui.AddTooltip(ofToString(smoothChannels[i]->onsetGrow.get(), 2));
+						ui.Add(smoothChannels[i]->onsetDecay, st);
+						if (!bx) ui.AddTooltip(ofToString(smoothChannels[i]->onsetDecay.get(), 2));
 					}
 					else if (smoothChannels[i]->bangDetectorIndex == 2 || // direction
 						smoothChannels[i]->bangDetectorIndex == 3 || // up
 						smoothChannels[i]->bangDetectorIndex == 4) // down
 					{
-						ui.Add(smoothChannels[i]->timeRedirection, OFX_IM_HSLIDER_SMALL);
-						//ui.AddTooltip(ofToString(smoothChannels[i]->timeRedirection.get(), 2));
+						ui.Add(smoothChannels[i]->timeRedirection, st);
+						if (!bx) ui.AddTooltip(ofToString(smoothChannels[i]->timeRedirection.get(), 2));
 					}
 				}
 
