@@ -47,6 +47,13 @@ void ofxSurfingSmooth::setup()
 	ui.bHelp = true;
 	ui.bKeys = true;
 
+	// font
+	std::string _path = "assets/fonts/"; // assets folder
+	string f = "JetBrainsMono-Bold.ttf";
+	_path += f;
+	bool b = font.load(_path, fontSize);
+	if (!b) font.load(OF_TTF_MONO, fontSize);
+
 	//--
 
 	mParamsGroup.setName("ofxSurfingSmooth");
@@ -132,7 +139,7 @@ void ofxSurfingSmooth::setupPlots()
 		//--
 
 	// circle beat widget
-	circleBeatWidget.setColor(0, colorTrig);
+		circleBeatWidget.setColor(0, colorTrig);
 	circleBeatWidget.setColor(1, colorBonk);
 	circleBeatWidget.setColor(2, colorDirect);
 	circleBeatWidget.setColor(3, colorDirectUp);
@@ -699,21 +706,24 @@ void ofxSurfingSmooth::draw()
 		else
 		{
 			//fix draw bg
-			if (!bGui_PlotIn && !bGui_PlotOut)
-			{
-				ofColor c = plots[0]->getBackgroundColor();
-				ofPushStyle();
-				ofFill();
-				ofSetColor(c);
-				ofDrawRectangle(boxPlots.getRectangle());
-				ofPopStyle();
-			}
-			drawPlots(boxPlots.getRectangle());
+			if (boxPlots.isVisible())
+				if (!bGui_PlotIn && !bGui_PlotOut)
+				{
+					ofColor c = plots[0]->getBackgroundColor();
+					ofPushStyle();
+					ofFill();
+					ofSetColor(c);
+					ofDrawRectangle(boxPlots.getRectangle());
+					ofPopStyle();
+				}
+
+			if (boxPlots.isVisible()) drawPlots(boxPlots.getRectangle());
 		}
 
 		boxPlots.draw();
 
-		if (boxPlots.isEditing()) boxPlots.drawBorderBlinking();
+		if (boxPlots.isVisible())
+			if (boxPlots.isEditing()) boxPlots.drawBorderBlinking();
 	}
 
 	//if (bGui) draw_ImGui();
@@ -962,7 +972,12 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		//--
 
 		// Draw display Text
-		ofDrawBitmapString(s, x + 5, y + 11);
+		//ofDrawBitmapString(s, x + 5, y + 11);
+		//string text = varName + string(haveData ? (" " + ofToString(cVal, precision)) : "");
+		//ofDrawBitmapString(text, x + w - (text.length()) * 8  , y + 10);
+		//float _w = font.getStringBoundingBox(text, 0, 0).getWidth() + 5;
+		//font.drawString(text, x + w - _w, y + 10);
+		font.drawString(s, x + 5, y + 11);
 
 		//--
 
@@ -1155,9 +1170,11 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 		{
 			int l = 4;
 			int lh = 2;
-
+			int a;
 			ofSetLineWidth(l);
-			ofSetColor(colorPlots, ofMap(ofxSurfingHelpers::Bounce(), 0, 1, 64, 150));
+			if (ui.bKeys) a = ofMap(ofxSurfingHelpers::Bounce(), 0, 1, 64, 150);
+			else a = 150;
+			ofSetColor(colorPlots, a);
 
 			ofLine(x + lh, y, x + lh, y + h);
 		}
@@ -1260,6 +1277,9 @@ void ofxSurfingSmooth::setupParams() {
 	params.add(alphaPlotInput.set("AlphaIn", 0.5, 0, 1));
 
 	params.add(bEnableSmoothGlobal.set("ENABLE GLOBAL", true));
+
+	//TODO: link
+	boxPlots.bGui.makeReferenceTo(bGui_Plots);
 
 	//--
 
@@ -1794,7 +1814,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 		//ui.AddButton("»", sz);
 		//ImGui::Columns(1);
 
-		ui.Add(ui.bMinimize, OFX_IM_TOGGLE_ROUNDED_MEDIUM);
+		ui.Add(ui.bMinimize, OFX_IM_TOGGLE_ROUNDED);
 
 		if (!ui.bMinimize) {
 			//ui.AddSpacingSeparated();
@@ -1941,7 +1961,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 				string n = editorEnablers[i].getName();
 				ui.AddLabel(n, false, true);
-				ui.AddLabelBig("BANG!", true, true);
+				if (!ui.bMinimize) ui.AddLabelBig("BANG!", true, true);
 				ui.AddSpacing();
 
 				circleBeatWidget.draw();

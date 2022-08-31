@@ -4,21 +4,32 @@
 #include "ofxImGui.h"
 #include "surfingTimers.h"
 
+/*
+
+An ImGui widget to visualize trig bangs for an audio analyzer.
+
+*/
+
+//--
+
 class CircleBeatWidget
 {
 public:
 
-	CircleBeatWidget() {
+	CircleBeatWidget::CircleBeatWidget()
+	{
 		dt = 1.0f / 60.f;
-	}
+	};
 
-	~CircleBeatWidget() {
-	}
+	CircleBeatWidget::~CircleBeatWidget()
+	{
+	};
 
-	void draw() {
+	void draw()
+	{
 		update();
 		draw_ImGui_CircleBeatWidget();
-	}
+	};
 
 private:
 	
@@ -33,7 +44,7 @@ private:
 			if (!bBpmMode) animCounter += (dt * speedRatio * speed);
 			else animCounter += dt_Bpm;
 		}
-	}
+	};
 	
 public:
 
@@ -167,7 +178,7 @@ private:
 		//---
 
 		float pad = 10;
-		float __w100 = ImGui::GetContentRegionAvail().x - 2 * pad;
+		float width = ImGui::GetContentRegionAvail().x - 2 * pad;
 
 		const char* label = " ";
 
@@ -178,32 +189,44 @@ private:
 		ImGuiStyle& style = ImGui::GetStyle();
 
 		ImVec2 pos = ImGui::GetCursorScreenPos(); // get top left of current widget
+
 		float xx = pos.x + pad;
 		float yy = pos.y;
-		ImVec4 widgetRec = ImVec4(xx, yy, radius * 2.0f, radius * 2.0f);
-		ImVec2 center = ImVec2(xx + __w100 / 2, yy + radius /*+ pad*/);
+
+		ImVec2 center = ImVec2(xx + width / 2.f, yy + radius);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
+		// make the free space
+		ImVec4 widgetRec = ImVec4(xx, yy, radius * 2.0f, radius * 2.0f);
 		ImGui::InvisibleButton(label, ImVec2(widgetRec.z, widgetRec.w));
 
 		//-
 
-		// Outer Circle / Bg
-
-		// Big circle segments outperforms..
+		// TODO: 
+		// NOTICED that big circle that segments outperforms a bit. lower fps..
 		const int nsegm = 24;
-		ofColor c = colorCircle;
 
+		// Outer Circle / Bg
 		draw_list->AddCircleFilled(center, radius_outer, ImGui::GetColorU32(ImVec4(colorBg)), nsegm);
 
-		if (mode == 0) // blink on that mode
+		// Inner Circle
+		ofColor c = colorCircle;
+
+		// blink alpha on that mode
+		if (mode == 0) 
 		{
 			int a = ofMap(ofxSurfingHelpers::getFadeBlink(0.05), 0, 1, 160, 190);
 			c = ofColor(colorCircle, a);
 		}
 
 		draw_list->AddCircleFilled(center, radius_inner, ImGui::GetColorU32(ImVec4(c)), nsegm);
+
+		// Add a beauty inner shadow border
+		float thickness = 2.f;
+		float r = 1 + radius_inner - (thickness/2.f);
+		c = ofColor(ofColor::black, 90);
+		draw_list->AddCircle(center, r, ImGui::GetColorU32(ImVec4(c)), nsegm, thickness);
 	}
 };
 

@@ -3,12 +3,23 @@
 /*
 
 	TODO:
-
+	
+	+ check notifier/void from @alptugan
 	+ fix hysteresis gate. tempo based. 1 bar i.e.
 	do the filtering in another "parent" method!
 	isBangFiltered(i);
 
-	+ filer type befor apply setBonks, etc
+	+ add mini float window with basic controls, vertical and knobs
+
+	+ add bypass detector ?
+
+	--
+
+	+ plotting int type should be stepped/not continuous.
+	
+	+ add clamp and normalization modes.
+
+	+ filter type before apply setBonks, etc ?
 
 	+ BUG: on startup smooth params, and maybe others are not loaded properly...
 	the problem is that when loading settings,
@@ -17,19 +28,11 @@
 	probably we should set setSerializable
 	when picking each type with his related params?
 
-	+ add mini float window with basic controls, vertical and knobs
-
-	+ add alpha for input plot
-	+ add clamp and normalization modes.
-	+ fix circle beat widget
-		check bang behavior!
+	+ add alpha for input plot ?
 	+ fix chars to debug plot
-
+	+ "real" nested sub-groups tree levels.. ?
 	+ add colors types, vectors, using templates.
 		avoid crash to unsupported types.
-	+ "real" nested sub-groups tree levels.. ?
-	+ add param to calibrate max history smooth/speed.
-	+ plotting int type should be stepped/not continuous.
 
 */
 
@@ -53,8 +56,14 @@
 class ofxSurfingSmooth : public ofBaseApp
 {
 
-public:
+private:
 
+	// custom font
+	ofTrueTypeFont font;
+	int fontSize = 6;
+
+public:
+	
 	ofxSurfingSmooth();
 	~ofxSurfingSmooth();
 
