@@ -1842,10 +1842,13 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 			else
 			{
 				//ImGui::Columns(2, "t1", false);
-				string n = "#" + ofToString(i);
-				ui.AddLabel(n, false, true);
-				//ImGui::NextColumn();
-				ui.SameLine();
+				string n;
+				if (!ui.bMinimize) {
+					n = "#" + ofToString(i);
+					ui.AddLabel(n, false, true);
+					//ImGui::NextColumn();
+					ui.SameLine();
+				}
 				n = editorEnablers[i].getName();
 				ui.AddLabelBig(n, false, true);
 				//ImGui::Columns(1);
@@ -1930,13 +1933,13 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 			{
 				ui.AddSpacing();
 
-				ui.AddLabel("Mode");
+				bool bx = (!ui.bMinimize);
+				if (bx) ui.AddLabel("Mode");
 
 				ui.AddComboButtonDualLefted(smoothChannels[i]->bangDetectorIndex, smoothChannels[i]->bangDetectors);
 
 				//--
 
-				bool bx = (!ui.bMinimize);
 				SurfingGuiTypes st = bx ? OFX_IM_HSLIDER_SMALL : OFX_IM_HSLIDER_MINI_NO_LABELS;
 
 				//if (!ui.bMinimize)
@@ -1964,11 +1967,15 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 				ui.AddSpacing();
 
+				//--
+
 				// Circle Widget
 
-				string n = editorEnablers[i].getName();
-				ui.AddLabel(n, false, true);
-				if (!ui.bMinimize) ui.AddLabelBig("BANG!", true, true);
+				if (bx) {
+					string n = editorEnablers[i].getName();
+					ui.AddLabel(n, false, true);
+					ui.AddLabelBig("BANG!", true, true);
+				}
 				ui.AddSpacing();
 
 				circleBeatWidget.draw();
