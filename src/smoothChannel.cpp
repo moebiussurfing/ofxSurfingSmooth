@@ -62,11 +62,20 @@ void SmoothChannel::startup()
 {
 	ofLogNotice("SmoothChannel") << (__FUNCTION__);
 
-	name_Settings = params.getName();
-	ofLogNotice("SmoothChannel") << "Load Settings for channel / param: "<< name_Settings;
+	name_Settings = params.getName() + ".json";
+	ofLogNotice("SmoothChannel") << "Load Settings for channel / param: " << name_Settings;
 	ofxSurfingHelpers::loadGroup(params, path_Global + name_Settings);
 
-	doRefresh();
+	bDoReFresh = true;
+}
+
+void SmoothChannel::update()
+{
+	if (bDoReFresh)
+	{
+		bDoReFresh = false;
+		doRefresh();
+	}
 }
 
 void SmoothChannel::exit()
@@ -108,7 +117,7 @@ void SmoothChannel::doReset()
 	typeSmooth = 1;
 	typeMean = 0;
 
-	doRefresh();
+	bDoReFresh = true;
 }
 
 void SmoothChannel::Changed(ofAbstractParameter& e)
@@ -143,7 +152,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = false;
 			typeSmooth_Str = typeSmoothLabels[0];
-			doRefresh();
+			bDoReFresh = true;
 			return;
 		}
 		break;
@@ -152,7 +161,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[1];
-			doRefresh();
+			bDoReFresh = true;
 			return;
 		}
 		break;
@@ -161,7 +170,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[2];
-			doRefresh();
+			bDoReFresh = true;
 			return;
 		}
 		break;
@@ -182,7 +191,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_ARITH:
 		{
 			typeMean_Str = typeMeanLabels[0];
-			doRefresh();
+			bDoReFresh = true;
 			return;
 		}
 		break;
@@ -190,7 +199,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_GEOM:
 		{
 			typeMean_Str = typeMeanLabels[1];
-			doRefresh();
+			bDoReFresh = true;
 			return;
 		}
 		break;
@@ -198,7 +207,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_HARM:
 		{
 			typeMean_Str = typeMeanLabels[2];
-			doRefresh();
+			bDoReFresh = true;
 			return;
 		}
 		break;
@@ -214,8 +223,9 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 void SmoothChannel::doRefresh()
 {
 	ofLogWarning("SmoothChannel") << (__FUNCTION__);
+	ofLogWarning("SmoothChannel") << ("--------------------------------------------------------------");
 
-	// to trig callbacks
+	// To trig callbacks
 
 	//--
 
@@ -225,19 +235,7 @@ void SmoothChannel::doRefresh()
 	}
 	else if (typeMean == 2) {
 	}
-
-	//--
-
-	if (bangDetectorIndex == 0) {//state
-		threshold = threshold;
-	}
-	else if (bangDetectorIndex == 1) {//bonk
-		onsetGrow = onsetGrow;
-		onsetDecay = onsetDecay;
-	}
-	else if (bangDetectorIndex == 2||bangDetectorIndex == 3||bangDetectorIndex == 4) {//re direct
-		timeRedirection = timeRedirection;
-	}
+	typeMean = typeMean;
 
 	//--
 
@@ -249,6 +247,23 @@ void SmoothChannel::doRefresh()
 	else if (typeSmooth == 2) {
 		slideMin = slideMin;
 		slideMax = slideMax;
+	}
+
+	//--
+
+	if (bangDetectorIndex == 0) { // state
+		threshold = threshold;
+	}
+	else if (bangDetectorIndex == 1) { // bonk
+		onsetGrow = onsetGrow;
+		onsetDecay = onsetDecay;
+	}
+	else if ( // re direct
+		bangDetectorIndex == 2 ||
+		bangDetectorIndex == 3 ||
+		bangDetectorIndex == 4) {
+
+		timeRedirection = timeRedirection;
 	}
 
 	//--

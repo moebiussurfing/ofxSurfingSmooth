@@ -79,7 +79,12 @@ public:
 	void setup(string name);
 	void startup();
 	void doReset();
+	
+	// fix workaround, for different related params and modes
+	// reduce by calling once per frame or make some bAttendintCalls flag..
+	void update();
 	void doRefresh();
+	bool bDoReFresh = false;
 
 public:
 
@@ -121,7 +126,7 @@ public:
 
 	ofParameter<bool> bReset;
 
-	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+	// 0 = TrigState, 1 = Bonk, 2 = Direction, 3 = DirUp, 4 = DirDown
 	ofParameter<int> bangDetectorIndex;	
 
 

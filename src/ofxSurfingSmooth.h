@@ -3,7 +3,7 @@
 /*
 
 	TODO:
-	
+
 	+ check notifier/void from @alptugan
 	+ fix hysteresis gate. tempo based. 1 bar i.e.
 	do the filtering in another "parent" method!
@@ -16,7 +16,7 @@
 	--
 
 	+ plotting int type should be stepped/not continuous.
-	
+
 	+ add clamp and normalization modes.
 
 	+ filter type before apply setBonks, etc ?
@@ -47,9 +47,11 @@
 #include "ofxSurfingBoxInteractive.h"
 #include "circleBeatWidget.h"
 
-#define COLORS_MONCHROME // Un comment to draw all plots with the same color.
+//#define COLORS_MONCHROME // Uncomment to draw all plots with the same color.
 
 #define MAX_AMP_POWER 1
+
+#define DISABLE_GATE
 
 //--
 
@@ -63,7 +65,7 @@ private:
 	int fontSize = 6;
 
 public:
-	
+
 	ofxSurfingSmooth();
 	~ofxSurfingSmooth();
 
@@ -74,6 +76,21 @@ private:
 
 	void update(ofEventArgs& args);
 	void exit();
+
+	//TODO:
+	// Fix workaround to allow multiple bangs..
+	//--------------------------------------------------------------
+	//void refreshGate(ofEventArgs& args)
+	void refreshGate()
+	{
+		// all the reading has happened,
+		// and all has been allowed!
+		for (int i = 0; i < gates.size(); i++)
+		{
+			gates[i].bIsGated = false;
+			//gates[i].bIsTrigState = false;
+		}
+	};
 
 	//--
 
@@ -131,6 +148,21 @@ private:
 public:
 
 	//--------------------------------------------------------------
+	ofColor getColorPlot(int i) const {
+		{
+			ofColor c;
+
+#ifdef COLORS_MONCHROME
+			c = colorPlots;
+#else
+			c = colorsPicked[i];
+			//c = colors[2 * i];
+#endif
+			return c;
+		}
+	}
+
+	//--------------------------------------------------------------
 	ofParameterGroup& getParamsSmoothed() {
 		return mParamsGroup_Smoothed;
 	}
@@ -160,41 +192,50 @@ private:
 	{
 		//ofParameter<int> bpmDiv{ "Div", 1, 1, 4 };//divide the bar duration in quarter
 		//ofParameter<bool> bGateMode{ "Gate", false };
-		ofParameter<bool> bGateState{ "State", false };
+		ofParameter<bool> bGateStateClosed{ "State", false };
 		int tDurationGate;//duration in ms
 		int timerGate = 0;//measure in ms
 		int lastTimerGate = 0;//last happened in ms
+
+		bool bIsGated = false;
+		//bool bIsTrigState = false;
 	};
 	vector<GateStruct> gates;
 
 	//--
 
 	//--------------------------------------------------------------
-	bool doGateControl(int i, bool bTrig) {
+	bool doBangGated(int i, bool bTrig) {
 
-		// gate
-		// skip and bypass any bang when gate is enabled
-		// bGateState true = locked = gate is active
-		if (smoothChannels[i]->bGateMode && gates[i].bGateState)
+		// Gate
+		// Skip and bypass any bang when gate is enabled
+		// bGateStateClosed true = locked = gate is active
+		if (smoothChannels[i]->bGateMode && gates[i].bGateStateClosed)
 		{
-			ofLogNotice("ofxSurfingSmooth") << "Bang Ignored bc gate active for index " << i;
+			ofLogVerbose("ofxSurfingSmooth") << "Bang Ignored bc gate active for index " << i;
 			return false;
 		}
 
-		// gates
-		// set timer
-		if (bTrig)//a bang happened, but check gate mode / state before accept it!
+		// Gates
+		// Set timer
+		// a bang happened, but check gate mode / state before accept it!
+		if (bTrig)
 		{
-			// bGateState = false, gate opened / passing
+			// bGateStateClosed = false, gate opened / passing
 			// must be opened to listen to it!
-			if (smoothChannels[i]->bGateMode && !gates[i].bGateState)
+			if (smoothChannels[i]->bGateMode && !gates[i].bGateStateClosed)
 			{
-				gates[i].bGateState = true; // close. gate activated
+				gates[i].bGateStateClosed = true; // close. gate activated
 				gates[i].lastTimerGate = ofGetElapsedTimeMillis(); // store when happened.
+
+				//gates[i].bIsTrigState = true;
 			}
 		}
 
+		if (bTrig) gates[i].bIsGated = true;
 		return bTrig;
+
+		//return gates[i].bIsTrigState;
 	}
 
 	//void doRefresh();
@@ -224,8 +265,11 @@ private:
 		if (!smoothChannels[i]->bEnableSmooth || !_bSmooth) return false;
 
 		// Gate
+
 		bool b = outputs[i].getTrigger();
-		//b = doGateControl(i, b);
+
+		//b = doBangGated(i, b);
+
 		return b;
 
 
@@ -254,8 +298,11 @@ private:
 
 
 		// Gate
+
 		bool b = outputs[i].getBonk();
-		//b = doGateControl(i, b);
+
+		//b = doBangGated(i, b);
+
 		return b;
 
 
@@ -291,9 +338,12 @@ private:
 
 
 		// Gate
+
 		bool b = outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
 			outputs[i].directionHasChanged();
-		//b = doGateControl(i, b);
+
+		//b = doBangGated(i, b);
+
 		return b;
 
 
@@ -333,10 +383,14 @@ private:
 
 
 		// Gate
+
 		bool b = outputs[i].getDirectionTimeDiff() > smoothChannels[i]->timeRedirection &&
 			outputs[i].directionHasChanged();
-		//b = doGateControl(i, b);
-		if (b) {
+
+		//b = doBangGated(i, b);
+
+		if (b)
+		{
 			if (outputs[i].getDirectionValDiff() < 0)
 				rdTo = 1;
 			else
@@ -412,7 +466,7 @@ public:
 	{
 		// Returns true if i / passed trigger is happening.
 		// then we can pick easily which detector to use 
-		// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+		// 0 = TrigState, 1 = Bonk, 2 = Direction, 3 = DirUp, 4 = DirDown
 
 		if (i > smoothChannels.size() - 1)
 		{
@@ -422,9 +476,10 @@ public:
 
 		//--
 
-		//// gate
-		//// skip and bypass any bang when gate is enabled
-		//if (smoothChannels[i]->bGateMode && gates[i].bGateState)
+		////TODO:
+		//// Gates
+		//// Skip and bypass any bang when gate is enabled
+		//if (smoothChannels[i]->bGateMode && gates[i].bGateStateClosed)
 		//{
 		//	ofLogNotice("ofxSurfingSmooth") << "Bang Ignored bc gate active for index " << i;
 		//	return false;
@@ -432,40 +487,89 @@ public:
 
 		//--
 
-		// get bangs
+		// Get bangs
 		bool bReturn = false;
 		switch (smoothChannels[i]->bangDetectorIndex)
 		{
+				
 		case 0: bReturn = isTriggered(i); break; // trigState
 		case 1: bReturn = isBonked(i); break; // bonked
 		case 2: bReturn = isRedirected(i); break; // redirect
 		case 3: bReturn = isRedirectedUp(i); break; // up
 		case 4: bReturn = isRedirectedDown(i); break; // down 
-		default: {
+
+		default:
+		{
 			ofLogError("ofxSurfingSmooth") << "Out of range. Unknown detector index: " << i;
 			return false;
 			break;
 		}
+
 		}
 
 		//--
 
-		//// gates
-		//// set timer
-		//if (bReturn)//a bang happened, but check gate mode / state before accept it!
-		//{
-		//	if (smoothChannels[i]->bGateMode && !gates[i].bGateState) // must be opened to liste to it!
-		//	{
-		//		gates[i].bGateState = true;
-		//		gates[i].lastTimerGate = ofGetElapsedTimeMillis();
-		//	}
-		//}
+		// Gates
+		// Set timer
+		/*
+		// a bang happened, but check gate mode / state before accept it!
+		if (bReturn)
+		{
+			// must be opened to listen to it!
+			if (smoothChannels[i]->bGateMode && !gates[i].bGateStateClosed)
+			{
+				gates[i].bGateStateClosed = true;
+				gates[i].lastTimerGate = ofGetElapsedTimeMillis();
+			}
+		}
+		*/
 
-		//doGateControl(i, bReturn);
+		//doBangGated(i, bReturn);
 
 		//--
 
 		return bReturn;
+	}
+
+	//--------------------------------------------------------------
+	bool isBangGated(ofAbstractParameter& e) {
+		int i = getIndex(e);
+		if (i != -1) return isBangGated(i);
+		else return false;
+	}
+
+	//--------------------------------------------------------------
+	bool isBangGated(int i)
+	{
+#ifdef DISABLE_GATE
+		isBang(i);
+#endif
+		//--
+		
+		//bool b = isBang(i);
+
+		////return doBangGated(i, b);
+		//doBangGated(i, b);
+
+		//return gates[i].bIsGated;
+
+
+		bool b = isBang(i);
+		return doBangGated(i, b);
+
+
+		/*
+		//TODO:
+		// Gates
+		// Skip and bypass any bang when gate is enabled
+		if (smoothChannels[i]->bGateMode && gates[i].bGateStateClosed)
+		{
+			ofLogNotice("ofxSurfingSmooth") << "Bang Ignored bc gate active for index " << i;
+			return false;
+		}
+
+		return isBang(i);
+		*/
 	}
 
 	//----
@@ -548,8 +652,10 @@ private:
 	vector<ofxHistoryPlot*> plots;
 	vector<ofColor> colors;
 
-#ifdef COLORS_MONCHROME
 	ofColor colorPlots;
+
+#ifndef COLORS_MONCHROME
+	vector<ofColor> colorsPicked;
 #endif
 
 	ofColor colorBaseLine;
@@ -572,12 +678,19 @@ private:
 
 	ofParameter<bool> bGui_Inputs;
 	ofParameter<bool> bGui_Outputs;
-	ofParameter<bool> bGenerators;
 
 	ofParameter<bool> bEnableSmoothGlobal; // global enable
 
 	ofParameter<bool> bPlay;
 	ofParameter<float> playSpeed;
+
+	ofParameter<bool> bGenerators;//signal generators for testing
+
+public:
+
+	void disableGenerators() { bGenerators = false; }
+
+private:
 
 	// Tester timers
 	int tf;
@@ -713,7 +826,7 @@ public:
 
 	ofParameter<bool> bReset;
 
-	CircleBeatWidget circleBeatWidget;
+	CircleBeatWidget circleBeat_Widget;
 };
 
 //----

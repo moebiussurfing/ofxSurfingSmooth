@@ -4,12 +4,14 @@
 ofxSurfingSmooth::ofxSurfingSmooth()
 {
 	ofAddListener(ofEvents().update, this, &ofxSurfingSmooth::update);
+	//ofAddListener(ofEvents().draw, this, &ofxSurfingSmooth::refreshGate, OF_EVENT_ORDER_APP);
 }
 
 //--------------------------------------------------------------
 ofxSurfingSmooth::~ofxSurfingSmooth()
 {
 	ofRemoveListener(ofEvents().update, this, &ofxSurfingSmooth::update);
+	//ofRemoveListener(ofEvents().draw, this, &ofxSurfingSmooth::refreshGate);
 
 	exit();
 }
@@ -43,7 +45,7 @@ void ofxSurfingSmooth::setup()
 	//bGui_Main = true;
 	bGui_Main = false;
 	bGui_GameMode = true;
-	bGenerators = true;
+	bGenerators = false;
 	ui.bHelp = true;
 	ui.bKeys = true;
 
@@ -112,9 +114,16 @@ void ofxSurfingSmooth::setupPlots()
 	// Plot colors
 
 	// One color for all channels
+	// pick a color
 #ifdef COLORS_MONCHROME
 	colorPlots = (ofColor::yellow);
 	//colorPlots = (ofColor::green);
+#else
+	// Pick some colors
+	colorsPicked.push_back(ofColor::turquoise);
+	colorsPicked.push_back(ofColor::orange);
+	colorsPicked.push_back(ofColor::pink);
+	colorsPicked.push_back(ofColor::green);
 #endif
 
 	colorBaseLine = ofColor(255, 100);
@@ -122,34 +131,46 @@ void ofxSurfingSmooth::setupPlots()
 
 	colorThreshold = ofColor(150);
 
-	//// style 1
+	//// Style 1
 	//colorTrig = ofColor(ofColor::red);
 	//colorBonk = ofColor(ofColor::blue);
 	//colorDirect = ofColor(ofColor::green);
 	//colorDirectUp = ofColor(ofColor::green);
 	//colorDirectDown = ofColor(ofColor::green);
 
-	// style 2. all the same colors 
+	// Style 2. All the same colors 
+#ifdef COLORS_MONCHROME
 	colorTrig = colorPlots;
 	colorBonk = colorPlots;
 	colorDirect = colorPlots;
 	colorDirectUp = colorPlots;
-	colorDirectDown = colorPlots; \
+	colorDirectDown = colorPlots;
+#else
+	colorPlots = (ofColor::yellow);
+	colorTrig = colorPlots;
+	colorBonk = colorPlots;
+	colorDirect = colorPlots;
+	colorDirectUp = colorPlots;
+	colorDirectDown = colorPlots;
+#endif
 
-		//--
+	//--
 
-	// circle beat widget
-		circleBeatWidget.setColor(0, colorTrig);
-	circleBeatWidget.setColor(1, colorBonk);
-	circleBeatWidget.setColor(2, colorDirect);
-	circleBeatWidget.setColor(3, colorDirectUp);
-	circleBeatWidget.setColor(4, colorDirectDown);
+	// Circle beat widget
+	circleBeat_Widget.setName("SmoothWidget");
+#ifdef COLORS_MONCHROME
+	circleBeat_Widget.setColor(0, colorTrig);
+	circleBeat_Widget.setColor(1, colorBonk);
+	circleBeat_Widget.setColor(2, colorDirect);
+	circleBeat_Widget.setColor(3, colorDirectUp);
+	circleBeat_Widget.setColor(4, colorDirectDown);
+#endif
 
-	// colors
+	// Colors
 	colors.clear();
 	colors.resize(amountPlots);
 
-	// alphas
+	// Alphas
 	int a1 = 128;//input
 	int a2 = 255;//output
 	ofColor c;
@@ -167,7 +188,9 @@ void ofxSurfingSmooth::setupPlots()
 	int hueStep = 255. / (float)amountChannels;
 	for (int i = 0; i < amountChannels; i++)
 	{
-		c.setHsb(hueStep * i, sat, brg);
+		if (i >= 0 && i < colorsPicked.size()) c = colorsPicked[i];
+		else c.setHsb(hueStep * i, sat, brg);
+
 		colors[2 * i] = ofColor(c, a1);
 		colors[2 * i + 1] = ofColor(c, a2);
 	}
@@ -225,6 +248,10 @@ void ofxSurfingSmooth::setupPlots()
 //--------------------------------------------------------------
 void ofxSurfingSmooth::update(ofEventArgs& args)
 {
+	//TODO:
+	// fix gate workflow
+	refreshGate();
+
 	// Force input params to test detectors!
 	{
 		// Generators
@@ -406,6 +433,10 @@ void ofxSurfingSmooth::updateEngine()
 
 	for (int i = 0; i < amountChannels; i++)
 	{
+		smoothChannels[i]->update();
+
+		//--
+		 
 		// Enabler toggle
 
 		auto& p = params_EditorEnablers[i]; // ofAbstractParameter
@@ -527,19 +558,25 @@ void ofxSurfingSmooth::updateDetectors()
 	{
 		if (smoothChannels[i]->bGateMode)
 		{
-			// calculate duration depending on mode slow/fast
-			if (!smoothChannels[i]->bGateSlow) // fast 
+			// Calculate duration depending on mode slow/fast
+
+			// Fast 
+			if (!smoothChannels[i]->bGateSlow)
 				gates[i].tDurationGate = (60000 / bpm) / (smoothChannels[i]->bpmDiv);
-			else // slow
+
+			// Slow
+			else
 				gates[i].tDurationGate = (60000 / bpm) * (2 * smoothChannels[i]->bpmDiv);
 
-			if (gates[i].bGateState) // true is for gate closed 
+			// True is for when gate is closed 
+			if (gates[i].bGateStateClosed)
 			{
-				// calculate time to open the gate if timer passed the target duration
+				// calculate time to open the gate
+				// if timer passed the target duration
 				gates[i].timerGate = (t - gates[i].lastTimerGate);
 				if (gates[i].timerGate > gates[i].tDurationGate)
 				{
-					gates[i].bGateState = false; // re open / release the gate!
+					gates[i].bGateStateClosed = false; // re open / release the gate!
 				}
 			}
 		}
@@ -552,32 +589,38 @@ void ofxSurfingSmooth::updateDetectors()
 
 	//TODO: it seems that calling isBang closes the gate!
 	// so, can on be readed once per frame! 
-	// and followed isBang are igored, returning always false!
+	// and followed isBang are ignored, returning always false!
 	// should use a notifier/callback approach.
 
 	// Gui Detector bang
 	// showing the selected channel by the gui index
-	// 0=TrigState, 1=Bonk, 2=Direction, 3=DirUp, 4=DirDown
+	// 0 = TrigState, 1 = Bonk, 2 = Direction, 3 = DirUp, 4 = DirDown
 	int i = index.get();
-	if (this->isBang(i))
+
+	// Customize
+	// Circle beat widget
+#ifndef COLORS_MONCHROME
+	ofColor c = colors[2 * i];
+	circleBeat_Widget.setColor(0, c);
+	circleBeat_Widget.setColor(1, c);
+	circleBeat_Widget.setColor(2, c);
+	circleBeat_Widget.setColor(3, c);
+	circleBeat_Widget.setColor(4, c);
+#endif
+
+	//if (this->isBang(i))
+	if (this->isBangGated(i))
 	{
 		switch (smoothChannels[i]->bangDetectorIndex)
 		{
-			//case 0:
-			//{
-			//	circleBeatWidget.setMode(0);
-			//	if (isTriggered(i)) circleBeatWidget.bang();
-			//	else circleBeatWidget.reset();
-			//	break;
-			//}
-		case 0: circleBeatWidget.bang(0); break;
-		case 1: circleBeatWidget.bang(1); break;
-		case 2: circleBeatWidget.bang(2); break;
-		case 3: circleBeatWidget.bang(3); break;
-		case 4: circleBeatWidget.bang(4); break;
+		case 0: circleBeat_Widget.bang(0); break;
+		case 1: circleBeat_Widget.bang(1); break;
+		case 2: circleBeat_Widget.bang(2); break;
+		case 3: circleBeat_Widget.bang(3); break;
+		case 4: circleBeat_Widget.bang(4); break;
+		default:  circleBeat_Widget.bang(0); break;
 		}
 	}
-
 }
 
 //--------------------------------------------------------------
@@ -696,7 +739,13 @@ void ofxSurfingSmooth::updateGenerators() {
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw()
 {
+	//if (bGui) draw_ImGui();
+	draw_ImGui();
+
+	//--
+
 	if (!bGui_Global) return;
+	if (!bGui_PlotIn && !bGui_PlotOut) return;
 
 	//if (!bGui) return;
 
@@ -720,14 +769,14 @@ void ofxSurfingSmooth::draw()
 			if (boxPlots.isVisible()) drawPlots(boxPlots.getRectangle());
 		}
 
-		boxPlots.draw();
+		if (!bGui_PlotFullScreen)
+		{
+			boxPlots.draw();
 
-		if (boxPlots.isVisible())
-			if (boxPlots.isEditing()) boxPlots.drawBorderBlinking();
+			if (boxPlots.isVisible())
+				if (boxPlots.isEditing()) boxPlots.drawBorderBlinking();
+		}
 	}
-
-	//if (bGui) draw_ImGui();
-	draw_ImGui();
 }
 
 //--------------------------------------------------------------
@@ -987,12 +1036,22 @@ void ofxSurfingSmooth::drawPlots(ofRectangle r) {
 			//ofColor _c1 = ofColor(colors[ii]);
 			//ofColor _c2 = ofColor(colors[ii]);
 
-			ofColor _c = colorThreshold;
+			ofColor _c = colorThreshold; // white
+
+			// all detectors as yellow
 			ofColor _c0 = colorTrig;
 			ofColor _c1 = colorBonk;
 			ofColor _c2 = colorDirect;
 			ofColor _c2up = colorDirectUp;
 			ofColor _c2down = colorDirectDown;
+
+			//// each detector same plot color
+			//ofColor _cp = colors[2 * i];
+			//ofColor _c0 = _cp;
+			//ofColor _c1 = _cp;
+			//ofColor _c2 = _cp;
+			//ofColor _c2up = _cp;
+			//ofColor _c2down = _cp;
 
 			// alpha blink
 			float _speedfast = 0.2;
@@ -1274,7 +1333,7 @@ void ofxSurfingSmooth::setupParams() {
 	params.add(bGenerators.set("Generators", false));
 	params.add(bPlay.set("Play", false));
 	params.add(playSpeed.set("Speed", 0.5, 0, 1));
-	params.add(alphaPlotInput.set("AlphaIn", 0.5, 0, 1));
+	params.add(alphaPlotInput.set("AlphaIn", 0.25, 0, 1));
 
 	params.add(bEnableSmoothGlobal.set("ENABLE GLOBAL", true));
 
@@ -1353,6 +1412,10 @@ void ofxSurfingSmooth::exit() {
 
 	ofxSurfingHelpers::CheckFolder(path_Global);
 	ofxSurfingHelpers::saveGroup(params, path_Settings);
+
+	//// Reset All
+	//for (int i = 0; i < smoothChannels.size(); i++)
+	//	smoothChannels[i]->exit();
 }
 
 //--------------------------------------------------------------
@@ -1801,7 +1864,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 		//--
 
-		ui.AddLabelHuge("SMOOTH & BANG");
+		ui.AddLabelHuge("SMOOTH DETECT");
 		//ui.AddLabelHuge(ui.bGui_GameMode.getName());
 		ui.AddSpacingBigSeparated();
 
@@ -1952,7 +2015,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 					else if (smoothChannels[i]->bangDetectorIndex == 1) // bonk
 					{
 						ui.Add(smoothChannels[i]->onsetGrow, st);
-						if(!bx) ui.AddTooltip(ofToString(smoothChannels[i]->onsetGrow.get(), 2));
+						if (!bx) ui.AddTooltip(ofToString(smoothChannels[i]->onsetGrow.get(), 2));
 						ui.Add(smoothChannels[i]->onsetDecay, st);
 						if (!bx) ui.AddTooltip(ofToString(smoothChannels[i]->onsetDecay.get(), 2));
 					}
@@ -1978,9 +2041,11 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 				}
 				ui.AddSpacing();
 
-				circleBeatWidget.draw();
+				circleBeat_Widget.draw();
 
 				//--
+
+#ifndef DISABLE_GATE
 
 				//ui.AddSpacingSeparated();
 				ui.AddSpacing();
@@ -1991,24 +2056,29 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 					// Timer progress
 					float v = ofMap(gates[i].timerGate, 0, gates[i].tDurationGate, 0, 1, true);
 					ofxImGuiSurfing::ProgressBar2(v, 1.f, true);
-					ofxImGuiSurfing::AddToggleNamed(smoothChannels[i]->bGateSlow, "Slow", "Fast");
-					ui.Add(smoothChannels[i]->bpmDiv, OFX_IM_STEPPER);
+
+					if (!ui.bMinimize)
+					{
+						ofxImGuiSurfing::AddToggleNamed(smoothChannels[i]->bGateSlow, "Slow", "Fast");
+						ui.Add(smoothChannels[i]->bpmDiv, OFX_IM_STEPPER);
+					}
 				}
+#endif
 
 				//--
 
 				ui.EndTree();
 			}
 
-			ui.AddSpacingSeparated();
+			if (!ui.bMinimize) ui.AddSpacingSeparated();
 		}
 
 		//--
 
-		if (ui.bMinimize)
-		{
-			ui.Add(ui.bKeys, OFX_IM_TOGGLE_ROUNDED);
-		}
+		//if (ui.bMinimize)
+		//{
+		//	ui.Add(ui.bKeys, OFX_IM_TOGGLE_ROUNDED);
+		//}
 
 		//--
 
@@ -2307,6 +2377,7 @@ void ofxSurfingSmooth::draw_ImGuiMain()
 		ui.EndWindowSpecial();
 	}
 }
+
 //--------------------------------------------------------------
 void ofxSurfingSmooth::draw_ImGui()
 {
@@ -2550,7 +2621,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 					{
 						outputs[i].initAccum(v);
 					}
-					smoothChannels[i]->doRefresh();
+					smoothChannels[i]->bDoReFresh = true;
 					return;
 				}
 				break;
@@ -2566,7 +2637,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 						MIN_SLIDE, MAX_SLIDE, true);
 
 					outputs[i].initSlide(_slmin, _slmax);
-					smoothChannels[i]->doRefresh();
+					smoothChannels[i]->bDoReFresh = true;
 					return;
 				}
 				break;
@@ -2585,7 +2656,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				case ofxDataStream::MEAN_ARITH:
 				{
 					outputs[i].setMeanType(ofxDataStream::MEAN_ARITH);
-					smoothChannels[i]->doRefresh();
+					smoothChannels[i]->bDoReFresh = true;
 					return;
 				}
 				break;
@@ -2593,7 +2664,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				case ofxDataStream::MEAN_GEOM:
 				{
 					outputs[i].setMeanType(ofxDataStream::MEAN_GEOM);
-					smoothChannels[i]->doRefresh();
+					smoothChannels[i]->bDoReFresh = true;
 					return;
 				}
 				break;
@@ -2601,7 +2672,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				case ofxDataStream::MEAN_HARM:
 				{
 					outputs[i].setMeanType(ofxDataStream::MEAN_HARM);
-					smoothChannels[i]->doRefresh();
+					smoothChannels[i]->bDoReFresh = true;
 					return;
 				}
 				break;
@@ -2615,7 +2686,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 			else if (name == smoothChannels[i]->threshold.getName())
 			{
 				outputs[i].setThresh(smoothChannels[i]->threshold);
-				smoothChannels[i]->doRefresh();
+				smoothChannels[i]->bDoReFresh = true;
 				return;
 			}
 
@@ -2626,7 +2697,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				//float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_ACC_HISTORY);
 				float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_HISTORY);
 				outputs[i].initAccum(v);
-				smoothChannels[i]->doRefresh();
+				smoothChannels[i]->bDoReFresh = true;
 				return;
 			}
 
@@ -2638,7 +2709,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				float _slmin = ofMap(smoothChannels[i]->slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
 				float _slmax = ofMap(smoothChannels[i]->slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
 				outputs[i].initSlide(_slmin, _slmax);
-				smoothChannels[i]->doRefresh();
+				smoothChannels[i]->bDoReFresh = true;
 				return;
 			}
 
@@ -2650,7 +2721,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				outputs[i].setOutputRange(ofVec2f(
 					smoothChannels[i]->minOutput,
 					smoothChannels[i]->maxOutput));
-				smoothChannels[i]->doRefresh();
+				smoothChannels[i]->bDoReFresh = true;
 				return;
 			}
 
@@ -2671,7 +2742,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 					outputs[i].setNormalized(
 						smoothChannels[i]->bNormalized,
 						ofVec2f(smoothChannels[i]->minOutput, smoothChannels[i]->maxOutput));
-				smoothChannels[i]->doRefresh();
+				smoothChannels[i]->bDoReFresh = true;
 				return;
 			}
 
@@ -2691,7 +2762,7 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 				outputs[i].directionChangeCalculated = true;
 				//specAmps[i].setDecayGrow(true, 0.99);
 				//outputs[i].setBonk(0.1, 0.0);
-				smoothChannels[i]->doRefresh();
+				smoothChannels[i]->bDoReFresh = true;
 				return;
 			}
 
@@ -2701,9 +2772,9 @@ void ofxSurfingSmooth::addParam(ofAbstractParameter& aparam) {
 
 			else if (name == smoothChannels[i]->bangDetectorIndex.getName())
 			{
-				//	circleBeatWidget.reset();
-				//	circleBeatWidget.setMode(smoothChannels[i]->bangDetectorIndex.get());
-				smoothChannels[i]->doRefresh();
+				//	circleBeat_Widget.reset();
+				//	circleBeat_Widget.setMode(smoothChannels[i]->bangDetectorIndex.get());
+				smoothChannels[i]->bDoReFresh = true;
 				return;
 			}
 
@@ -2785,7 +2856,7 @@ void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 
 		// prepare gate engine
 		GateStruct gate;
-		gate.bGateState.setSerializable(false);
+		gate.bGateStateClosed.setSerializable(false);
 		gates.push_back(gate);
 	}
 

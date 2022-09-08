@@ -32,7 +32,7 @@ public:
 	};
 
 private:
-	
+
 	float dt_Bpm = 0.f;
 	bool bBpmMode = false;
 
@@ -45,7 +45,9 @@ private:
 			else animCounter += dt_Bpm;
 		}
 	};
-	
+
+	string name = "";
+
 public:
 
 	ofParameter<float> bpm{ "Bpm", -1, 40.f, 240.f };
@@ -127,6 +129,10 @@ public:
 		}
 	}
 
+	void setName(string _name) {
+		name = _name;
+	}
+
 	void setColor(ofColor color) {
 		setColor(0, color);
 		setMode(0);
@@ -171,35 +177,86 @@ private:
 
 	void draw_ImGui_CircleBeatWidget()
 	{
+		string t = "##" + name;
+		ImGui::PushID(t.c_str());
+
+
 		float radius = 30;
-		ofColor colorBg = ofColor(16, 200);
 		ofColor colorCircle = this->getColor();
+		
+		static ofColor colorBg;
+
+		auto* colors = ImGui::GetStyle().Colors;
+		auto base = colors[ImGuiCol_FrameBgActive];
+		auto active = colors[ImGuiCol_FrameBg];
+		auto hovered = colors[ImGuiCol_FrameBgHovered];
 
 		//---
 
 		float pad = 10;
 		float width = ImGui::GetContentRegionAvail().x - 2 * pad;
 
-		const char* label = " ";
-
-		float radius_inner = radius * this->getValue() - 2; // 2 px inner
-		float radius_outer = radius;
 
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
 
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+
+		//TODO:
+
+		//draw_list->AddText(ImVec2(0, 0), ImU32(255), "myLabel", "myLabel");
+
+		////TODO: add label
+		////ImGui::Text(name.c_str());
+		//auto title_size = ImGui::CalcTextSize(name.c_str(), NULL, false, width);
+
+		//// Center title
+		//ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (width - title_size[0]) * 0.5f);
+		//
+		//ImGui::Text("%s", name.c_str());
+		//ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 20);
+
+
+		//// Common case
+		//const float wrap_width = wrap_enabled ? CalcWrapWidthForPos(window->DC.CursorPos, wrap_pos_x) : 0.0f;
+		//const ImVec2 text_size = CalcTextSize(text_begin, text_end, false, wrap_width);
+
+		//ImRect bb(text_pos, text_pos + text_size);
+		//ItemSize(text_size, 0.0f);
+		//if (!ItemAdd(bb, 0))
+		//	//return;
+
+		//// Render (we don't hide text after ## in this end-user function)
+		//RenderTextWrapped(ImVec2(0,0), "hola", "tu", 100);
+
+
+		const char* label = "label";
+
+		float radius_inner = radius * this->getValue() - 2; // 2 px inner
+		float radius_outer = radius;
+
+
 		ImVec2 pos = ImGui::GetCursorScreenPos(); // get top left of current widget
+
 
 		float xx = pos.x + pad;
 		float yy = pos.y;
 
 		ImVec2 center = ImVec2(xx + width / 2.f, yy + radius);
 
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		//TODO: position widget correctly to allow correct hover...
+		//ImGui::SetCursorPos(ImVec2(center.x, 0));
 
 		// make the free space
 		ImVec4 widgetRec = ImVec4(xx, yy, radius * 2.0f, radius * 2.0f);
-		ImGui::InvisibleButton(label, ImVec2(widgetRec.z, widgetRec.w));
+		ImGui::InvisibleButton(label, ImVec2(widgetRec.z + radius * 2.0f, widgetRec.w));//fix
+		//ImGui::InvisibleButton(label, ImVec2(widgetRec.z, widgetRec.w));
+
+		// assign color
+		bool is_active = ImGui::IsItemActive();
+		bool is_hovered = ImGui::IsItemHovered();
+		colorBg = is_hovered ? hovered : active;
 
 		//-
 
@@ -214,7 +271,7 @@ private:
 		ofColor c = colorCircle;
 
 		// blink alpha on that mode
-		if (mode == 0) 
+		if (mode == 0)
 		{
 			int a = ofMap(ofxSurfingHelpers::getFadeBlink(0.05), 0, 1, 160, 190);
 			c = ofColor(colorCircle, a);
@@ -224,9 +281,12 @@ private:
 
 		// Add a beauty inner shadow border
 		float thickness = 2.f;
-		float r = 1 + radius_inner - (thickness/2.f);
+		float r = 1 + radius_inner - (thickness / 2.f);
 		c = ofColor(ofColor::black, 90);
 		draw_list->AddCircle(center, r, ImGui::GetColorU32(ImVec4(c)), nsegm, thickness);
+
+
+		ImGui::PopID();
 	}
 };
 
