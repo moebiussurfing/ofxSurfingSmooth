@@ -66,17 +66,21 @@ void SmoothChannel::startup()
 	ofLogNotice("SmoothChannel") << "Load Settings for channel / param: " << name_Settings;
 	ofxSurfingHelpers::loadGroup(params, path_Global + name_Settings);
 
-	bDoReFresh = true;
+	//bDoReFresh = true;
 }
 
-void SmoothChannel::update()
-{
-	if (bDoReFresh)
-	{
-		bDoReFresh = false;
-		doRefresh();
-	}
-}
+//void SmoothChannel::update()
+//{
+//	//return;
+//	/*
+//	if (bDoReFresh)
+//	{
+//		cout << ofGetFrameNum() << endl;
+//		bDoReFresh = false;
+//		doRefresh();
+//	}
+//	*/
+//}
 
 void SmoothChannel::exit()
 {
@@ -117,7 +121,7 @@ void SmoothChannel::doReset()
 	typeSmooth = 1;
 	typeMean = 0;
 
-	bDoReFresh = true;
+	//bDoReFresh = true;
 }
 
 void SmoothChannel::Changed(ofAbstractParameter& e)
@@ -152,7 +156,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = false;
 			typeSmooth_Str = typeSmoothLabels[0];
-			bDoReFresh = true;
+
 			return;
 		}
 		break;
@@ -161,7 +165,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[1];
-			bDoReFresh = true;
+
 			return;
 		}
 		break;
@@ -170,7 +174,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		{
 			if (!bEnableSmooth) bEnableSmooth = true;
 			typeSmooth_Str = typeSmoothLabels[2];
-			bDoReFresh = true;
+
 			return;
 		}
 		break;
@@ -184,14 +188,16 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 
 	else if (name == typeMean.getName())
 	{
-		typeMean = ofClamp(typeMean, typeMean.getMin(), typeMean.getMax());
+		//int typeMean_ = typeMean;
+		int _typeMean = ofClamp(typeMean, typeMean.getMin(), typeMean.getMax());
+		typeMean.setWithoutEventNotifications(typeMean);
 
 		switch (typeMean)
 		{
 		case MEAN_ARITH:
 		{
 			typeMean_Str = typeMeanLabels[0];
-			bDoReFresh = true;
+
 			return;
 		}
 		break;
@@ -199,7 +205,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_GEOM:
 		{
 			typeMean_Str = typeMeanLabels[1];
-			bDoReFresh = true;
+
 			return;
 		}
 		break;
@@ -207,7 +213,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 		case MEAN_HARM:
 		{
 			typeMean_Str = typeMeanLabels[2];
-			bDoReFresh = true;
+
 			return;
 		}
 		break;
@@ -217,7 +223,7 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 	}
 }
 
-// fix workaround, for different related params and modes
+// Fix workaround, for different related params and modes
 // reduce by calling once per frame or make some bAttendintCalls flag..
 
 void SmoothChannel::doRefresh()

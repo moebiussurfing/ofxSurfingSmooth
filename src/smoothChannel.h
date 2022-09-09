@@ -82,9 +82,9 @@ public:
 	
 	// fix workaround, for different related params and modes
 	// reduce by calling once per frame or make some bAttendintCalls flag..
-	void update();
+	//void update();
 	void doRefresh();
-	bool bDoReFresh = false;
+	//bool bDoReFresh = false;
 
 public:
 

@@ -103,8 +103,8 @@ private:
 
 	// constants
 	const int MIN_SLIDE = 1;
-	const int MAX_SLIDE = 50;
-	const int MAX_HISTORY = 60;
+	const int MAX_SLIDE = 50 * 2;
+	const int MAX_ACCUM = 60;
 	//const int MAX_ACC_HISTORY = 60; // calibrated to 60fps ?
 
 public:
@@ -600,6 +600,7 @@ public:
 	//---
 
 	void startup();
+	void doRefresh();
 
 private:
 
@@ -628,8 +629,8 @@ private:
 
 private:
 
-	vector<ofxDataStream> outputs; // the smooth class
-	vector<float> inputs; // feed normalized signals here
+	vector<float> inputs; // feed normalized signals here.
+	vector<ofxDataStream> outputs; // the smooth/detect class to get the output from.
 
 	// Signal Generator
 	ofxSurfingHelpers::SurfGenerators surfGenerator;
@@ -642,6 +643,7 @@ private:
 public:
 
 	ofxSurfingBoxInteractive boxPlots;
+
 	ofParameter<float> alphaPlotInput;
 
 private:
@@ -712,17 +714,6 @@ private:
 
 	std::vector<std::string> typeSmoothLabels;
 	std::vector<std::string> typeMeanLabels;
-
-	////--------------------------------------------------------------
-	//void nextTypeSmooth() {
-	//	if (typeSmooth >= typeSmooth.getMax()) typeSmooth = 1;
-	//	else typeSmooth++;
-	//}
-	////--------------------------------------------------------------
-	//void nextTypeMean() {
-	//	if (typeMean >= typeMean.getMax()) typeMean = 0;
-	//	else typeMean++;
-	//}
 
 	//--------------------------------------------------------------
 	void nextTypeSmooth(int i) {
