@@ -2,6 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxSurfingHelpers.h"
+#include "ofxSurfingImGui.h"
+#include "surfingPresets.h"
 
 
 //--
@@ -18,7 +20,7 @@ public:
 		ofNotifyEvent(event, this); // if TheEventType is void you should use this form
 	}
 
-	//TheEventType eventArgs; // whatever data you might want to pass with the event. dont use if you declare ofEvent<void>
+	//TheEventType eventArgs; // whatever data you might want to pass with the event. don't use if you declare ofEvent<void>
 
 };
 
@@ -28,7 +30,7 @@ public:
 		eventListener = controller->event.newListener(this, &SoundEngineClass::eventCallback);
 	}
 
-	// in case you used a void event just make a funtion without arguments
+	// in case you used a void event just make a function without arguments
 	//void eventCallback(TheEventType&) {
 	void eventCallback() {
 		// this gets triggered by the event!
@@ -49,6 +51,18 @@ class SmoothChannel
 
 public:
 
+	string pathGlobal;
+	ofxSurfingGui* ui;
+	void setUiPtr(ofxSurfingGui* _ui) 
+	{
+		ui = _ui;
+		surfingPresets.setUiPtr(_ui);
+	}
+
+	SurfingPresets surfingPresets;
+
+public:
+	
 	SmoothChannel()
 	{
 		path_Global = "ofxSurfingSmooth/";
@@ -79,11 +93,14 @@ public:
 	void setup(string name);
 	void startup();
 	void doReset();
-	
+
 	// fix workaround, for different related params and modes
 	// reduce by calling once per frame or make some bAttendintCalls flag..
 	//void update();
 	void doRefresh();
+	void doRefreshDetector();
+	void doRefreshMean();
+	void doRefreshSmooth();
 	//bool bDoReFresh = false;
 
 public:
@@ -119,20 +136,20 @@ public:
 	ofParameter<float> maxInput;
 	ofParameter<float> minOutput;
 	ofParameter<float> maxOutput;
-	
-	ofParameter<bool> bGateMode{ "GATE", false };
+
+	ofParameter<bool> bGateModeEnable{ "GATE", false };
 	ofParameter<bool> bGateSlow{ "Slow", false };
 	ofParameter<int> bpmDiv{ "Div", 1, 1, 4 };//divide the bar duration in quarter
 
 	ofParameter<bool> bReset;
 
 	// 0 = TrigState, 1 = Bonk, 2 = Direction, 3 = DirUp, 4 = DirDown
-	ofParameter<int> bangDetectorIndex;	
+	ofParameter<int> bangDetectorIndex;
 
 
 	//--
 
-	vector<string> bangDetectors = { "State","Bonk", "Direct", "DirUp", "DirDown" };
+	vector<string> bangDetectors = { "State", "Bonk", "Direct", "DirUp", "DirDown" };
 
 private:
 
@@ -168,7 +185,7 @@ private:
 public:
 
 	void setPathGlobal(string name) {
-		path_Global = name;
+		path_Global = name + "channels/";
 		ofxSurfingHelpers::CheckFolder(path_Global);
 	};
 

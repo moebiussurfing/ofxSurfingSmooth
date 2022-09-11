@@ -21,10 +21,12 @@ void SmoothChannel::setup(string _name)
 	params.add(threshold.set("Threshold", 0.5f, 0.0, 1));
 
 	params.add(timeRedirection.set("TimeDir", 0.5f, 0.01, 1));
+
 	params.add(slideMin.set("SlideIn", 0.2f, 0.0, 1));
 	params.add(slideMax.set("SlideOut", 0.2f, 0.0, 1));
-	params.add(onsetGrow.set("Grow", 0.1f, 0.01, 1));
-	params.add(onsetDecay.set("Decay", 0.1, 0.01, 1));
+
+	params.add(onsetGrow.set("Grow", 0.1f, 0.001, 0.5));
+	params.add(onsetDecay.set("Decay", 0.1, 0.001, 0.5));
 
 	params.add(bClamp.set("Clamp", false));
 	params.add(minInput.set("minIn", 0, 0, 1));
@@ -33,7 +35,7 @@ void SmoothChannel::setup(string _name)
 	params.add(maxOutput.set("maxOut", 1, 0, 1));
 	params.add(bNormalized.set("Normalized", false));
 
-	params.add(bGateMode);
+	params.add(bGateModeEnable);
 	params.add(bGateSlow);
 	params.add(bpmDiv);
 
@@ -56,6 +58,11 @@ void SmoothChannel::setup(string _name)
 	/*
 	soundEngine.setListener(&controller);
 	*/
+	
+	surfingPresets.setPath(pathGlobal);
+	surfingPresets.AddGroup(params);
+	//W_vReset.makeReferenceTo(surfingPresets.vReset);
+
 }
 
 void SmoothChannel::startup()
@@ -67,6 +74,8 @@ void SmoothChannel::startup()
 	ofxSurfingHelpers::loadGroup(params, path_Global + name_Settings);
 
 	//bDoReFresh = true;
+
+	surfingPresets.startup();
 }
 
 //void SmoothChannel::update()
@@ -106,15 +115,15 @@ void SmoothChannel::doReset()
 	bNormalized = false;
 
 	threshold = 0.75f;
-	slideMin = 0.2f;
-	slideMax = 0.2f;
-	onsetGrow = 0.05f;
-	onsetDecay = 0.05f;
+	slideMin = 0.f;
+	slideMax = 0.4f;
+	onsetGrow = 0.015f;
+	onsetDecay = 0.25f;
 	timeRedirection = 0.1f;
 
-	smoothPower = 0.f;
+	smoothPower = 0.1f;
 
-	bGateMode = false;
+	bGateModeEnable = false;
 	bGateSlow = true;
 	bpmDiv = 1;
 
@@ -223,6 +232,8 @@ void SmoothChannel::Changed(ofAbstractParameter& e)
 	}
 }
 
+//----
+
 // Fix workaround, for different related params and modes
 // reduce by calling once per frame or make some bAttendintCalls flag..
 
@@ -235,42 +246,15 @@ void SmoothChannel::doRefresh()
 
 	//--
 
-	if (typeMean == 0) {
-	}
-	else if (typeMean == 1) {
-	}
-	else if (typeMean == 2) {
-	}
-	typeMean = typeMean;
+	doRefreshMean();
 
 	//--
 
-	if (typeSmooth == 0) {
-	}
-	else if (typeSmooth == 1) {
-		smoothPower = smoothPower;
-	}
-	else if (typeSmooth == 2) {
-		slideMin = slideMin;
-		slideMax = slideMax;
-	}
+	doRefreshSmooth();
 
 	//--
 
-	if (bangDetectorIndex == 0) { // state
-		threshold = threshold;
-	}
-	else if (bangDetectorIndex == 1) { // bonk
-		onsetGrow = onsetGrow;
-		onsetDecay = onsetDecay;
-	}
-	else if ( // re direct
-		bangDetectorIndex == 2 ||
-		bangDetectorIndex == 3 ||
-		bangDetectorIndex == 4) {
-
-		timeRedirection = timeRedirection;
-	}
+	doRefreshDetector();
 
 	//--
 
@@ -283,4 +267,61 @@ void SmoothChannel::doRefresh()
 	//float smoothPower_ = smoothPower;
 	//smoothPower = smoothPower.getMax();
 	//smoothPower = smoothPower_;
+}
+
+void SmoothChannel::doRefreshMean()
+{
+	ofLogWarning("SmoothChannel") << (__FUNCTION__);
+	ofLogWarning("SmoothChannel") << ("--------------------------------------------------------------");
+
+	if (typeMean == 0) {
+	}
+	else if (typeMean == 1) {
+	}
+	else if (typeMean == 2) {
+	}
+
+	typeMean = typeMean;
+}
+
+void SmoothChannel::doRefreshSmooth()
+{
+	ofLogWarning("SmoothChannel") << (__FUNCTION__);
+	ofLogWarning("SmoothChannel") << ("--------------------------------------------------------------");
+
+	if (typeSmooth == 0) {
+	}
+	else if (typeSmooth == 1) {
+		smoothPower = smoothPower;
+	}
+	else if (typeSmooth == 2) {
+		slideMin = slideMin;
+		slideMax = slideMax;
+	}
+}
+
+void SmoothChannel::doRefreshDetector()
+{
+	ofLogWarning("SmoothChannel") << (__FUNCTION__);
+	ofLogWarning("SmoothChannel") << ("--------------------------------------------------------------");
+
+	// state
+	if (bangDetectorIndex == 0) { 
+		threshold = threshold;
+	}
+	
+	// bonk
+	else if (bangDetectorIndex == 1) { 
+		onsetGrow = onsetGrow;
+		onsetDecay = onsetDecay;
+	}
+
+	// re direct
+	else if ( 
+		bangDetectorIndex == 2 ||
+		bangDetectorIndex == 3 ||
+		bangDetectorIndex == 4) {
+
+		timeRedirection = timeRedirection;
+	}
 }
