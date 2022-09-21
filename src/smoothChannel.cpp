@@ -75,7 +75,7 @@ void SmoothChannel::startup()
 
 	//bDoReFresh = true;
 
-	surfingPresets.startup();
+	//surfingPresets.startup();
 }
 
 //void SmoothChannel::update()

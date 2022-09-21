@@ -9,31 +9,19 @@
 
 	+ check notifier/void from @alptugan
 	+ fix hysteresis gate. tempo based. 1 bar i.e.
+		+ some bangs are bypassed when checked multiple times
 	do the filtering in another "parent" method!
 	isBangFiltered(i);
 
 	+ add mini float window with basic controls, vertical and knobs
 
-	+ add bypass detector ?
-
-	--
+	+ add bypass detector
 
 	+ plotting int type should be stepped/not continuous.
 
 	+ add clamp and normalization modes.
 
-	+ filter type before apply setBonks, etc ?
-
-	+ BUG: on startup smooth params, and maybe others are not loaded properly...
-	the problem is that when loading settings,
-	some of theme trigs dataStream configurations
-	that not correlate with the selected types.
-	probably we should set setSerializable
-	when picking each type with his related params?
-
-	+ add alpha for input plot ?
-	+ fix chars to debug plot
-	+ "real" nested sub-groups tree levels.. ?
+	+ implement "real" nested sub-groups tree levels.. ?
 	+ add colors types, vectors, using templates.
 		avoid crash to unsupported types.
 
@@ -55,7 +43,6 @@
 #define MAX_PRE_AMP_POWER 1.5f
 
 //#define DISABLE_GATE // WIP fixing
-
 
 // constants
 #define MIN_SLIDE 1

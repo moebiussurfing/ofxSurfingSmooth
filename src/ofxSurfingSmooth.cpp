@@ -1768,7 +1768,7 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 		//--
 
-		ui.AddLabelHuge("SMOOTH DETECT");
+		ui.AddLabelHuge("SMOOTH \n+DETECT");
 		//ui.AddLabelHuge(ui.bGui_GameMode.getName());
 		ui.AddSpacingBigSeparated();
 
