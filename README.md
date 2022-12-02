@@ -1,6 +1,6 @@
 # ofxSurfingSmooth
 
-## Overview
+## OVERVIEW
 
 An **openFrameworks** add-on to do different styles of timed **Smoothing** to grouped ```ofParameters```.
 
@@ -12,14 +12,14 @@ Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)
 
 **ofxSurfingSmooth** is just a kind of `helper` with the **ofxDataStream** engine, ```ofParameters``` bridge, plottings, easy integration `workflow`, `GUI`, and `settings` management.  
 
-## Screenshots
+## SCREENSHOTS
 
 <img src="docs/readme_images/ofxSurfingSmooth.gif" width="80%" height="80%">
 
 ### Example: Audio analyzer App
 ![](ofxSurfingBeatSync.jpeg)
 
-## Features
+## FEATURES
 
 - Different `detectors` to apply to the smoothed signals.
   - Trig bangs as events to be used after.
@@ -30,7 +30,7 @@ Copyright (C) 2015, Paul Turowski. (http://paulturowski.com)
 - Auto `Store/Recall` all the settings.
 - **ImGui** based GUI ready to integrate.
 
-## Usage
+## USAGE
 - Just pass your `ofParameterGroup` parameters containsser.
 - Another smoothed `ofParameterGroup` will be created with the same parameters structure.
 
@@ -79,7 +79,7 @@ void ofApp::update()
 ```
 
 <details>
-  <summary>Dependencies</summary>
+  <summary>DEPENDENCIES</summary>
   <p>
 
 Clone these add-ons and include them in the **OF**** PROJECT GENERATOR** to allow compile your projects or the examples:
@@ -107,7 +107,7 @@ Clone these add-ons and include them in the **OF**** PROJECT GENERATOR** to allo
 <details>
   <summary>TODO</summary>
   <p>
-  
+
 + Simplify API getters.
 + Add more types: 2D/3D vectors and colors. Using templates [?] ...  
   [ _**ANY HELP/PULL ON THIS IS REALLY APPRECIATED!**_ ]
@@ -122,7 +122,7 @@ Clone these add-ons and include them in the **OF**** PROJECT GENERATOR** to allo
 There's another more powerful but complex filtering add-on that you can check too:  
 https://github.com/bensnell/ofxFilter
 
-## Authors
+## AUTHORS
 
 Original **ofxDataStream** engine author:  
 Paul Turowski. http://paulturowski.com  
