@@ -97,7 +97,7 @@ Clone these add-ons and include them in the **OF**** PROJECT GENERATOR** to allo
 </details>
 
 <details>
-  <summary>Tested Systems</summary>
+  <summary>TESTED SYSTEMS</summary>
   <p>
 
 - **Windows 10** / **VS 2017** / **OF ~0.11**
