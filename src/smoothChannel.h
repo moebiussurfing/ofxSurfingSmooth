@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include "ofxSurfingHelpers.h"
 #include "ofxSurfingImGui.h"
-#include "surfingPresets.h"
+#include "ofxSurfingPresetsLite.h"
 
 
 //--
@@ -60,7 +60,7 @@ public:
 		surfingPresets.setUiPtr(_ui);
 	}
 
-	SurfingPresets surfingPresets;
+	ofxSurfingPresetsLite surfingPresets;
 
 public:
 	
