@@ -41,7 +41,7 @@ void SmoothChannel::setup(string _name)
 
 	params.add(bReset.set("Reset", false));
 
-	params.add(bangDetectorIndex.set("Detector", 0, 0, 4));
+	params.add(bangDetectorIndex.set("Detector", 1, 0, 4));
 
 	//--
 
@@ -105,7 +105,7 @@ void SmoothChannel::doReset()
 
 	ampInput = 0.f;
 
-	bangDetectorIndex = 0;
+	bangDetectorIndex = 1;
 
 	bClamp = false;
 	minInput = 0.f;

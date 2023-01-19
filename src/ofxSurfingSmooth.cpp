@@ -1787,11 +1787,13 @@ void ofxSurfingSmooth::draw_ImGuiGameMode()
 
 		ui.AddSpacingSeparated();
 
-		smoothChannels[i]->surfingPresets.drawImGui(false);
+		// Presets
+		smoothChannels[i]->surfingPresets.drawImGui(false, false, true);
 
 		//--
 
 		ui.AddSpacingSeparated();
+		//ui.AddSeparated();
 
 		//--
 
