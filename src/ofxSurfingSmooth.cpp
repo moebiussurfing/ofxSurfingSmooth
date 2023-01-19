@@ -1390,7 +1390,7 @@ void ofxSurfingSmooth::setupParams() {
 	//params.add(typeMean_Str.set(" ", ""));
 	//params.add(typeSmooth_Str.set(" ", ""));
 
-	params.add(bReset.set("ResetAll", false));
+	params.add(bReset.set("ResetAll"));
 
 	//--
 
@@ -1538,11 +1538,7 @@ void ofxSurfingSmooth::Changed_Params(ofAbstractParameter& e)
 	// Reset all
 	else if (name == bReset.getName())
 	{
-		if (bReset)
-		{
-			bReset = false;
-			doReset();
-		}
+		doReset();
 
 		return;
 	}
@@ -2398,7 +2394,7 @@ void ofxSurfingSmooth::setup(ofParameterGroup& aparams) {
 }
 
 //--------------------------------------------------------------
-void ofxSurfingSmooth::setupCallback(int _i) 
+void ofxSurfingSmooth::setupCallback(int _i)
 {
 	ofLogNotice("ofxSurfingSmooth") << (__FUNCTION__) << " " << _i;
 
@@ -2425,270 +2421,270 @@ void ofxSurfingSmooth::setupCallback(int _i)
 		{
 			string name = e.getName();
 
-			ofLogNotice("ofxSurfingSmooth") << "--------------------------------------------------------------";
-			ofLogNotice("ofxSurfingSmooth") << "Lambda | " << name << ": " << e;
+	ofLogNotice("ofxSurfingSmooth") << "--------------------------------------------------------------";
+	ofLogNotice("ofxSurfingSmooth") << "Lambda | " << name << ": " << e;
 
-			////ofLogNotice("ofxSurfingSmooth") << "Ch " << iIndex;
-			//auto &g = e.castGroup();
-			//int i = g.getInt("index");
-			//ofLogNotice("ofxSurfingSmooth") << "index : " << smoothChannels[i]->index;
+	////ofLogNotice("ofxSurfingSmooth") << "Ch " << iIndex;
+	//auto &g = e.castGroup();
+	//int i = g.getInt("index");
+	//ofLogNotice("ofxSurfingSmooth") << "index : " << smoothChannels[i]->index;
 
-			//TODO:
-			// using that workaround:
-			// each class object knows which index is
-			// for this parent scope class!
-			int i = params.getInt("index");
-			//int i = _i;
+	//TODO:
+	// using that workaround:
+	// each class object knows which index is
+	// for this parent scope class!
+	int i = params.getInt("index");
+	//int i = _i;
 
-			ofLogNotice("ofxSurfingSmooth") << "CH: " << i;
+	ofLogNotice("ofxSurfingSmooth") << "CH: " << i;
 
-			if (i > amountChannels)
+	if (i > amountChannels)
+	{
+		ofLogError("ofxSurfingSmooth") << "Out of range: " << i << ". Skip this index!";
+		return;
+	}
+
+	//--
+
+	if (0) {}
+
+	//--
+
+	else if (name == smoothChannels[i]->typeSmooth.getName())
+	{
+		switch (smoothChannels[i]->typeSmooth)
+		{
+
+		case ofxDataStream::SMOOTHING_NONE:
+		{
+			//smoothChannels[i]->bDoReFresh = true;
+			//smoothChannels[i]->doRefresh();
+
+			return;
+		}
+		break;
+
+		case ofxDataStream::SMOOTHING_ACCUM:
+		{
+			float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_ACCUM);
 			{
-				ofLogError("ofxSurfingSmooth") << "Out of range: " << i << ". Skip this index!";
-				return;
-			}
-
-			//--
-
-			if (0) {}
-
-			//--
-
-			else if (name == smoothChannels[i]->typeSmooth.getName())
-			{
-				switch (smoothChannels[i]->typeSmooth)
-				{
-
-				case ofxDataStream::SMOOTHING_NONE:
-				{
-					//smoothChannels[i]->bDoReFresh = true;
-					//smoothChannels[i]->doRefresh();
-
-					return;
-				}
-				break;
-
-				case ofxDataStream::SMOOTHING_ACCUM:
-				{
-					float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_ACCUM);
-					{
-						outputs[i].initAccum(v);
-					}
-
-					//smoothChannels[i]->bDoReFresh = true;
-					//smoothChannels[i]->doRefresh();
-
-					return;
-				}
-				break;
-
-				case ofxDataStream::SMOOTHING_SLIDE:
-				{
-					float _slmin = ofMap(
-						smoothChannels[i]->slideMin, 0, 1,
-						MIN_SLIDE, MAX_SLIDE, true);
-
-					float _slmax = ofMap(
-						smoothChannels[i]->slideMax, 0, 1,
-						MIN_SLIDE, MAX_SLIDE, true);
-
-					outputs[i].initSlide(_slmin, _slmax);
-
-					//smoothChannels[i]->bDoReFresh = true;
-					//smoothChannels[i]->doRefresh();
-
-					return;
-				}
-				break;
-
-				}
-
-				return;
-			}
-
-			//--
-
-			else if (name == smoothChannels[i]->typeMean.getName())
-			{
-				switch (smoothChannels[i]->typeMean)
-				{
-				case ofxDataStream::MEAN_ARITH:
-				{
-					outputs[i].setMeanType(ofxDataStream::MEAN_ARITH);
-
-					//smoothChannels[i]->doRefreshMean();
-					//smoothChannels[i]->bDoReFresh = true;
-					//smoothChannels[i]->doRefresh();
-
-					return;
-				}
-				break;
-
-				case ofxDataStream::MEAN_GEOM:
-				{
-					outputs[i].setMeanType(ofxDataStream::MEAN_GEOM);
-
-					//smoothChannels[i]->doRefreshMean();
-					//smoothChannels[i]->bDoReFresh = true;
-					//smoothChannels[i]->doRefresh();
-
-					return;
-				}
-				break;
-
-				case ofxDataStream::MEAN_HARM:
-				{
-					outputs[i].setMeanType(ofxDataStream::MEAN_HARM);
-
-					//smoothChannels[i]->doRefreshMean();
-					//smoothChannels[i]->bDoReFresh = true;
-					//smoothChannels[i]->doRefresh();
-
-					return;
-				}
-				break;
-				}
-
-				return;
-			}
-
-			//--
-
-			else if (name == smoothChannels[i]->threshold.getName())
-			{
-				outputs[i].setThresh(smoothChannels[i]->threshold);
-
-				//smoothChannels[i]->bDoReFresh = true;
-				//smoothChannels[i]->doRefresh();
-
-				return;
-			}
-
-			//--
-
-			else if (name == smoothChannels[i]->smoothPower.getName())
-			{
-				float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_ACCUM);
 				outputs[i].initAccum(v);
-
-				//smoothChannels[i]->doRefreshSmooth();
-				//smoothChannels[i]->bDoReFresh = true;
-				//smoothChannels[i]->doRefresh();
-
-				return;
 			}
 
-			//--
+			//smoothChannels[i]->bDoReFresh = true;
+			//smoothChannels[i]->doRefresh();
 
-			else if (name == smoothChannels[i]->slideMin.getName() ||
-				name == smoothChannels[i]->slideMax.getName())
-			{
-				float _slmin = ofMap(smoothChannels[i]->slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
-				float _slmax = ofMap(smoothChannels[i]->slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
-				outputs[i].initSlide(_slmin, _slmax);
+			return;
+		}
+		break;
 
-				//smoothChannels[i]->doRefreshSmooth();
-				//smoothChannels[i]->bDoReFresh = true;
-				//smoothChannels[i]->doRefresh();
+		case ofxDataStream::SMOOTHING_SLIDE:
+		{
+			float _slmin = ofMap(
+				smoothChannels[i]->slideMin, 0, 1,
+				MIN_SLIDE, MAX_SLIDE, true);
 
-				return;
-			}
+			float _slmax = ofMap(
+				smoothChannels[i]->slideMax, 0, 1,
+				MIN_SLIDE, MAX_SLIDE, true);
 
-			//--
+			outputs[i].initSlide(_slmin, _slmax);
 
-			//TODO:
-			else if (name == smoothChannels[i]->minOutput.getName() || name == smoothChannels[i]->maxOutput.getName())
-			{
-				outputs[i].setOutputRange(ofVec2f(
-					smoothChannels[i]->minOutput,
-					smoothChannels[i]->maxOutput));
+			//smoothChannels[i]->bDoReFresh = true;
+			//smoothChannels[i]->doRefresh();
 
-				//smoothChannels[i]->doRefresh();
-				//smoothChannels[i]->bDoReFresh = true;
+			return;
+		}
+		break;
 
-				return;
-			}
+		}
 
-			//--
+		return;
+	}
 
-			//TODO:
-			//detect "bonks" (onsets):
-			//amp.setBonk(0.1, 0.1);  // min growth for onset, min decay
-			//set growth/decay:
-			//amp.setDecayGrow(true, 0.99); // a frame rate dependent steady decay/growth
+	//--
 
-			else if (
-				name == smoothChannels[i]->onsetGrow.getName() ||
-				name == smoothChannels[i]->onsetDecay.getName())
-			{
-				outputs[i].setBonk(smoothChannels[i]->onsetGrow, smoothChannels[i]->onsetDecay);
-				outputs[i].directionChangeCalculated = true;
-				//specAmps[i].setDecayGrow(true, 0.99);
-				//outputs[i].setBonk(0.1, 0.0);
+	else if (name == smoothChannels[i]->typeMean.getName())
+	{
+		switch (smoothChannels[i]->typeMean)
+		{
+		case ofxDataStream::MEAN_ARITH:
+		{
+			outputs[i].setMeanType(ofxDataStream::MEAN_ARITH);
 
-				//smoothChannels[i]->bDoReFresh = true;
-				//smoothChannels[i]->doRefresh();
+			//smoothChannels[i]->doRefreshMean();
+			//smoothChannels[i]->bDoReFresh = true;
+			//smoothChannels[i]->doRefresh();
 
-				return;
-			}
+			return;
+		}
+		break;
 
-			//--
+		case ofxDataStream::MEAN_GEOM:
+		{
+			outputs[i].setMeanType(ofxDataStream::MEAN_GEOM);
 
-			// Do not requires to update the engine!
+			//smoothChannels[i]->doRefreshMean();
+			//smoothChannels[i]->bDoReFresh = true;
+			//smoothChannels[i]->doRefresh();
 
-			else if (name == smoothChannels[i]->bangDetectorIndex.getName())
-			{
-				//	circleBeat_Widget.reset();
-				//	circleBeat_Widget.setMode(smoothChannels[i]->bangDetectorIndex.get());
+			return;
+		}
+		break;
 
-				//smoothChannels[i]->bDoReFresh = true;
-				//smoothChannels[i]->doRefresh();
-				smoothChannels[i]->doRefreshDetector(); 
+		case ofxDataStream::MEAN_HARM:
+		{
+			outputs[i].setMeanType(ofxDataStream::MEAN_HARM);
 
-				return;
-			}
+			//smoothChannels[i]->doRefreshMean();
+			//smoothChannels[i]->bDoReFresh = true;
+			//smoothChannels[i]->doRefresh();
 
-			//--
+			return;
+		}
+		break;
+		}
 
-			//TODO:
-			else if (name == smoothChannels[i]->bNormalized.getName())
-			{
-				//TODO:
-				//outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
+		return;
+	}
 
-				if (smoothChannels[i]->bNormalized)
-					outputs[i].setNormalized(
-						smoothChannels[i]->bNormalized,
-						ofVec2f(0, 1));
+	//--
 
-				else
-					outputs[i].setNormalized(
-						smoothChannels[i]->bNormalized,
-						ofVec2f(smoothChannels[i]->minOutput, smoothChannels[i]->maxOutput));
+	else if (name == smoothChannels[i]->threshold.getName())
+	{
+		outputs[i].setThresh(smoothChannels[i]->threshold);
 
-				//smoothChannels[i]->bDoReFresh = true;
-				//smoothChannels[i]->doRefresh();
+		//smoothChannels[i]->bDoReFresh = true;
+		//smoothChannels[i]->doRefresh();
 
-				return;
-			}
+		return;
+	}
 
-			//else if (name == smoothChannels[i]->ampInput.getName())
-			//{
-			//	//..
-			//	return;
-			//}
+	//--
 
-			//else if (name == minOutput.getName())
-			//{
-			//	//..
-			//	return;
-			//}
+	else if (name == smoothChannels[i]->smoothPower.getName())
+	{
+		float v = ofMap(smoothChannels[i]->smoothPower, 0, 1, 1, MAX_ACCUM);
+		outputs[i].initAccum(v);
 
-			//else if (name == minOutput.getName())
-			//{
-			//	//..
-			//	return;
-			//}
+		//smoothChannels[i]->doRefreshSmooth();
+		//smoothChannels[i]->bDoReFresh = true;
+		//smoothChannels[i]->doRefresh();
+
+		return;
+	}
+
+	//--
+
+	else if (name == smoothChannels[i]->slideMin.getName() ||
+		name == smoothChannels[i]->slideMax.getName())
+	{
+		float _slmin = ofMap(smoothChannels[i]->slideMin, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+		float _slmax = ofMap(smoothChannels[i]->slideMax, 0, 1, MIN_SLIDE, MAX_SLIDE, true);
+		outputs[i].initSlide(_slmin, _slmax);
+
+		//smoothChannels[i]->doRefreshSmooth();
+		//smoothChannels[i]->bDoReFresh = true;
+		//smoothChannels[i]->doRefresh();
+
+		return;
+	}
+
+	//--
+
+	//TODO:
+	else if (name == smoothChannels[i]->minOutput.getName() || name == smoothChannels[i]->maxOutput.getName())
+	{
+		outputs[i].setOutputRange(ofVec2f(
+			smoothChannels[i]->minOutput,
+			smoothChannels[i]->maxOutput));
+
+		//smoothChannels[i]->doRefresh();
+		//smoothChannels[i]->bDoReFresh = true;
+
+		return;
+	}
+
+	//--
+
+	//TODO:
+	//detect "bonks" (onsets):
+	//amp.setBonk(0.1, 0.1);  // min growth for onset, min decay
+	//set growth/decay:
+	//amp.setDecayGrow(true, 0.99); // a frame rate dependent steady decay/growth
+
+	else if (
+		name == smoothChannels[i]->onsetGrow.getName() ||
+		name == smoothChannels[i]->onsetDecay.getName())
+	{
+		outputs[i].setBonk(smoothChannels[i]->onsetGrow, smoothChannels[i]->onsetDecay);
+		outputs[i].directionChangeCalculated = true;
+		//specAmps[i].setDecayGrow(true, 0.99);
+		//outputs[i].setBonk(0.1, 0.0);
+
+		//smoothChannels[i]->bDoReFresh = true;
+		//smoothChannels[i]->doRefresh();
+
+		return;
+	}
+
+	//--
+
+	// Do not requires to update the engine!
+
+	else if (name == smoothChannels[i]->bangDetectorIndex.getName())
+	{
+		//	circleBeat_Widget.reset();
+		//	circleBeat_Widget.setMode(smoothChannels[i]->bangDetectorIndex.get());
+
+		//smoothChannels[i]->bDoReFresh = true;
+		//smoothChannels[i]->doRefresh();
+		smoothChannels[i]->doRefreshDetector();
+
+		return;
+	}
+
+	//--
+
+	//TODO:
+	else if (name == smoothChannels[i]->bNormalized.getName())
+	{
+		//TODO:
+		//outputs[i].setOutputRange(ofVec2f(minOutput, maxOutput));
+
+		if (smoothChannels[i]->bNormalized)
+			outputs[i].setNormalized(
+				smoothChannels[i]->bNormalized,
+				ofVec2f(0, 1));
+
+		else
+			outputs[i].setNormalized(
+				smoothChannels[i]->bNormalized,
+				ofVec2f(smoothChannels[i]->minOutput, smoothChannels[i]->maxOutput));
+
+		//smoothChannels[i]->bDoReFresh = true;
+		//smoothChannels[i]->doRefresh();
+
+		return;
+	}
+
+	//else if (name == smoothChannels[i]->ampInput.getName())
+	//{
+	//	//..
+	//	return;
+	//}
+
+	//else if (name == minOutput.getName())
+	//{
+	//	//..
+	//	return;
+	//}
+
+	//else if (name == minOutput.getName())
+	//{
+	//	//..
+	//	return;
+	//}
 
 		}));
 }

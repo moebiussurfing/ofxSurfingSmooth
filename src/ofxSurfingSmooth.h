@@ -700,13 +700,14 @@ public:
 
 	void disableGenerators() { bGenerators = false; }
 
+	void doReset();
+
 private:
 
 	// Tester timers
 	int tf;
 	float tn;
 
-	void doReset();
 	void setupParams();
 
 	ofColor colorBg;
@@ -823,7 +824,7 @@ public:
 	//ofParameter<float> minOutput;
 	//ofParameter<float> maxOutput;
 
-	ofParameter<bool> bReset;
+	ofParameter<void> bReset;
 
 	CircleBeatWidget circleBeat_Widget;
 };
